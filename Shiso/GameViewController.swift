@@ -8,21 +8,49 @@
 
 import UIKit
 import SpriteKit
-import GameplayKit
+import Firebase
+import FirebaseAuth
+import FBSDKLoginKit
 
-class GameViewController: UIViewController {
+class GameViewController: UIViewController, TransitionDelegate {
 
+    var loggedIn: Bool = false
+    
+ 
     override func viewDidLoad() {
-        super.viewDidLoad()
+        super.viewDidLoad()        
         
+        Fire.dataService.delegate = self
+     
         if let view = self.view as! SKView? {
-            // Load the SKScene from 'GameScene.sks'
-            if let scene = SKScene(fileNamed: "GameScene") {
-                // Set the scale mode to scale to fit the window
+           
+        if loggedIn == false {
+           if let scene = LoginScene(fileNamed: "LoginScene") {
                 scene.scaleMode = .aspectFill
                 
                 // Present the scene
                 view.presentScene(scene)
+            
+            
+            }
+        }
+             // Load the SKScene from 'GameScene.sks'
+           else   {
+            
+            // Set the scale mode to scale to fit the window
+            
+            Fire.dataService.loadGame(){
+                
+                (game) in
+                
+                if let scene = GameplayScene(fileNamed: "GameplayScene") {
+                     scene.scaleMode = .aspectFill
+                    scene.game = game 
+                    // Present the scene
+                    view.presentScene(scene)
+                }
+            }
+            
             }
             
             view.ignoresSiblingOrder = true
@@ -31,7 +59,36 @@ class GameViewController: UIViewController {
             view.showsNodeCount = true
         }
     }
-
+    
+    
+    func showLoginAlert(message: String) {
+        
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+        
+        
+        self.present(alertController, animated: true, completion: nil)
+    }
+    
+    func showLoginError(message: String) {
+     
+        let alertController = UIAlertController(title: "Oops!", message: "\(message)", preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+        
+        
+        alertController.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel, handler: nil))
+        
+        present(alertController, animated: true, completion: nil)
+    }
+    
+    func showLoginSuccess(message: String) {
+        
+        let alertController = UIAlertController(title: "Successful Login!", message: "\(message)", preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+        present(alertController, animated: true, completion: nil)
+    }
+    
+    
     override var shouldAutorotate: Bool {
         return true
     }

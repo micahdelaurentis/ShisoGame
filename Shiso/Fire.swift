@@ -1,4 +1,4 @@
-//
+// 
 //  Fire.swift
 //  Shiso
 //
@@ -10,6 +10,8 @@ import Foundation
 import Firebase
 import FirebaseAuth
 import SpriteKit
+
+
 let REF = FirebaseConstants.FBRef
 let currentUserID = FirebaseConstants.CurrentUserID
 

@@ -7,16 +7,31 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		32545EF054B00264A0A93989 /* Pods_ShisoUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 56572FB3CC4A0693A2C53A7D /* Pods_ShisoUITests.framework */; };
+		CF064CA81F9CD5F40075E72C /* Fire.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3776BE1F64281E00BCC246 /* Fire.swift */; };
+		CF3776C31F65CE4400BCC246 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3776C21F65CE4400BCC246 /* Game.swift */; };
+		CF3776C51F65D07500BCC246 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3776C41F65D07500BCC246 /* Player.swift */; };
+		CF55B8ED1EDCD0340024126E /* Board.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF55B8EC1EDCD0340024126E /* Board.swift */; };
+		CF55B8EF1EE2E8B30024126E /* Tile.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF55B8EE1EE2E8B30024126E /* Tile.swift */; };
+		CF55B8F31EEADEE80024126E /* TileRack.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF55B8F21EEADEE80024126E /* TileRack.swift */; };
+		CF5B0D6D1FC07478006C3A8C /* WildCardPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5B0D6C1FC07478006C3A8C /* WildCardPickerView.swift */; };
+		CFE350CB1F6DC3210009AAFB /* FirebaseConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE350CA1F6DC3210009AAFB /* FirebaseConstants.swift */; };
+		CFE350CD1F891E1B0009AAFB /* GameConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE350CC1F891E1B0009AAFB /* GameConstants.swift */; };
 		CFE93B9E1EDC5CBB004F81FE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE93B9D1EDC5CBB004F81FE /* AppDelegate.swift */; };
-		CFE93BA01EDC5CBB004F81FE /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = CFE93B9F1EDC5CBB004F81FE /* GameScene.sks */; };
 		CFE93BA21EDC5CBB004F81FE /* Actions.sks in Resources */ = {isa = PBXBuildFile; fileRef = CFE93BA11EDC5CBB004F81FE /* Actions.sks */; };
-		CFE93BA41EDC5CBB004F81FE /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE93BA31EDC5CBB004F81FE /* GameScene.swift */; };
 		CFE93BA61EDC5CBB004F81FE /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE93BA51EDC5CBB004F81FE /* GameViewController.swift */; };
 		CFE93BA91EDC5CBB004F81FE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CFE93BA71EDC5CBB004F81FE /* Main.storyboard */; };
 		CFE93BAB1EDC5CBB004F81FE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CFE93BAA1EDC5CBB004F81FE /* Assets.xcassets */; };
 		CFE93BAE1EDC5CBB004F81FE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CFE93BAC1EDC5CBB004F81FE /* LaunchScreen.storyboard */; };
 		CFE93BB91EDC5CBB004F81FE /* ShisoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE93BB81EDC5CBB004F81FE /* ShisoTests.swift */; };
 		CFE93BC41EDC5CBB004F81FE /* ShisoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE93BC31EDC5CBB004F81FE /* ShisoUITests.swift */; };
+		CFE93BD21EDC5CED004F81FE /* GameplayScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = CFE93BD11EDC5CEC004F81FE /* GameplayScene.sks */; };
+		CFE93BD61EDC5D74004F81FE /* GameplayScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE93BD51EDC5D74004F81FE /* GameplayScene.swift */; };
+		CFF4056F1F4F113E00764E56 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CFF4056E1F4F113E00764E56 /* GoogleService-Info.plist */; };
+		CFF405741F59A34D00764E56 /* LoginScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = CFF405731F59A34D00764E56 /* LoginScene.sks */; };
+		CFF405761F59A36A00764E56 /* LoginScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFF405751F59A36A00764E56 /* LoginScene.swift */; };
+		F8BD3CC135E7E8C0BD5623E4 /* Pods_Shiso.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CCC3D42085D0E6E576FF3757 /* Pods_Shiso.framework */; };
+		F9666B0FC195DEC33EDF7DA1 /* Pods_ShisoTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F0F90D5D745921CB2716437B /* Pods_ShisoTests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,11 +52,25 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1A2DA46A66A74735D150A5D6 /* Pods-ShisoUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShisoUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ShisoUITests/Pods-ShisoUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		2D78BC1EC05087CDF6E54C30 /* Pods-ShisoTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShisoTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ShisoTests/Pods-ShisoTests.release.xcconfig"; sourceTree = "<group>"; };
+		46C328C0DCD0F7A444A8A965 /* Pods-Shiso.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Shiso.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Shiso/Pods-Shiso.debug.xcconfig"; sourceTree = "<group>"; };
+		56572FB3CC4A0693A2C53A7D /* Pods_ShisoUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShisoUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		62D66C8FC3E02F0CA3C18218 /* Pods-Shiso.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Shiso.release.xcconfig"; path = "Pods/Target Support Files/Pods-Shiso/Pods-Shiso.release.xcconfig"; sourceTree = "<group>"; };
+		87A7EE6C942E40C9ED60E102 /* Pods-ShisoUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShisoUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ShisoUITests/Pods-ShisoUITests.release.xcconfig"; sourceTree = "<group>"; };
+		CCC3D42085D0E6E576FF3757 /* Pods_Shiso.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Shiso.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CF3776BE1F64281E00BCC246 /* Fire.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Fire.swift; sourceTree = "<group>"; };
+		CF3776C21F65CE4400BCC246 /* Game.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
+		CF3776C41F65D07500BCC246 /* Player.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+		CF55B8EC1EDCD0340024126E /* Board.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Board.swift; path = ../Board.swift; sourceTree = "<group>"; };
+		CF55B8EE1EE2E8B30024126E /* Tile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tile.swift; sourceTree = "<group>"; };
+		CF55B8F21EEADEE80024126E /* TileRack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TileRack.swift; sourceTree = "<group>"; };
+		CF5B0D6C1FC07478006C3A8C /* WildCardPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WildCardPickerView.swift; sourceTree = "<group>"; };
+		CFE350CA1F6DC3210009AAFB /* FirebaseConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirebaseConstants.swift; sourceTree = "<group>"; };
+		CFE350CC1F891E1B0009AAFB /* GameConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameConstants.swift; sourceTree = "<group>"; };
 		CFE93B9A1EDC5CBB004F81FE /* Shiso.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shiso.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CFE93B9D1EDC5CBB004F81FE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		CFE93B9F1EDC5CBB004F81FE /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
 		CFE93BA11EDC5CBB004F81FE /* Actions.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Actions.sks; sourceTree = "<group>"; };
-		CFE93BA31EDC5CBB004F81FE /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 		CFE93BA51EDC5CBB004F81FE /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
 		CFE93BA81EDC5CBB004F81FE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		CFE93BAA1EDC5CBB004F81FE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -53,6 +82,13 @@
 		CFE93BBF1EDC5CBB004F81FE /* ShisoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ShisoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CFE93BC31EDC5CBB004F81FE /* ShisoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShisoUITests.swift; sourceTree = "<group>"; };
 		CFE93BC51EDC5CBB004F81FE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CFE93BD11EDC5CEC004F81FE /* GameplayScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameplayScene.sks; sourceTree = "<group>"; };
+		CFE93BD51EDC5D74004F81FE /* GameplayScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameplayScene.swift; sourceTree = "<group>"; };
+		CFF4056E1F4F113E00764E56 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		CFF405731F59A34D00764E56 /* LoginScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = LoginScene.sks; sourceTree = "<group>"; };
+		CFF405751F59A36A00764E56 /* LoginScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginScene.swift; sourceTree = "<group>"; };
+		DAE889B57F11E2978951AE18 /* Pods-ShisoTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShisoTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ShisoTests/Pods-ShisoTests.debug.xcconfig"; sourceTree = "<group>"; };
+		F0F90D5D745921CB2716437B /* Pods_ShisoTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShisoTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +96,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F8BD3CC135E7E8C0BD5623E4 /* Pods_Shiso.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -67,6 +104,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9666B0FC195DEC33EDF7DA1 /* Pods_ShisoTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,19 +112,75 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				32545EF054B00264A0A93989 /* Pods_ShisoUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		26BBDB03A818E02CBCD85F71 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				46C328C0DCD0F7A444A8A965 /* Pods-Shiso.debug.xcconfig */,
+				62D66C8FC3E02F0CA3C18218 /* Pods-Shiso.release.xcconfig */,
+				DAE889B57F11E2978951AE18 /* Pods-ShisoTests.debug.xcconfig */,
+				2D78BC1EC05087CDF6E54C30 /* Pods-ShisoTests.release.xcconfig */,
+				1A2DA46A66A74735D150A5D6 /* Pods-ShisoUITests.debug.xcconfig */,
+				87A7EE6C942E40C9ED60E102 /* Pods-ShisoUITests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		93DFFB0FCC621D58EA97D2FA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CCC3D42085D0E6E576FF3757 /* Pods_Shiso.framework */,
+				F0F90D5D745921CB2716437B /* Pods_ShisoTests.framework */,
+				56572FB3CC4A0693A2C53A7D /* Pods_ShisoUITests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		CF3776C61F65D28F00BCC246 /* model classes */ = {
+			isa = PBXGroup;
+			children = (
+				CF3776C21F65CE4400BCC246 /* Game.swift */,
+				CF3776C41F65D07500BCC246 /* Player.swift */,
+			);
+			name = "model classes";
+			sourceTree = "<group>";
+		};
+		CF5B0D6E1FC07487006C3A8C /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				CF5B0D6C1FC07478006C3A8C /* WildCardPickerView.swift */,
+			);
+			name = Views;
+			path = Shiso;
+			sourceTree = "<group>";
+		};
+		CFD7D0571EEC34570067A422 /* Scenes */ = {
+			isa = PBXGroup;
+			children = (
+				CFF405731F59A34D00764E56 /* LoginScene.sks */,
+				CFE93BD11EDC5CEC004F81FE /* GameplayScene.sks */,
+			);
+			name = Scenes;
+			path = ..;
+			sourceTree = "<group>";
+		};
 		CFE93B911EDC5CBB004F81FE = {
 			isa = PBXGroup;
 			children = (
 				CFE93B9C1EDC5CBB004F81FE /* Shiso */,
+				CF5B0D6E1FC07487006C3A8C /* Views */,
+				CFE93BD41EDC5D16004F81FE /* Supporting Files */,
 				CFE93BB71EDC5CBB004F81FE /* ShisoTests */,
 				CFE93BC21EDC5CBB004F81FE /* ShisoUITests */,
 				CFE93B9B1EDC5CBB004F81FE /* Products */,
+				26BBDB03A818E02CBCD85F71 /* Pods */,
+				93DFFB0FCC621D58EA97D2FA /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -103,15 +197,14 @@
 		CFE93B9C1EDC5CBB004F81FE /* Shiso */ = {
 			isa = PBXGroup;
 			children = (
-				CFE93B9D1EDC5CBB004F81FE /* AppDelegate.swift */,
-				CFE93B9F1EDC5CBB004F81FE /* GameScene.sks */,
-				CFE93BA11EDC5CBB004F81FE /* Actions.sks */,
-				CFE93BA31EDC5CBB004F81FE /* GameScene.swift */,
-				CFE93BA51EDC5CBB004F81FE /* GameViewController.swift */,
-				CFE93BA71EDC5CBB004F81FE /* Main.storyboard */,
-				CFE93BAA1EDC5CBB004F81FE /* Assets.xcassets */,
-				CFE93BAC1EDC5CBB004F81FE /* LaunchScreen.storyboard */,
-				CFE93BAF1EDC5CBB004F81FE /* Info.plist */,
+				CF3776BE1F64281E00BCC246 /* Fire.swift */,
+				CFE350CC1F891E1B0009AAFB /* GameConstants.swift */,
+				CFE350CA1F6DC3210009AAFB /* FirebaseConstants.swift */,
+				CF3776C61F65D28F00BCC246 /* model classes */,
+				CFF405721F59940800764E56 /* ViewControllers */,
+				CFD7D0571EEC34570067A422 /* Scenes */,
+				CFF0FDA71EDCC99B00908DC9 /* Game Classes */,
+				CFE93BD31EDC5CFE004F81FE /* Scene Classes */,
 			);
 			path = Shiso;
 			sourceTree = "<group>";
@@ -134,6 +227,48 @@
 			path = ShisoUITests;
 			sourceTree = "<group>";
 		};
+		CFE93BD31EDC5CFE004F81FE /* Scene Classes */ = {
+			isa = PBXGroup;
+			children = (
+				CFF405751F59A36A00764E56 /* LoginScene.swift */,
+				CFE93BD51EDC5D74004F81FE /* GameplayScene.swift */,
+			);
+			name = "Scene Classes";
+			sourceTree = "<group>";
+		};
+		CFE93BD41EDC5D16004F81FE /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				CFF4056E1F4F113E00764E56 /* GoogleService-Info.plist */,
+				CFE93BA71EDC5CBB004F81FE /* Main.storyboard */,
+				CFE93BA11EDC5CBB004F81FE /* Actions.sks */,
+				CFE93BAA1EDC5CBB004F81FE /* Assets.xcassets */,
+				CFE93BAF1EDC5CBB004F81FE /* Info.plist */,
+				CFE93BAC1EDC5CBB004F81FE /* LaunchScreen.storyboard */,
+				CFE93B9D1EDC5CBB004F81FE /* AppDelegate.swift */,
+			);
+			name = "Supporting Files";
+			path = Shiso;
+			sourceTree = "<group>";
+		};
+		CFF0FDA71EDCC99B00908DC9 /* Game Classes */ = {
+			isa = PBXGroup;
+			children = (
+				CF55B8F21EEADEE80024126E /* TileRack.swift */,
+				CF55B8EC1EDCD0340024126E /* Board.swift */,
+				CF55B8EE1EE2E8B30024126E /* Tile.swift */,
+			);
+			name = "Game Classes";
+			sourceTree = "<group>";
+		};
+		CFF405721F59940800764E56 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				CFE93BA51EDC5CBB004F81FE /* GameViewController.swift */,
+			);
+			name = ViewControllers;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -141,9 +276,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = CFE93BC81EDC5CBB004F81FE /* Build configuration list for PBXNativeTarget "Shiso" */;
 			buildPhases = (
+				0B96BAAD975D496D723129E7 /* [CP] Check Pods Manifest.lock */,
 				CFE93B961EDC5CBB004F81FE /* Sources */,
 				CFE93B971EDC5CBB004F81FE /* Frameworks */,
 				CFE93B981EDC5CBB004F81FE /* Resources */,
+				EB3EB2B358E0A059ECE81D84 /* [CP] Embed Pods Frameworks */,
+				66F62CCAA921C2AABDB2596E /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -158,9 +296,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = CFE93BCB1EDC5CBB004F81FE /* Build configuration list for PBXNativeTarget "ShisoTests" */;
 			buildPhases = (
+				D6CF027BF7249E88F52A44FD /* [CP] Check Pods Manifest.lock */,
 				CFE93BB01EDC5CBB004F81FE /* Sources */,
 				CFE93BB11EDC5CBB004F81FE /* Frameworks */,
 				CFE93BB21EDC5CBB004F81FE /* Resources */,
+				0DAD9A70BB4CF4AF4D9FF738 /* [CP] Embed Pods Frameworks */,
+				4486060A157A2E49F5BBEB06 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -176,9 +317,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = CFE93BCE1EDC5CBB004F81FE /* Build configuration list for PBXNativeTarget "ShisoUITests" */;
 			buildPhases = (
+				6EEEE229FA9E45E8F93EEDC6 /* [CP] Check Pods Manifest.lock */,
 				CFE93BBB1EDC5CBB004F81FE /* Sources */,
 				CFE93BBC1EDC5CBB004F81FE /* Frameworks */,
 				CFE93BBD1EDC5CBB004F81FE /* Resources */,
+				5D939B671E158F35F2DD3752 /* [CP] Embed Pods Frameworks */,
+				488B4740B4E3726B9CEAAD2C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -197,7 +341,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0830;
-				LastUpgradeCheck = 0830;
+				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = "Micah DeLaurentis";
 				TargetAttributes = {
 					CFE93B991EDC5CBB004F81FE = {
@@ -242,10 +386,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				CFE93BA91EDC5CBB004F81FE /* Main.storyboard in Resources */,
-				CFE93BA01EDC5CBB004F81FE /* GameScene.sks in Resources */,
+				CFF405741F59A34D00764E56 /* LoginScene.sks in Resources */,
 				CFE93BAB1EDC5CBB004F81FE /* Assets.xcassets in Resources */,
 				CFE93BAE1EDC5CBB004F81FE /* LaunchScreen.storyboard in Resources */,
+				CFE93BD21EDC5CED004F81FE /* GameplayScene.sks in Resources */,
 				CFE93BA21EDC5CBB004F81FE /* Actions.sks in Resources */,
+				CFF4056F1F4F113E00764E56 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -265,13 +411,187 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		0B96BAAD975D496D723129E7 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Shiso-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		0DAD9A70BB4CF4AF4D9FF738 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ShisoTests/Pods-ShisoTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		4486060A157A2E49F5BBEB06 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ShisoTests/Pods-ShisoTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		488B4740B4E3726B9CEAAD2C /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ShisoUITests/Pods-ShisoUITests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5D939B671E158F35F2DD3752 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ShisoUITests/Pods-ShisoUITests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		66F62CCAA921C2AABDB2596E /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Shiso/Pods-Shiso-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		6EEEE229FA9E45E8F93EEDC6 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ShisoUITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D6CF027BF7249E88F52A44FD /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ShisoTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		EB3EB2B358E0A059ECE81D84 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-Shiso/Pods-Shiso-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/Bolts/Bolts.framework",
+				"${BUILT_PRODUCTS_DIR}/FBSDKCoreKit/FBSDKCoreKit.framework",
+				"${BUILT_PRODUCTS_DIR}/FBSDKLoginKit/FBSDKLoginKit.framework",
+				"${BUILT_PRODUCTS_DIR}/FBSDKShareKit/FBSDKShareKit.framework",
+				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
+				"${BUILT_PRODUCTS_DIR}/leveldb-library/leveldb.framework",
+				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Bolts.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKCoreKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKLoginKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKShareKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/leveldb.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Shiso/Pods-Shiso-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		CFE93B961EDC5CBB004F81FE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CFE93BA41EDC5CBB004F81FE /* GameScene.swift in Sources */,
+				CF3776C51F65D07500BCC246 /* Player.swift in Sources */,
 				CFE93BA61EDC5CBB004F81FE /* GameViewController.swift in Sources */,
+				CFF405761F59A36A00764E56 /* LoginScene.swift in Sources */,
+				CF064CA81F9CD5F40075E72C /* Fire.swift in Sources */,
+				CF5B0D6D1FC07478006C3A8C /* WildCardPickerView.swift in Sources */,
+				CF55B8ED1EDCD0340024126E /* Board.swift in Sources */,
+				CF55B8F31EEADEE80024126E /* TileRack.swift in Sources */,
+				CFE350CD1F891E1B0009AAFB /* GameConstants.swift in Sources */,
+				CF55B8EF1EE2E8B30024126E /* Tile.swift in Sources */,
+				CFE93BD61EDC5D74004F81FE /* GameplayScene.swift in Sources */,
+				CF3776C31F65CE4400BCC246 /* Game.swift in Sources */,
+				CFE350CB1F6DC3210009AAFB /* FirebaseConstants.swift in Sources */,
 				CFE93B9E1EDC5CBB004F81FE /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -337,7 +657,9 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -345,7 +667,11 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -388,7 +714,9 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -396,7 +724,11 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -424,6 +756,7 @@
 		};
 		CFE93BC91EDC5CBB004F81FE /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 46C328C0DCD0F7A444A8A965 /* Pods-Shiso.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = Shiso/Info.plist;
@@ -436,6 +769,7 @@
 		};
 		CFE93BCA1EDC5CBB004F81FE /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 62D66C8FC3E02F0CA3C18218 /* Pods-Shiso.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = Shiso/Info.plist;
@@ -448,6 +782,7 @@
 		};
 		CFE93BCC1EDC5CBB004F81FE /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DAE889B57F11E2978951AE18 /* Pods-ShisoTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -462,6 +797,7 @@
 		};
 		CFE93BCD1EDC5CBB004F81FE /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2D78BC1EC05087CDF6E54C30 /* Pods-ShisoTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -476,6 +812,7 @@
 		};
 		CFE93BCF1EDC5CBB004F81FE /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1A2DA46A66A74735D150A5D6 /* Pods-ShisoUITests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = ShisoUITests/Info.plist;
@@ -489,6 +826,7 @@
 		};
 		CFE93BD01EDC5CBB004F81FE /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 87A7EE6C942E40C9ED60E102 /* Pods-ShisoUITests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = ShisoUITests/Info.plist;
@@ -519,6 +857,7 @@
 				CFE93BCA1EDC5CBB004F81FE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		CFE93BCB1EDC5CBB004F81FE /* Build configuration list for PBXNativeTarget "ShisoTests" */ = {
 			isa = XCConfigurationList;
@@ -527,6 +866,7 @@
 				CFE93BCD1EDC5CBB004F81FE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		CFE93BCE1EDC5CBB004F81FE /* Build configuration list for PBXNativeTarget "ShisoUITests" */ = {
 			isa = XCConfigurationList;
@@ -535,6 +875,7 @@
 				CFE93BD01EDC5CBB004F81FE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
