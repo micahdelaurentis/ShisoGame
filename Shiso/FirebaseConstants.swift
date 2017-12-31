@@ -26,7 +26,8 @@ struct FirebaseConstants {
     static let UsersNode = FBRef.child("Users")
     static let GamesNode = FBRef.child("Games")
     
-    
+    static let ChallengesReceived = "challenges_received"
+    static let ChallengesSent = "challenges_sent"
     static let GameBoardNode = GamesNode.child("Board") 
     static let UserName = "userName"
     static let UserID = "userID"

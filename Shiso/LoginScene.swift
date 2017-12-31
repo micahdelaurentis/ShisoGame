@@ -22,7 +22,7 @@ protocol TransitionDelegate: SKSceneDelegate  {
 class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
     
     var ref: DatabaseReference!
-    
+    var invite: Invite?
     var loginBtn = SKShapeNode()
     var loginTitle =  SKLabelNode()
     var registerButton = SKShapeNode()
@@ -31,8 +31,9 @@ class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
     var emailField = UITextField()
     var nameField  = UITextField()
     var opponentNameField = UITextField()
-    var  loginButton = FBSDKLoginButton()
-        
+    var loginButton = FBSDKLoginButton()
+    let acceptBox = SKLabelNode(text: "Accept")
+    let declineBox = SKLabelNode(text: "Decline")
     override func didMove(to view: SKView) {
         
         
@@ -136,7 +137,7 @@ class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
         tf.leftViewMode = .always
         tf.leftView = leftPaddingView
         tf.autocorrectionType = .no
-        tf.autocapitalizationType = .none
+    
         tf.delegate = self
         
     }
@@ -161,25 +162,91 @@ class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
             
         }
         
+        
+    
+        
         if nodes(at: loc).contains(loginBtn) {
             
-            Fire.dataService.loginUser(email: emailField.text!, password: passwordField.text!, opponentUserName: opponentNameField.text!){
+            Fire.dataService.loginUser(email: emailField.text!, password: passwordField.text!, opponentUserName: opponentNameField.text!) {
                 
+                (invite)
+                
+                in
+              
+                guard invite != nil else {
+                    print("failed to load invite")
+                    return
+                }
+                
+                self.invite = invite
+                
+                
+                //self.addInviteBox(invite: invite!)
+              
+        /*
                 if let scene = GameplayScene(fileNamed: GameConstants.GameplaySceneName) {
                     if let view = self.view {
                         self.emailField.removeFromSuperview()
                         self.nameField.removeFromSuperview()
                         self.passwordField.removeFromSuperview()
                         self.opponentNameField.removeFromSuperview()
+                        self.loginButton.removeFromSuperview()
                         scene.scaleMode = .aspectFill
                         view.presentScene(scene)
                     }
+     
                 }
+     */
+                
+                
+                
                 
             }
         }
+        if nodes(at: loc).contains(acceptBox) {
+            guard invite != nil else {return}
+            FirebaseConstants.CurrentUserPath!.child("challenges_received/\(invite!.inviteID)").removeValue()
+            FirebaseConstants.UsersNode.child("\(invite!.senderID)/challenges_sent/\(invite!.inviteID)").removeValue()
+            
+            
+                Fire.dataService.createGame(invite: invite!)
+            
+            
+        }
+        if nodes(at: loc).contains(declineBox) {
+            guard invite != nil else {return}
+            FirebaseConstants.CurrentUserPath!.child("challenges_received/\(invite!.inviteID)").removeValue()
+            
+            FirebaseConstants.UsersNode.child("\(invite!.senderID)/challenges_sent/\(invite!.inviteID)").updateChildValues([GameConstants.Invite_status: GameConstants.Invite_status_declined])
+            
+        }
+        
+        
     }
     
+    func addInviteBox(invite: Invite) {
+     
+    
+        let inviteContainer = SKLabelNode(text: "\(invite.senderUserName) has challenged you to a game!")
+        inviteContainer.fontName = GameConstants.TileLabelFontName
+
+        acceptBox.fontName = GameConstants.TileLabelFontName
+
+        declineBox.fontName = GameConstants.TileLabelFontName
+        
+        inviteContainer.position.y = self.nameField.frame.origin.y + 3*self.nameField.frame.height
+        
+        acceptBox.position.y = inviteContainer.position.y - inviteContainer.frame.size.height/2 - 20
+        acceptBox.position.x = inviteContainer.frame.midX - acceptBox.frame.size.width/2 - 2
+        declineBox.position.y  = acceptBox.position.y
+        declineBox.position.x = acceptBox.position.x + declineBox.frame.size.width + 5
+        
+        acceptBox.fontColor = .green
+        declineBox.fontColor = .red
+        self.addChild(inviteContainer)
+        self.addChild(acceptBox)
+        self.addChild(declineBox)
+    }
     func presentGameScene(game: Game) {
         if let scene = GameplayScene(fileNamed: GameConstants.GameplaySceneName) {
             if let view = self.view {
@@ -231,9 +298,22 @@ class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
             
         
             guard user != nil else {return}
-            FirebaseConstants.UsersNode.child((user?.uid)!).updateChildValues([FirebaseConstants.UserName : user?.displayName ?? "",
-                                                           FirebaseConstants.UserEmail:  user?.email ?? "",
-                                                           FirebaseConstants.UserID: user?.uid])
+            
+            FirebaseConstants.UsersNode.child((user?.uid)!).observeSingleEvent(of: .value, with: { (snapshot) in
+                if snapshot.exists() {
+                    print("Already exists!!---\(snapshot)")
+                    return
+                }
+                else {
+                    print("No user in database yet!!!!!!")
+                    
+                    FirebaseConstants.UsersNode.child((user?.uid)!).updateChildValues([FirebaseConstants.UserName : user?.displayName ?? "",
+                                                                                       FirebaseConstants.UserEmail:  user?.email ?? "",
+                                                                                       FirebaseConstants.UserID: user?.uid])
+                }
+            })
+            
+         
             
             
             

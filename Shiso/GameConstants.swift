@@ -51,5 +51,15 @@ struct GameConstants {
     static let TileRackDisplayName = "TILERACK DISPLAY"
     static let TileRackDisplaySize = CGSize(width: 430, height: 60)  
    
+    static let InviteID = "inviteID"
+    static let Invite_ReceiverID = "receiverID"
+    static let Invite_receiverName = "receiverUserName"
+    static let Invite_senderID = "senderID"
+    static let Invite_senderName = "senderUserName"
+    static let Invite_status = "status"
+    static let Invite_timestamp = "timestamp"
+    static let Invite_statusPending = "?"
+    static let Invite_status_accepted = "ACCEPTED"
+    static let Invite_status_declined = "DECLINED"
 }
 

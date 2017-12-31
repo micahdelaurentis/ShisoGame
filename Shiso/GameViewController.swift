@@ -14,17 +14,58 @@ import FBSDKLoginKit
 
 class GameViewController: UIViewController, TransitionDelegate {
 
-    var loggedIn: Bool = false
+    var loggedIn: Bool = true
     
  
     override func viewDidLoad() {
         super.viewDidLoad()        
         
+   
+        
         Fire.dataService.delegate = self
-     
+       
+            
         if let view = self.view as! SKView? {
-           
-        if loggedIn == false {
+            if loggedIn == false {
+                if let scene = LoginScene(fileNamed: "LoginScene") {
+                    scene.scaleMode = .aspectFill
+                    
+                    // Present the scene
+                    view.presentScene(scene)
+                    
+                    
+                }
+            }
+            else {
+                
+                if let scene = Shiso_MainMenuScene(fileNamed: "Shiso_MainMenuScene") {
+                    scene.scaleMode = .aspectFill
+                    scene.vc = self 
+                    view.presentScene(scene)
+                }
+                else {
+                    print("Can't present shiso_mainmenuscene!!!!!!!!!")
+                }
+            }
+            
+            /*
+            if Auth.auth().currentUser != nil {
+                // Set the scale mode to scale to fit the window
+                
+                Fire.dataService.loadGame(){
+                    
+                    (game) in
+                    
+                    if let scene = GameplayScene(fileNamed: "GameplayScene") {
+                        scene.scaleMode = .aspectFill
+                        scene.game = game
+                        // Present the scene
+                        view.presentScene(scene)
+                    }
+                }
+                
+            }
+        else {
            if let scene = LoginScene(fileNamed: "LoginScene") {
                 scene.scaleMode = .aspectFill
                 
@@ -34,27 +75,8 @@ class GameViewController: UIViewController, TransitionDelegate {
             
             }
         }
-             // Load the SKScene from 'GameScene.sks'
-           else   {
-            
-            // Set the scale mode to scale to fit the window
-            
-            Fire.dataService.loadGame(){
-                
-                (game) in
-                
-                if let scene = GameplayScene(fileNamed: "GameplayScene") {
-                     scene.scaleMode = .aspectFill
-                    scene.game = game 
-                    // Present the scene
-                    view.presentScene(scene)
-                }
-            }
-            
-            }
-            
+      */
             view.ignoresSiblingOrder = true
-            
             view.showsFPS = true
             view.showsNodeCount = true
         }
