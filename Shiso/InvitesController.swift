@@ -12,7 +12,7 @@ import SpriteKit
 class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var tableView = UITableView()
-    var invites = ["a","b","c"]
+    var invites: [Invite]?
     var backBtn: UIButton = {
         let bb = UIButton()
         bb.frame = CGRect(origin: CGPoint(x: 10, y: 30), size: CGSize(width: 70, height: 30))
@@ -27,7 +27,15 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        Fire.dataService.loadInvites()
+        Fire.dataService.loadInvites{
+        (loadedInvites)
+            in
+        
+            if let inviteList = loadedInvites {
+                self.invites = inviteList
+                self.tableView.reloadData()
+            }
+        }
         
         view.backgroundColor = .white
         
@@ -36,7 +44,7 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
         tableView = UITableView(frame: CGRect(x: view.frame.midX - 150, y: view.frame.midY - 150, width: 300, height: 300), style: UITableViewStyle.plain)
         tableView.delegate  = self
         tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "myCell")
+        tableView.register(InviteCell.self, forCellReuseIdentifier: "inviteCell")
         let header = UIView()
         header.backgroundColor = .lightGray
         header.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
@@ -56,12 +64,18 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let inviteCell = tableView.dequeueReusableCell(withIdentifier: "myCell", for: indexPath)
-        inviteCell.textLabel?.text = invites[indexPath.row]
+        let inviteCell = tableView.dequeueReusableCell(withIdentifier: "inviteCell", for: indexPath) as! InviteCell
+        inviteCell.invite = invites?[indexPath.row]
+        inviteCell.textLabel?.text = "From: \(inviteCell.invite?.senderUserName ?? "N/A")"
+    
         return inviteCell
     }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return invites.count
+        return invites?.count ?? 0
     }
+    
+    
+ 
     
 }

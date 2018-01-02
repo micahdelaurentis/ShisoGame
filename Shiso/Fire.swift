@@ -347,29 +347,32 @@ class Fire {
         })
     }
     
-    func loadInvites(completion: (()->())?) {
+    func loadInvites(completion: (([Invite]?)->())?) {
        var invites = [Invite]()
-        FirebaseConstants.CurrentUserPath?.child(FirebaseConstants.ChallengesReceived).observe(.childAdded, with: { (snapshot) in
+        FirebaseConstants.CurrentUserPath?.child(FirebaseConstants.ChallengesReceived).observe(.value, with: { (snapshot) in
             
             if snapshot.exists() {
-                print("challenge received snapshot: \(snapshot)")
-                
-                
-                if let challengeDict = snapshot.value as? [String:Any] {
-                    if let invite = Invite(dict: challengeDict) {
-                       invites.append(invite)
+                print("Showing snapshot: \(snapshot)")
+                if let dict1 = snapshot.value as? [String: Any] {
+                    for dict2 in dict1.values {
+                        if let inviteDict = dict2 as? [String:Any] {
+                            if let invite = Invite(dict: inviteDict) {
+
+                                invites.append(invite)
+                            }
+                        }
                     }
-                   
                 }
                 
-                /*
-                 for snap in snapshot.children {
-                 print(snap)
-                 }
-                 */
-                
             }
+            
+            if completion != nil {
+                completion!(invites)
+            }
+       
         })
+        
+        
     }
     
     func createGame(invite: Invite) {
