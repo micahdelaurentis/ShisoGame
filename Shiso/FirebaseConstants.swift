@@ -19,6 +19,7 @@ struct FirebaseConstants {
         if CurrentUserID != nil {
             return UsersNode.child("\(CurrentUserID!)")
         }
+        
     return nil
     }
     
@@ -40,6 +41,7 @@ struct FirebaseConstants {
     static let UserScore = "score"
 
     static let UserCurrentGameID = "currentGameID"
+    static let UserGames = "Games"
    
     
     static let GamePlayersNode = "Players"

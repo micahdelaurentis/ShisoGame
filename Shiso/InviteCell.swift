@@ -10,6 +10,8 @@ import Foundation
 import UIKit
 class InviteCell: UITableViewCell {
     var invite: Invite?
+    var invitesController: InvitesController?
+    
     var declineBtn: UIButton =
     {
         let db = UIButton(type: .system)
@@ -56,13 +58,27 @@ class InviteCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func acceptBtnPressed(completion: ()-> Void) {
+    func acceptBtnPressed() {
         if invite != nil {
+
             Fire.dataService.createGame(invite: invite!)
         }
-        completion()
-    
-    }
+        
+        if let iC = invitesController, let iCInvites = iC.invites {
+            
+            for (n,invite) in iCInvites.enumerated() {
+                if self.invite?.inviteID == invite.inviteID {
+                    iC.invites?.remove(at: n)
+                    
+                    DispatchQueue.main.async {
+                        iC.tableView.reloadData()
+                    }
+                    
+                }
+            }
+        }
+      
+     }
     func declineBtnPressed(){
         
     }

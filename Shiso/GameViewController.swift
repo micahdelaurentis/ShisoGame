@@ -14,8 +14,7 @@ import FBSDKLoginKit
 
 class GameViewController: UIViewController, TransitionDelegate {
 
-    var loggedIn: Bool = true
-    
+    var goToLogin = true 
  
     override func viewDidLoad() {
         super.viewDidLoad()        
@@ -24,10 +23,12 @@ class GameViewController: UIViewController, TransitionDelegate {
         
         Fire.dataService.delegate = self
        
+        
             
         if let view = self.view as! SKView? {
-            if loggedIn == false {
+            if FirebaseConstants.CurrentUserID  == nil || goToLogin == true {
                 if let scene = LoginScene(fileNamed: "LoginScene") {
+                    scene.mainVC = self 
                     scene.scaleMode = .aspectFill
                     
                     // Present the scene
@@ -38,14 +39,35 @@ class GameViewController: UIViewController, TransitionDelegate {
             }
             else {
                 
-                if let scene = Shiso_MainMenuScene(fileNamed: "Shiso_MainMenuScene") {
+           if let scene = Shiso_MainMenuScene(fileNamed: "Shiso_MainMenuScene") {
                     scene.scaleMode = .aspectFill
-                    scene.vc = self 
+                    scene.mainVC = self
                     view.presentScene(scene)
                 }
                 else {
                     print("Can't present shiso_mainmenuscene!!!!!!!!!")
                 }
+                
+ 
+                /*
+                Fire.dataService.loadGame(){
+                    (loadedGame)
+                    
+                    in
+                    
+                if let scene = GameplayScene(fileNamed: "GameplayScene") {
+                    scene.game = loadedGame
+                    scene.scaleMode = .aspectFill
+                    view.presentScene(scene)
+                }
+                else {
+                    print("can't let scene be gameplay scene!!")
+                    }
+                }
+ */
+ 
+              
+              
             }
             
             /*

@@ -34,6 +34,9 @@ class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
     var loginButton = FBSDKLoginButton()
     let acceptBox = SKLabelNode(text: "Accept")
     let declineBox = SKLabelNode(text: "Decline")
+    var mainVC: UIViewController?
+    
+    
     override func didMove(to view: SKView) {
         
         
@@ -168,23 +171,9 @@ class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
         if nodes(at: loc).contains(loginBtn) {
             
             Fire.dataService.loginUser(email: emailField.text!, password: passwordField.text!, opponentUserName: opponentNameField.text!) {
-                
-                (invite)
-                
-                in
-              
-                guard invite != nil else {
-                    print("failed to load invite")
-                    return
-                }
-                
-                self.invite = invite
-                
-                
-                //self.addInviteBox(invite: invite!)
-              
-        /*
-                if let scene = GameplayScene(fileNamed: GameConstants.GameplaySceneName) {
+             
+            
+                if let scene = Shiso_MainMenuScene(fileNamed: "Shiso_MainMenuScene") {
                     if let view = self.view {
                         self.emailField.removeFromSuperview()
                         self.nameField.removeFromSuperview()
@@ -192,17 +181,17 @@ class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
                         self.opponentNameField.removeFromSuperview()
                         self.loginButton.removeFromSuperview()
                         scene.scaleMode = .aspectFill
+                        if scene.mainVC == nil {
+                            scene.mainVC = self.mainVC
+                        }
                         view.presentScene(scene)
+                        
                     }
-     
                 }
-     */
-                
-                
-                
-                
             }
         }
+        
+        
         if nodes(at: loc).contains(acceptBox) {
             guard invite != nil else {return}
             FirebaseConstants.CurrentUserPath!.child("challenges_received/\(invite!.inviteID)").removeValue()

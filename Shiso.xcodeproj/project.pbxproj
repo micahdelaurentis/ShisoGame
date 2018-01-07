@@ -20,6 +20,7 @@
 		CF99405B1FF688F600943861 /* Shiso_MainMenuScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = CF99405A1FF688F600943861 /* Shiso_MainMenuScene.sks */; };
 		CF99405D1FF8115000943861 /* InvitesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF99405C1FF8115000943861 /* InvitesController.swift */; };
 		CF99405F1FF990AB00943861 /* InviteCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF99405E1FF990AB00943861 /* InviteCell.swift */; };
+		CFD4E8C020016B6F00C8F25B /* GameDisplayTableVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFD4E8BF20016B6F00C8F25B /* GameDisplayTableVC.swift */; };
 		CFE350CB1F6DC3210009AAFB /* FirebaseConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE350CA1F6DC3210009AAFB /* FirebaseConstants.swift */; };
 		CFE350CD1F891E1B0009AAFB /* GameConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE350CC1F891E1B0009AAFB /* GameConstants.swift */; };
 		CFE93B9E1EDC5CBB004F81FE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE93B9D1EDC5CBB004F81FE /* AppDelegate.swift */; };
@@ -76,6 +77,7 @@
 		CF99405A1FF688F600943861 /* Shiso_MainMenuScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Shiso_MainMenuScene.sks; sourceTree = "<group>"; };
 		CF99405C1FF8115000943861 /* InvitesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitesController.swift; sourceTree = "<group>"; };
 		CF99405E1FF990AB00943861 /* InviteCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteCell.swift; sourceTree = "<group>"; };
+		CFD4E8BF20016B6F00C8F25B /* GameDisplayTableVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDisplayTableVC.swift; sourceTree = "<group>"; };
 		CFE350CA1F6DC3210009AAFB /* FirebaseConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirebaseConstants.swift; sourceTree = "<group>"; };
 		CFE350CC1F891E1B0009AAFB /* GameConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameConstants.swift; sourceTree = "<group>"; };
 		CFE93B9A1EDC5CBB004F81FE /* Shiso.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shiso.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -280,6 +282,7 @@
 			children = (
 				CF99405C1FF8115000943861 /* InvitesController.swift */,
 				CFE93BA51EDC5CBB004F81FE /* GameViewController.swift */,
+				CFD4E8BF20016B6F00C8F25B /* GameDisplayTableVC.swift */,
 			);
 			name = ViewControllers;
 			sourceTree = "<group>";
@@ -606,6 +609,7 @@
 				CFE350CD1F891E1B0009AAFB /* GameConstants.swift in Sources */,
 				CF99405D1FF8115000943861 /* InvitesController.swift in Sources */,
 				CF55B8EF1EE2E8B30024126E /* Tile.swift in Sources */,
+				CFD4E8C020016B6F00C8F25B /* GameDisplayTableVC.swift in Sources */,
 				CF9940571FE4293F00943861 /* Shiso_MainMenuScene.swift in Sources */,
 				CFE93BD61EDC5D74004F81FE /* GameplayScene.swift in Sources */,
 				CF99405F1FF990AB00943861 /* InviteCell.swift in Sources */,

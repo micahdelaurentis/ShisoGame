@@ -77,7 +77,7 @@ struct Invite {
             self.timestamp = timestamp
         }
         else {
-            self.timestamp = Int(NSDate().timeIntervalSince1970)
+            self.timestamp = Int( NSDate().timeIntervalSince1970)
         }
         
         if let status = dict[GameConstants.Invite_status] as? String {

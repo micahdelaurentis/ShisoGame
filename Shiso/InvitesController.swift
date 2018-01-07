@@ -26,6 +26,8 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        Fire.dataService.loadGames()
+        
         
         Fire.dataService.loadInvites{
         (loadedInvites)
@@ -33,7 +35,17 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
         
             if let inviteList = loadedInvites {
                 self.invites = inviteList
-                self.tableView.reloadData()
+                self.invites?.sort(by: { (invite1, invite2)
+                    in
+                    
+                    invite1.timestamp > invite2.timestamp
+                    
+                })
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+                print("You have \(self.invites?.count) invites!!!")
+                
             }
         }
         
@@ -66,8 +78,14 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let inviteCell = tableView.dequeueReusableCell(withIdentifier: "inviteCell", for: indexPath) as! InviteCell
         inviteCell.invite = invites?[indexPath.row]
-        inviteCell.textLabel?.text = "From: \(inviteCell.invite?.senderUserName ?? "N/A")"
-    
+        let ts = inviteCell.invite!.timestamp
+        let inviteDt = Date(timeIntervalSince1970: TimeInterval(ts))
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM d, h:mm a"
+        let inviteDt_str = dateFormatter.string(from: inviteDt)
+        
+        inviteCell.textLabel?.text = "\(inviteCell.invite?.senderUserName ?? "N/A"): \(inviteDt_str)"
+        inviteCell.invitesController = self 
         return inviteCell
     }
     

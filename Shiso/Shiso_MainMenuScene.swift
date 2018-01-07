@@ -10,7 +10,7 @@ import Foundation
 import SpriteKit
 
 class Shiso_MainMenuScene: SKScene , UITextFieldDelegate {
-    var vc: UIViewController?
+    var mainVC: UIViewController?
     var challengeBtn: UIButton!
     var opponentNameField: UITextField!
     
@@ -54,11 +54,12 @@ class Shiso_MainMenuScene: SKScene , UITextFieldDelegate {
        
        
     
-        vc?.present(InvitesController(), animated: true, completion: nil)
+        mainVC?.present(InvitesController(), animated: true, completion: nil)
         
         if let oppName = textField.text, oppName != "" {
             opponentNameField.text = ""
             createChallenge(opponentUserName: oppName)
+            print("creating challenge against\(oppName)!")
         }
       return  true
     }

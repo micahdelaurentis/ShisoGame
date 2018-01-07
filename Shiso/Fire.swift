@@ -58,118 +58,9 @@ class Fire {
     }
 
 
-   /* func loginUser(email: String, password: String, opponentUserName: String, completion: (()-> Void)?){
-        Auth.auth().signIn(withEmail: email, password: password) { (user, error) in
-            
-            if error != nil {
-                
-                self.delegate?.showLoginError(message: error!.localizedDescription)
-            }
-            
-            guard user != nil else {
-                return
-            }
-            print("Successfully logged in \(user!.uid)")
-            
-       
-            FirebaseConstants.CurrentUserPath?.observeSingleEvent(of: DataEventType.value, with: { (snapshot) in
-                
-                if let userDict = snapshot.value as? [String: Any] {
-                    
-                    guard let challengerUserName = userDict[FirebaseConstants.UserName] as? String else {
-                        print("no user name....returning!!!")
-                        return }
-                 
-                    if opponentUserName != "" {
-                     let challengerID = snapshot.key
-                       // get opponent userID 
-                        
-                   
-                    //find opponent's userID
-                        
-                        FirebaseConstants.UsersNode.queryOrdered(byChild: FirebaseConstants.UserName).queryEqual(toValue: opponentUserName).observeSingleEvent(of: .value, with: { (snapshot) in
-                            guard snapshot.exists() else {
-                                print("there is no user with this name!!!")
-                                return
-                            }
-                            if let dict = snapshot.value as? [String: Any] {
-                                guard let opponentID = dict.keys.first else {
-                                    print("No opponent ID!!")
-                                    return
-                                }
-                                
-                            
-                                let gamePath =  FirebaseConstants.GamesNode.childByAutoId()
-                                
-                                let gameID = gamePath.key
-                                
-                                let challenge: [String:Any] = ["sender_userName": challengerUserName]
-                                
-                                let challengePath = FirebaseConstants.UsersNode.child(opponentID).child("challenges_received").childByAutoId()
-                                challengePath.updateChildValues(challenge)
-                                let challengeKey = challengePath.key
-                             
-                                FirebaseConstants.UsersNode.updateChildValues([
-                                    "/\(challengerID)/contacts/": [opponentID: opponentUserName],
-                                    "/\(challengerID)/challanges_sent/\(challengeKey)": ["opponentUserName": opponentUserName, "status":""],
-                                    "/\(opponentID)/contacts/": [challengerID: challengerUserName]
-                                    ])
-                                
-                            
-                                
-                                FirebaseConstants.UsersNode.updateChildValues(
-                                    ["/\(opponentID)/\(FirebaseConstants.UserCurrentGameID)": gameID,
-                                     
-                                     
-                                     "/\(challengerID)/\(FirebaseConstants.UserCurrentGameID)": gameID
-                                    ])
-                                
-                                gamePath.updateChildValues(
-                                    
-                                    ["/\(FirebaseConstants.GamePlayersNode)/\(challengerID)/\(FirebaseConstants.UserTileRack)": "",
-                                     "/\(FirebaseConstants.GamePlayersNode)/\(challengerID)/\(FirebaseConstants.UserPlayer1)": true,
-                                     "/\(FirebaseConstants.GamePlayersNode)/\(challengerID)/\(FirebaseConstants.UserScore)": 0,
-                                     "/\(FirebaseConstants.GamePlayersNode)/\(challengerID)/\(FirebaseConstants.UserID)": challengerID,
-                                     "/\(FirebaseConstants.GamePlayersNode)/\(challengerID)/\(FirebaseConstants.UserName)": "\(challengerUserName)",
-                                        
-                                        
-                                        
-                                        "/\(FirebaseConstants.GamePlayersNode)/\(opponentID)/\(FirebaseConstants.UserTileRack)": "",
-                                        "/\(FirebaseConstants.GamePlayersNode)/\(opponentID)/\(FirebaseConstants.UserPlayer1)": false,
-                                        "/\(FirebaseConstants.GamePlayersNode)/\(opponentID)/\(FirebaseConstants.UserScore)": 0,
-                                        "/\(FirebaseConstants.GamePlayersNode)/\(opponentID)/\(FirebaseConstants.UserID)": opponentID,
-                                        "/\(FirebaseConstants.GamePlayersNode)/\(opponentID)/\(FirebaseConstants.UserName)": "\(opponentUserName)",
-                                        
-                                        "/\(FirebaseConstants.GameCurrentPlayerID)": challengerID,
-                                        "/\(FirebaseConstants.GameNew)": true])
-                                
-                                if completion != nil {
-                                    completion!()
-                                    return
-                                }
-                                
-                                
-                                
-                                   
-                                    }
-                            
-                                })
-
-                            }
-                        }
-                    })
-            
-        }
-        
-        if completion != nil {
-            completion!()
-        }
-       
-    }
-*/
+   
     
-    
-    
+    /*
     func loginUser(email: String, password: String, opponentUserName: String, completion: ((Invite?)-> Void)?){
         Auth.auth().signIn(withEmail: email, password: password) { (user, error) in
             
@@ -286,8 +177,24 @@ class Fire {
             
         }
     }
+    */
     
-
+    func loginUser(email: String, password: String, opponentUserName: String, completion: @escaping (()-> Void)){
+        Auth.auth().signIn(withEmail: email, password: password) { (user, error) in
+            
+            if error != nil {
+                
+                self.delegate?.showLoginError(message: error!.localizedDescription)
+            }
+            
+            guard user != nil else {
+                return
+            }
+            
+            completion()
+        }
+        
+    }
     func postChallenge(opponentUserName: String){
         FirebaseConstants.CurrentUserPath?.observeSingleEvent(of: DataEventType.value, with: { (snapshot) in
             
@@ -333,6 +240,7 @@ class Fire {
                                                             GameConstants.Invite_status: GameConstants.Invite_statusPending]
                             
                             challengePath.updateChildValues(challenge)
+                            
                             FirebaseConstants.UsersNode.updateChildValues([
                                 "/\(challengerID)/contacts/": [opponentID: opponentUserName],
                                 "/\(challengerID)/\(FirebaseConstants.ChallengesSent)/\(challengeKey)": challenge,
@@ -365,6 +273,9 @@ class Fire {
                 }
                 
             }
+            else {
+                print("No challenges snapshot exists!!")
+            }
             
             if completion != nil {
                 completion!(invites)
@@ -378,7 +289,9 @@ class Fire {
     func createGame(invite: Invite) {
         // delete invitation from challenger in current User's node
         
-       // FirebaseConstants.CurrentUserPath?.child("challenges_received").removeValue()
+        FirebaseConstants.CurrentUserPath?.child("challenges_received/\(invite.inviteID)").removeValue()
+        FirebaseConstants.UsersNode.child("\(invite.senderID)/challenges_sent/\(invite.inviteID)").removeValue()
+        
         
         
         //find opponent's userID
@@ -388,21 +301,18 @@ class Fire {
         
                 let gamePath =  FirebaseConstants.GamesNode.childByAutoId()
                 let gameID = gamePath.key
-                
-           
-                
+        
                 FirebaseConstants.CurrentUserPath?.observeSingleEvent(of: .value, with: { (snapshot) in
-         
                     if let currentUserDict = snapshot.value as? [String: Any] {
-                    
                         if let currentUserName = currentUserDict[FirebaseConstants.UserName] as? String, let currentUserID = currentUserDict[FirebaseConstants.UserID] as? String {
+                           
                             gamePath.updateChildValues(
                                 
                                 ["/\(FirebaseConstants.GamePlayersNode)/\(challengerID)/\(FirebaseConstants.UserTileRack)": "",
                                  "/\(FirebaseConstants.GamePlayersNode)/\(challengerID)/\(FirebaseConstants.UserPlayer1)": true,
                                  "/\(FirebaseConstants.GamePlayersNode)/\(challengerID)/\(FirebaseConstants.UserScore)": 0,
                                  "/\(FirebaseConstants.GamePlayersNode)/\(challengerID)/\(FirebaseConstants.UserID)": challengerID,
-                                 "/\(FirebaseConstants.GamePlayersNode)/\(challengerID)/\(FirebaseConstants.UserName)": "\(challengerUserName))",
+                                 "/\(FirebaseConstants.GamePlayersNode)/\(challengerID)/\(FirebaseConstants.UserName)": "\(challengerUserName)",
                                     
                                     
                                     
@@ -416,10 +326,10 @@ class Fire {
                                     "/\(FirebaseConstants.GameNew)": true])
                             
                             FirebaseConstants.UsersNode.updateChildValues(
-                                ["/\(challengerID)/\(FirebaseConstants.UserCurrentGameID)": gameID,
+                                ["/\(challengerID)/\(FirebaseConstants.UserGames)/\(gameID)": 1,
                                  
                                  
-                                 "/\(currentUserID)/\(FirebaseConstants.UserCurrentGameID)": gameID
+                                 "/\(currentUserID)/\(FirebaseConstants.UserGames)/\(gameID)": 1
                                 ])
                             
                         }
@@ -428,8 +338,11 @@ class Fire {
         })
     }
     
-    func declineInvitation(challengerID: String) {
+    func declineInvitation(invite: Invite) {
         
+        FirebaseConstants.CurrentUserPath?.child("challenges_received/\(invite.inviteID)").removeValue()
+        FirebaseConstants.UsersNode.child("\(invite.senderID)/challenges_sent/\(invite.inviteID)").removeValue()
+        print("you have declined!!!!")
     }
     
     func updateValues(referencePath: DatabaseReference, values: Dictionary<String, Any>, completion: ((String) -> ())?){
@@ -502,9 +415,7 @@ class Fire {
                         /*if game.board.grid.isEmpty == false {
                                 game.board.showBoard()
                         }*/
-                        self.nTimesLoadGame += 1
-                        print("You have loaded the game \(self.nTimesLoadGame) times")
-                        
+                     
                         print("Game Dict: \(snapshot)")
                         
                         
@@ -599,8 +510,46 @@ class Fire {
       
     }
  
+    func loadGames()  {
+        print("Loading game IDs....")
+        var games = [Game]()
+        FirebaseConstants.CurrentUserPath?.child(FirebaseConstants.UserGames).observe(.value, with: { (snapshot) in
+            if let userGamesDict = snapshot.value as? [String: Any] {
 
-    
+                for gameID in userGamesDict.keys {
+                    FirebaseConstants.GamesNode.child(gameID).observe(.value, with: { (snapshot) in
+                        let game = Game()
+                        game.gameID = gameID
+                        if let gameDict = snapshot.value as? [String: Any] {
+                            if let boardValues = gameDict[FirebaseConstants.GameBoard] as? [String:Any] {
+                                for i in 0 ... Board.numRows {
+                                    var tileRow = [Tile]()
+                                    for j in 0 ... Board.numCols {
+                                        if let tileDict = boardValues["Row\(i)_Col\(j)"] as? [String: Any] {
+                                            let tile = Tile.initializeFromDict(dict: tileDict)
+                                            
+                                            tileRow.append(tile)
+                                            if j == Board.numCols {
+                                                game.board.appendTileRowInGrid(tileRow: tileRow)
+                                                
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                games.append(game)
+                            }
+                            
+                         }
+                    })
+                    
+                }
+                
+                print("Finished loading games: there are \(games.count) games loaded")
+            }
+        })
+        
+    }
     
     func saveGameData(game: Game, completion: (()->())? ) {
     
