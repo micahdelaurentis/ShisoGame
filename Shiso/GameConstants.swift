@@ -46,6 +46,8 @@ struct GameConstants {
     static let BoardSeparatorWidth: CGFloat = 10
     static let BoardPosition = CGPoint(x: 150, y: 0)
     static let GameBoardDisplayName = "GAMEBOARD DISPLAY"
+    static let BoardNumRows: Int = 7
+    static let BoardNumCols: Int = 7
     
     static let TileRackDisplayPosition = CGPoint(x: -50, y: -450)
     static let TileRackDisplayName = "TILERACK DISPLAY"

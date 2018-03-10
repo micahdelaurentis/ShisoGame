@@ -7,6 +7,7 @@
 //
 
 import SpriteKit
+import UIKit
 
 class Board {
    
@@ -14,8 +15,7 @@ class Board {
     var bonusPointTiles = [Tile]()
     var grid = [[Tile]]()
     
-   static let numRows = 7
-   static let numCols = 7
+    
     
     var intersectingBlocks = [[Tile]]()
     var alreadyCountedTargetTiles = [Tile]()
@@ -34,9 +34,9 @@ class Board {
         var row = [Tile]()
         var rand = 0
         
-        for j in 0...Board.numRows {
+        for j in 0...GameConstants.BoardNumRows{
            rand = Int(arc4random_uniform(UInt32(8)))
-            for i in 0 ... Board.numCols {
+            for i in 0 ... GameConstants.BoardNumCols {
                
                 
                 let tile = gridEmpty ? Tile() : grid[j][i]
@@ -87,7 +87,7 @@ class Board {
                 tile.currentPosition = tile.position 
                 row.append(tile)
                 
-                if i == Board.numRows {
+                if i == GameConstants.BoardNumRows {
                     grid.append(row)
                     row.removeAll()
                 }
@@ -112,6 +112,54 @@ class Board {
      
         return board 
     }
+    
+
+    func convertBoardToView(tilew: Int, tileh: Int, separatorWidthInt:Int = 1 ) -> UIView {
+       
+        let boardWidth = tilew*(GameConstants.BoardNumRows + 1) + separatorWidthInt*(GameConstants.BoardNumRows + 2)
+        let boardHeight = tileh*(GameConstants.BoardNumCols + 1) + separatorWidthInt*(GameConstants.BoardNumCols + 2)
+        let boardView = UIView(frame: CGRect(x: 0, y: 0, width: boardWidth, height: boardHeight))
+        boardView.backgroundColor = .black
+       
+        if grid.isEmpty {
+            print("Grid empty...creating board")
+            let _ = setUpBoard()
+            print("Board set up...grid empty is now: \(grid.isEmpty)")
+        }
+        
+        for row in 0 ... GameConstants.BoardNumRows {
+            for col in 0 ... GameConstants.BoardNumCols {
+              
+                let tile = getTile(atRow: row, andCol: col)
+                    let tileUIBtn = UIButton()
+                    tileUIBtn.frame.size = CGSize(width: tilew, height: tileh)
+                    let txt = tile.getTileLabelText()
+                
+                    tileUIBtn.setTitle("\(txt)", for: .normal)
+                    tileUIBtn.setTitleColor(.black, for: .normal)
+                    tileUIBtn.titleLabel?.font = UIFont(name: GameConstants.TileLabelFontName, size: 13)
+                    
+                
+                    tileUIBtn.backgroundColor = tile.color
+                    tileUIBtn.layer.borderColor = UIColor.black.cgColor
+                    tileUIBtn.layer.borderWidth = 0.5
+                
+                   tileUIBtn.frame.origin.x = CGFloat((col + 1)*separatorWidthInt + col*tilew)
+                   tileUIBtn.frame.origin.y = CGFloat((row + 1)*separatorWidthInt + row*tileh)
+                   
+                   boardView.addSubview(tileUIBtn)
+
+                }
+            }
+        
+        
+     
+        
+        
+        return boardView
+    }
+    
+ 
     
     
     
@@ -844,8 +892,8 @@ class Board {
     func convertToDict() -> [String:Any] {
         print("In Board.convertToDict...")
         var boardDict:[String: Any] = [:]
-        for i in 0 ... Board.numRows {
-            for j in 0 ... Board.numCols {
+        for i in 0 ... GameConstants.BoardNumRows {
+            for j in 0 ... GameConstants.BoardNumCols {
                 let tile = getTile(atRow: i, andCol: j)
                 
                     boardDict["Row\(i)_Col\(j)"] = tile.convertToDict()

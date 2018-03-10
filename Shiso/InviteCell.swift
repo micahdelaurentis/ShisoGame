@@ -8,10 +8,12 @@
 
 import Foundation
 import UIKit
+import SpriteKit
+
 class InviteCell: UITableViewCell {
     var invite: Invite?
     var invitesController: InvitesController?
-    
+   
     var declineBtn: UIButton =
     {
         let db = UIButton(type: .system)
@@ -35,6 +37,7 @@ class InviteCell: UITableViewCell {
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         backgroundColor = .yellow
+
         self.layer.borderColor = UIColor.black.cgColor
         self.layer.borderWidth = 1.0
         
@@ -44,7 +47,7 @@ class InviteCell: UITableViewCell {
         declineBtn.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
         declineBtn.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -5).isActive = true
         declineBtn.widthAnchor.constraint(equalToConstant: 20).isActive = true
-   
+        declineBtn.addTarget(self, action: #selector(declineBtnPressed), for: .touchUpInside)
         addSubview(acceptBtn)
         acceptBtn.rightAnchor.constraint(equalTo: declineBtn.leftAnchor, constant: -10).isActive = true
         acceptBtn.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
@@ -64,12 +67,15 @@ class InviteCell: UITableViewCell {
             Fire.dataService.createGame(invite: invite!)
         }
         
+        removeInviteFromInviteController()
+      
+     }
+    func removeInviteFromInviteController() {
         if let iC = invitesController, let iCInvites = iC.invites {
             
             for (n,invite) in iCInvites.enumerated() {
                 if self.invite?.inviteID == invite.inviteID {
                     iC.invites?.remove(at: n)
-                    
                     DispatchQueue.main.async {
                         iC.tableView.reloadData()
                     }
@@ -77,10 +83,12 @@ class InviteCell: UITableViewCell {
                 }
             }
         }
-      
-     }
+    }
     func declineBtnPressed(){
-        
+        if invite != nil {
+        Fire.dataService.declineInvitation(invite: invite!)
+        removeInviteFromInviteController()
+        }
     }
     
 }

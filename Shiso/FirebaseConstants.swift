@@ -12,17 +12,16 @@ import FirebaseAuth
 
 
 struct FirebaseConstants {
-    static let FBRef = Database.database().reference()
-    static let CurrentUserID = Auth.auth().currentUser?.uid
+
    
-    static var CurrentUserPath: DatabaseReference? {
-        if CurrentUserID != nil {
-            return UsersNode.child("\(CurrentUserID!)")
-        }
-        
-    return nil
-    }
+  
+    static var FBRef = Database.database().reference()
+    static var CurrentUserID = Auth.auth().currentUser?.uid
+    static var CurrentUserPath: DatabaseReference? = CurrentUserID != nil ? UsersNode.child("\(CurrentUserID!)") : nil
+   
+
     
+  
   
     static let UsersNode = FBRef.child("Users")
     static let GamesNode = FBRef.child("Games")

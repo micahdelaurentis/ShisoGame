@@ -16,9 +16,11 @@ class GameplayScene: SKScene {
     
     var game = Game() {
         didSet{
-            print("game set in GameplayScene!!!")
+            print("game set in GameplayScene!!! GameID: \(game.gameID)")
         }
     }
+    
+    var mainVC: UIViewController? = UIApplication.shared.keyWindow?.rootViewController
     
     var currentUserIsCurrentPlayer: Bool {
         return game.currentPlayerID == FirebaseConstants.CurrentUserID
@@ -106,7 +108,10 @@ class GameplayScene: SKScene {
     var tileRefreshBtnTapped = false
     
     var recallBtn = SKLabelNode()
-
+    
+    var backLblNode = SKLabelNode(text: "🔙")
+  
+    
     var lastTouchedWildCardTile: Tile?
 
     var initializeGameCount: Int!
@@ -129,8 +134,12 @@ class GameplayScene: SKScene {
     
        // currentUserTileRack.setUpPlayerTileRack(player: currentPlayerN)
         
+        
+        print("in initializeGame: setting player 1 score label for: \(player1.userName!) and player 2 to: \(player2.userName!)")
         player1ScoreLbl.text = "\(player1.userName!)'s score: \(player1.score)"
         player2ScoreLbl.text = "\(player2.userName!)'s score: \(player2.score)"
+        player1ScoreLbl.fontSize = 40
+        player2ScoreLbl.fontSize = 40
         
         currentScoreLbl = currentPlayerN == 1 ? player1ScoreLbl : player2ScoreLbl
         let otherScoreLbl = currentPlayerN == 1 ? player2ScoreLbl : player1ScoreLbl
@@ -166,21 +175,19 @@ class GameplayScene: SKScene {
     
     override func didMove(to view: SKView) {
         
-        Fire.dataService.loadGame{ (loadedGame)
+      /*  Fire.dataService.loadGame{ (loadedGame)
             in
             
             self.game = loadedGame
             
-            self.initializeGame()
+         
               print("done loading game")
         }
       
  
-        
-
-        
- 
-        
+  */
+       print("IN GAMEPLAYSCENE DID MOVE TO VIEW.....ABOUT TO RUN INITIALIZEGAME()")
+     self.initializeGame()
     restartBtn.fontSize = 40
     restartBtn.zPosition = 3
     restartBtn.position = CGPoint(x: -200, y: 400)
@@ -204,7 +211,7 @@ class GameplayScene: SKScene {
         player1ScoreLbl.position = CGPoint(x: -200, y: 600)
         player1ScoreLbl.zPosition = 2
         
-        player1ScoreLbl.fontSize = 25
+        player1ScoreLbl.fontSize = 50
         player1ScoreLbl.fontName = "Arial"
         
         addChild(player1ScoreLbl)
@@ -212,12 +219,14 @@ class GameplayScene: SKScene {
        
         player2ScoreLbl.position = CGPoint(x: 200, y: 600)
         player2ScoreLbl.zPosition = 2
-        player2ScoreLbl.text = "Player 2 Score: \(player2Score)"
-        player2ScoreLbl.fontSize = 25
+        player2ScoreLbl.fontSize = 50
         player2ScoreLbl.fontName = "Arial"
         
         addChild(player2ScoreLbl)
         
+        backLblNode.fontSize  = 50
+        backLblNode.position = CGPoint(x:-200, y: view.frame.maxY)
+        addChild(backLblNode)
         // add doneTurnBtn
         
     
@@ -429,6 +438,17 @@ class GameplayScene: SKScene {
                 play()
             }
             
+                
+            if nodes(at: location).contains(backLblNode) {
+                if mainVC != nil {
+                    print("Main vc not nil...")
+                    let gameDisplayVC = GameDisplayTableVC()
+                    mainVC!.present(gameDisplayVC, animated: true, completion: nil)
+                }
+                
+                }
+                
+                
             if nodes(at: location).contains(yesBtn) {
                 
                 if let view = self.view {
@@ -478,18 +498,27 @@ class GameplayScene: SKScene {
                     
                 }
             }
-            
+            //RECALL TILES
                 if nodes(at: location).contains(recallBtn), selectedPlayerTiles.count > 0 {
                     for tile in selectedPlayerTiles {
                         tile.isHidden = false
                         let goHome = SKAction.move(to: tile.startingPosition, duration: 0.3)
                         let boardTile = gameBoard.getTile(atRow: tile.row, andCol: tile.col)
                         boardTile.inSelectedPlayerTiles = false
+                        
+                        if let holdVal = boardTile.holdingValue, let holdCol = boardTile.holdingColor {
+                            boardTile.setTileValue(value: holdVal)
+                            boardTile.color = holdCol
+                        }
+                        else {
                         boardTile.player = nil
-                        boardTile.col = -1
-                        boardTile.row = -1
                         boardTile.setTileValue(value: nil)
                         boardTile.color = GameConstants.TileBoardTileColor
+                        
+                        }
+                       
+                            
+                       
                         tile.run(goHome)
                         for (ind, turnTile) in tilesUsedThisTurn.enumerated() {
                             if turnTile == tile {
@@ -563,11 +592,11 @@ class GameplayScene: SKScene {
                     if let targetTile = node as? Tile {
                 
                         if targetTile.name == GameConstants.TileBoardTileName  && targetTile.tileIsEmpty && selectedTile.name != GameConstants.TileDeleteTileName {
-                            
+                            print("selected tile is on board and about to set row/col as \(targetTile.row) and \(targetTile.col)")
                             selectedTileOnBoard = true
                             selectedTile.row = targetTile.row
                             selectedTile.col  = targetTile.col
-                            print("selected tile value: \(selectedTile.getTileValue()) and rack position \(selectedTile.rackPosition)")
+                           // print("selected tile value: \(selectedTile.getTileValue()) and rack position \(selectedTile.rackPosition)")
                            
                             
                             selectedTile.isHidden = true
@@ -837,8 +866,6 @@ class GameplayScene: SKScene {
                     tile.color = currentPlayerN == 1 ? .blue : .red
                 }
                 
-                
-            
                 self.selectedPlayerTiles.removeAll()
                 
                 if self.tilesUsedThisTurn.count == 8 {
@@ -846,14 +873,10 @@ class GameplayScene: SKScene {
                 }
             
             }
- 
-            
+
         }
         
         else {
-            
-            
-            
             for tile in selectedPlayerTiles {
                 
                 //var deleteTileHere = false
@@ -861,14 +884,17 @@ class GameplayScene: SKScene {
                 let row = tile.row
                 let col = tile.col
                 
+                
                 if tile.isTileOnBoard() {
                     
                     
                     
                     let gameBoardTile = gameBoard?.getTile(atRow: row, andCol: col)
                     
-    
+                    gameBoardTile?.player = 0
+                    
                     if let holdVal = gameBoardTile!.holdingValue, let holdCol = gameBoardTile!.holdingColor {
+         
                         gameBoardTile!.setTileValue(value: holdVal)
                         gameBoardTile!.color = holdCol
                     }
@@ -876,7 +902,6 @@ class GameplayScene: SKScene {
                     else {
                         gameBoardTile!.setTileValue(value: nil)
                         gameBoardTile!.color = gameBoard!.bonusPointTiles.contains(gameBoardTile!) ? SKColor.green : .brown
-                        
                     }
      
                     
@@ -894,8 +919,8 @@ class GameplayScene: SKScene {
          nonDeleteSelectedPlayerTiles.removeAll()
         
     }
+
     
-  
     
     func lightUpPlayedTiles(completion: ([Tile]) -> ()) {
     
@@ -967,6 +992,7 @@ class GameplayScene: SKScene {
         
             showSelectedTiles()
             for tile in selectedPlayerTiles {
+                print("in convertnonDelete... tile value is \(tile.getTileValue()) at row \(tile.row) and col \(tile.col)")
                 if tile.name != "DELETE" {
                     print("Tile val: \(tile.getTileValue()!) row: \(tile.row) col: \(tile.col)")
                         
@@ -1474,7 +1500,7 @@ class GameplayScene: SKScene {
         
     }
     
-    
+
 
 
 

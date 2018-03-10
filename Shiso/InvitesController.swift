@@ -9,6 +9,9 @@
 import Foundation
 import UIKit
 import SpriteKit
+
+
+
 class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var tableView = UITableView()
@@ -26,13 +29,13 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        Fire.dataService.loadGames()
+      
         
         
         Fire.dataService.loadInvites{
         (loadedInvites)
             in
-        
+            print("in closure with loaded invites: \(loadedInvites)")
             if let inviteList = loadedInvites {
                 self.invites = inviteList
                 self.invites?.sort(by: { (invite1, invite2)
@@ -41,11 +44,11 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
                     invite1.timestamp > invite2.timestamp
                     
                 })
+                
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
                 }
-                print("You have \(self.invites?.count) invites!!!")
-                
+              
             }
         }
         
