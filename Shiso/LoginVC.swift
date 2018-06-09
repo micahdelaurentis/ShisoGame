@@ -20,12 +20,22 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
     var emailField: UITextField!
     var nameField: UITextField!
     var loginButton = FBSDKLoginButton()
-    
+   
+    var backBtn: UIButton = {
+        let bb = UIButton()
+        bb.frame = CGRect(origin: CGPoint(x: 10, y: 50), size: CGSize(width: 70, height: 30))
+        bb.backgroundColor = .yellow
+        bb.setTitle("🔙", for: .normal)
+        
+        return bb
+    }()
     override func viewDidLoad() {
         super.viewDidLoad()
         
+       print("In loginc VC!!!")
        
-        
+
+        backBtn.addTarget(self, action: #selector(backbtnPushed), for: .touchUpInside)
      
         nameField = UITextField(frame: CGRect(x: view.frame.size.width/4, y: view.frame.size.height/3, width: 200, height: 30))
         
@@ -69,7 +79,7 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         registerButton.titleLabel?.textColor = .white
         registerButton.addTarget(self, action: #selector(registerButtonPressed), for: .touchUpInside)
         
-        
+        view.addSubview(backBtn)
         view.addSubview(loginBtn)
         view.addSubview(registerButton)
         
@@ -81,6 +91,9 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         view.addSubview(loginButton)
     }
     
+    func backbtnPushed() {
+        self.dismiss(animated: true, completion: nil)
+    }
     func loginButton(_ loginButton: FBSDKLoginButton!, didCompleteWith result: FBSDKLoginManagerLoginResult!, error: Error!) {
         if error != nil {
             print("Error logging in with facebook: \(error.localizedDescription)")
@@ -154,8 +167,28 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
                 return
             }
             FirebaseConstants.CurrentUserPath = FirebaseConstants.UsersNode.child(uid)
+          // self.dismiss(animated: true, completion: nil)
             
-            self.present(GameDisplayTableVC(), animated: true, completion: nil)
+            
+         if let mainVC = UIApplication.shared.keyWindow?.rootViewController {
+                self.dismiss(animated: true, completion: nil)
+                mainVC.present(GameDisplayTableVC(), animated: true, completion: nil)
+                
+            }
+            else {
+                print("can't let main vc present display vc from loginvc")
+            }
+            /*if self.presentingViewController is GameDisplayTableVC {
+                print("presenting is game vc. about to dismiss login vc")
+                self.dismiss(animated: true, completion: nil)
+            }
+            else {
+                print("presenting vc is: \(self.presentingViewController)")
+                self.present(GameDisplayTableVC(), animated: true, completion: nil)
+            }
+ */
+            
+            
         }
     }
     
@@ -172,7 +205,7 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         }
         
         Fire.dataService.registerUser(email: emailField.text!, password: passwordField.text!, username: nameField.text!, errorHandler: self) {
-            
+   
             self.present(GameDisplayTableVC(), animated: true, completion: nil)
             print("register success: userID: \(Auth.auth().currentUser?.uid)")
         }
@@ -180,6 +213,9 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
     
     }
     
+    deinit {
+        print("Login VC deinitialized!")
+    }
     
     
 }

@@ -15,13 +15,21 @@ class Game {
     var player2: Player!
     var board: Board!
     var gameID: String!
-  
-    init(currentPlayerID: String, player1: Player, player2: Player, board: Board, gameID: String) {
+    var tilesLeft: Int!
+    var gameOver: Bool
+    var lastTurnPassed: Bool
+    var lastUpdated: Int 
+    init(currentPlayerID: String, player1: Player, player2: Player, board: Board, gameID: String, tilesLeft: Int,
+         gameOver: Bool = false, lastTurnPassed: Bool , lastUpdated: Int =  Int(NSDate().timeIntervalSince1970)) {
         self.currentPlayerID = currentPlayerID
         self.player1 = player1
         self.player2 = player2
         self.board = board
         self.gameID = gameID
+        self.tilesLeft = tilesLeft
+        self.gameOver = gameOver
+        self.lastTurnPassed = lastTurnPassed
+        self.lastUpdated = lastUpdated
     }
     init() {
         currentPlayerID = ""
@@ -29,6 +37,11 @@ class Game {
         player2 = Player()
         board = Board()
         gameID = ""
+        tilesLeft = 10
+        gameOver = false
+        lastTurnPassed = false
+        lastUpdated =  Int(NSDate().timeIntervalSince1970)
+       
     }
     
     

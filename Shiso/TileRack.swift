@@ -10,7 +10,7 @@ import SpriteKit
 class TileRack {
     
     var playerTiles = [Int:Tile]()
-    var playerTilesUnset: Bool {
+     var playerTilesUnset: Bool {
         for i in 0 ... 7 {
             if playerTiles[i]?.tileLabel.text != nil {
                 return false
@@ -19,12 +19,15 @@ class TileRack {
         return true
     }
     let tileRack: SKSpriteNode = {
+        
         let tileRack = SKSpriteNode()
         tileRack.name = "Tile Rack"
-        tileRack.size = GameConstants.TileRackDisplaySize
+        tileRack.size.width = 7*GameConstants.TileSize.width + 8*10 //1 + num tiles = 7 times the separator width = 10
+        tileRack.size.height = GameConstants.TileSize.height + 2*10 //separator width above and below
+        
         tileRack.zPosition = 2
         tileRack.anchorPoint = CGPoint(x: 0.5, y: 0.5)
-        tileRack.color = UIColor.green
+        tileRack.color = UIColor.black
         
         
     return tileRack
@@ -33,7 +36,7 @@ class TileRack {
     func setUpPlayerTileRack(player: Int)  {
   
         if playerTilesUnset == false {
-            
+  
             for i in 0 ..< 7 {
                 if let tile = playerTiles[i] {
                     tileRack.addChild(tile)
@@ -60,7 +63,7 @@ class TileRack {
             
             let separatorWidth: Int = 10
             
-            tile.position.x =  tileRack.position.x - tileRack.size.width/2 + 20 + CGFloat((i+1)*separatorWidth) + CGFloat(i)*tile.size.width
+            tile.position.x =  tileRack.position.x - tileRack.size.width/2 + tile.size.width/2 + CGFloat((i+1)*separatorWidth) + CGFloat(i)*tile.size.width
             
             tile.startingPosition = CGPoint(x: tile.position.x, y: tile.position.y)
                 
@@ -69,8 +72,9 @@ class TileRack {
         }
         
     }
+
     
-    func removeAndReplaceTileFromRack(tile: Tile, player: Int){
+    func removeAndReplaceTileFromRack(tile: Tile, player: Int, completion: ((Tile) -> ())? = nil){
         print("In removeAndReplaceTileFromRack...")
         let newTilePos = tile.startingPosition
         let newTileIndex = tile.rackPosition
@@ -80,13 +84,7 @@ class TileRack {
         
         let newTile = Tile()
         newTile.initializeTile(tileValueText: nil , includeRandomTextValue: true, player: player)
-     
-        switch newTile.tileLabel.text! {
-        case GameConstants.TileWildCardSymbol : newTile.name = GameConstants.TileWildcardTileName
-        case GameConstants.TileDeleteTileSymbol  : newTile.name = GameConstants.TileDeleteTileName
-        default:
-            newTile.name = GameConstants.TilePlayerTileName
-        }
+
         
         tileRack.removeChildren(in: [tile])
         newTile.position = newTilePos
@@ -96,6 +94,38 @@ class TileRack {
         tileRack.addChild(newTile)
         print("tile replaced with new tile with value : \(newTile.getTileLabelText()) and position: \(newTile.startingPosition) and rack position \(newTile.rackPosition)")
         
+        if completion != nil {
+            completion!(newTile)
+        }
+    }
+    
+    func removeTileFromRack(tile: Tile, player: Int, replace: Bool = true){
+        print("replace = \(replace).")
+        
+        let newTilePos = tile.startingPosition
+        let newTileIndex = tile.rackPosition
+        tileRack.removeChildren(in: [tile])
+        
+        if replace {
+            
+            let newTile = Tile()
+            newTile.initializeTile(tileValueText: nil , includeRandomTextValue: true, player: player)
+            
+            
+            
+            newTile.position = newTilePos
+            newTile.rackPosition = newTileIndex
+            newTile.startingPosition = newTilePos
+            playerTiles[newTileIndex] = newTile
+            tileRack.addChild(newTile)
+            print("tile replaced with new tile with value : \(newTile.getTileLabelText()) and position: \(newTile.startingPosition) and rack position \(newTile.rackPosition)")
+        }
+   
+        else {
+        playerTiles[newTileIndex] = nil
+        }
+      
+  
     }
     
  

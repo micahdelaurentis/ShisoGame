@@ -7,7 +7,11 @@
 //
 
 import SpriteKit
-
+enum TileType {
+    case regular
+    case eraser
+    case wildcard
+}
 class Tile: SKSpriteNode {
    
     var holdingValue: Int?
@@ -27,7 +31,9 @@ class Tile: SKSpriteNode {
     var startingPosition = CGPoint()
     var currentPosition = CGPoint() 
     
-
+  
+    
+    var tileType: TileType!
     
     
     
@@ -47,33 +53,41 @@ class Tile: SKSpriteNode {
         }
         
         
+        
+        
         self.addChild(tileLabel)
-              if includeRandomTextValue {
-            
-           
-            if Double(arc4random_uniform(100)) <=  40 {
+        tileLabel.horizontalAlignmentMode = .center
+        tileLabel.verticalAlignmentMode = .center
+        
+        if includeRandomTextValue {
+                 if Double(arc4random_uniform(100)) <=  40 {
                 
                 if Double(arc4random_uniform(100)) <=  50 {
-                tileLabel.text = "?"
-                self.name = "WILDCARD"
+                tileLabel.text = GameConstants.TileWildCardSymbol
+                self.name = GameConstants.TileWildcardTileName
+                tileType = TileType.wildcard
                 }
                 
                 else {
-                    tileLabel.text = "X"
-                    self.name = "DELETE"
+                    texture = SKTexture(image: #imageLiteral(resourceName: "ShisoEraserIcon"))
+                    self.name = GameConstants.TileDeleteTileName
+                    tileType = TileType.eraser
                 }
                 
             }
             
             else {
+                    
                 setTileValue(value: Int(arc4random_uniform(25)))
+                tileType = TileType.regular
+                self.name = GameConstants.TilePlayerTileName
             }
             
         }
         //If includeRandomTextValue is false
             else if tileValueText != nil {
                 switch tileValueText! {
-                case "X", "?" : self.tileLabel.text = tileValueText
+                case "+2", "X" , "?" : self.tileLabel.text = tileValueText
                 default:
                     if let tileValInt = Int(tileValueText!) {
                         self.setTileValue(value: tileValInt)
@@ -126,7 +140,14 @@ class Tile: SKSpriteNode {
        // print("in convertToDict in Tile...color = \(self.color)")
         var dict: [String: Any] = [:]
         
-        dict[FirebaseConstants.TileValue] = getTileLabelText()
+        if tileType == TileType.eraser {
+            dict[FirebaseConstants.TileValue] = "X"
+        }
+        else {
+          dict[FirebaseConstants.TileValue] = getTileLabelText()
+        }
+        
+        
         dict[FirebaseConstants.TileRow] = row
         dict[FirebaseConstants.TileCol] = col
         
@@ -149,25 +170,30 @@ class Tile: SKSpriteNode {
     
         if let dictTileValue = dict[FirebaseConstants.TileValue] as? String {
           //  print("tile value  = \(dictTileValue)")
-            if let numVal = Int(dictTileValue) {
-                tile.setTileValue(value: numVal)
+            if dictTileValue == GameConstants.TileDeleteTileSymbol  {
+                tile.tileLabel.text = ""
+                tile.texture = SKTexture(image: #imageLiteral(resourceName: "ShisoEraserIcon"))
+                tile.tileType = .eraser
+            }
+            else if dictTileValue == GameConstants.TileWildCardSymbol {
+                tile.tileLabel.text = dictTileValue
+                tile.tileType = TileType.wildcard
+            }
+             
+            else if dictTileValue == "+2" {
+                tile.tileLabel.text = "+2"
+                tile.tileType = TileType.regular
+                tile.tileLabel.fontColor = .gray 
             }
             else {
-            //    print("can't let tile value be int")
-                tile.tileLabel.text = dictTileValue
+                if let numVal = Int(dictTileValue) {
+                    tile.setTileValue(value: numVal)
+                    tile.tileType = TileType.regular
+                }
             }
         }
     
-    if let player = dict[FirebaseConstants.TilePlayer] as? Int {
-     
-        tile.player = player
-    
-    switch player {
-    case 1: tile.color = GameConstants.TilePlayer1TileColor
-    case 2: tile.color = GameConstants.TilePlayer2TileColor
-    default: tile.color = GameConstants.TileDefaultColor
-    }
-    }
+ 
     if let tileTypeName = dict[FirebaseConstants.TileTypeName] as? String {
         tile.name = tileTypeName
     }
@@ -176,6 +202,28 @@ class Tile: SKSpriteNode {
     }
     if let tileCol = dict[FirebaseConstants.TileCol] as? Int {
         tile.col = tileCol
+    }
+    
+    if let player = dict[FirebaseConstants.TilePlayer] as? Int {
+        
+        tile.player = player
+        
+        if player == 1 {
+            tile.color = GameConstants.TilePlayer1TileColor
+        }
+        else if player == 2 {
+            tile.color = GameConstants.TilePlayer2TileColor
+        }
+       else if tile.row == 2 && tile.col == 2 ||
+        tile.row == 2 && tile.col == GameConstants.BoardNumCols - 2 ||
+        tile.row == GameConstants.BoardNumRows - 2 && tile.col == 2 ||
+            tile.row == GameConstants.BoardNumRows - 2 && tile.col == GameConstants.BoardNumCols - 2 {
+        
+        tile.color = GameConstants.TileStartingSquaresColor
+        }
+        else {
+            tile.color = GameConstants.TileDefaultColor
+        }
     }
   
         if let currPosX = dict[FirebaseConstants.TileCurrentPositionX] as? CGFloat,
@@ -198,14 +246,8 @@ class Tile: SKSpriteNode {
     }
     
     func showTileValues() {
-        var clr: String!
-        switch self.color {
-        case SKColor.brown , UIColor.brown : clr = "Brown"
-        case SKColor.blue , UIColor.blue : clr = "Blue"
-        case SKColor.green : clr = "SKGreen"
-        default: clr = "None"
-        }
-        if self.parent != nil { print("Showing tile values for tile with parent..Color: \(clr) Value: \(String(describing: self.tileLabel.text)) row: \(self.row) col: \(self.col) player: \(player) parent: \(self.parent)")
+      
+        if self.parent != nil { print("Showing tile values for tile. Value: \(String(describing: self.tileLabel.text)) row: \(self.row) col: \(self.col) player: \(player) parent: \(self.parent)")
         }
         }
   

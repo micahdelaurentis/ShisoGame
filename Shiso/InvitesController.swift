@@ -15,7 +15,15 @@ import SpriteKit
 class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var tableView = UITableView()
-    var invites: [Invite]?
+    var invites: [Invite]? {
+        didSet {
+            print("item added/dropped from invites in Invites Controller. Count is: \(invites?.count)")
+            DispatchQueue.main.async {
+                print("re-loading data")
+                self.tableView.reloadData()
+            }
+        }
+    }
     var backBtn: UIButton = {
         let bb = UIButton()
         bb.frame = CGRect(origin: CGPoint(x: 10, y: 30), size: CGSize(width: 70, height: 30))
@@ -33,10 +41,13 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
         
         
         Fire.dataService.loadInvites{
+           
         (loadedInvites)
             in
-            print("in closure with loaded invites: \(loadedInvites)")
+             print("Loaded invites....")
+            //print("in closure with loaded invites: \(loadedInvites)")
             if let inviteList = loadedInvites {
+                print("loadedInvites count= \(loadedInvites?.count) invite list count: \(inviteList.count)")
                 self.invites = inviteList
                 self.invites?.sort(by: { (invite1, invite2)
                     in
@@ -45,9 +56,7 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
                     
                 })
                 
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
+               
               
             }
         }
@@ -88,7 +97,10 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
         let inviteDt_str = dateFormatter.string(from: inviteDt)
         
         inviteCell.textLabel?.text = "\(inviteCell.invite?.senderUserName ?? "N/A"): \(inviteDt_str)"
-        inviteCell.invitesController = self 
+        inviteCell.invitesController = self
+        if let presentingVC = self.presentingViewController as? GameDisplayTableVC {
+            inviteCell.gameDisplayVC = presentingVC
+        }
         return inviteCell
     }
     

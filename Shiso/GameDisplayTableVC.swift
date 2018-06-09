@@ -13,17 +13,18 @@ import Firebase
 
 class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDataSource {
     
-   
+    var newGameSet: Bool = false
     var cellHeight: CGFloat = 0
     var tableView: UITableView!
     var games: [Game]?
     var tileh: Int = 20
     var tilew: Int = 20
-    var mainVC: UIViewController? = UIApplication.shared.keyWindow?.rootViewController
+   
+    var hamburgerControl = Hamburger()
     
     var backBtn: UIButton = {
         let bb = UIButton()
-        bb.frame = CGRect(origin: CGPoint(x: 10, y: 30), size: CGSize(width: 70, height: 30))
+        bb.frame = CGRect(origin: CGPoint(x: 10, y: 50), size: CGSize(width: 70, height: 30))
         bb.backgroundColor = .yellow
         bb.setTitle("🔙", for: .normal)
         
@@ -57,17 +58,20 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        print("IN GAMES DISPLAY VC: VIEW DID LOAD....")
-        print("Showing games: \(games)")
-     tableView = UITableView(frame: CGRect(x: view.frame.midX - 150, y: view.frame.midY - 150, width: 300, height: 300), style: UITableViewStyle.plain)
+       print("IN GAMEDISPLAY VIEW DID LOAD")
+   
+     hamburgerControl.setUpNavBarWithHamburgerBtn(inVC: self)
+    
+    tableView = UITableView(frame: CGRect(x: view.frame.midX - 150, y: view.frame.midY - 150, width: 300, height: 300), style: UITableViewStyle.plain)
      
-     tableView.dataSource = self
-     tableView.delegate = self
+    tableView.dataSource = self
+    tableView.delegate = self
     tableView.register(UITableViewCell.self, forCellReuseIdentifier: "displayCell")
      view.addSubview(tableView)
-     view.addSubview(backBtn)
-     view.addSubview(newGameBtn)
+     
+    view.addSubview(backBtn)
+    view.addSubview(newGameBtn)
+    
         Fire.dataService.checkForChallengesReceived { (challengesReceived) in
             
             if challengesReceived == true {
@@ -85,7 +89,7 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     shisoPicImgView.image = UIImage(named: "ShisoLeaf")
     shisoPicImgView.frame.size = CGSize(width: 30, height: 30)
     shisoPicImgView.frame.origin.x = view.frame.maxX - shisoPicImgView.frame.width - 5
-    shisoPicImgView.frame.origin.y = 20
+    shisoPicImgView.frame.origin.y = 50
     shisoPicImgView.addSubview(notificationCircle)
     notificationCircle.frame.origin.x = shisoPicImgView.frame.size.width - notificationCircle.frame.size.width
     shisoPicImgView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(shisoPicImgViewPressed)))
@@ -100,44 +104,77 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     backBtn.addTarget(self, action: #selector(backBtnPushed), for: .touchUpInside)
     newGameBtn.addTarget((self), action: #selector(newGameBtnPushed), for: .touchUpInside)
 
-    Fire.dataService.loadGames() {
-            (loadedGames)
-            in
-            guard loadedGames.count != 0 else {
-                print("no games loaded!")
-                return
-            }
-            self.games = loadedGames
-        
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-            }
-        
-        if self.games != nil {
-            print("Games not nil in displayVC...")
-            for (index,game) in self.games!.enumerated() {
-                print("Game \(index): \(game.gameID)")
-            }
+    loadGamesAndUpdateDisplay()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        if newGameSet {
+            loadGamesAndUpdateDisplay()
+            self.newGameSet = false
         }
         else {
-            print("games == NIL in displayVC!")
-        }
+            print("game display vc: no new games loaded, so no refresh!")
         }
     }
+
     func shisoPicImgViewPressed() {
+        hamburgerControl.removeSlideOut()
         present(InvitesController(), animated: true, completion: nil)
     }
     
-    func backBtnPushed() {
-        Fire.dataService.logOutUser{
-            print("User successfully logged out! current user ID...should be nil==\(Auth.auth().currentUser?.uid)")
-        self.present(LoginVC(), animated: true, completion: nil)
+  
+    func loadGamesAndUpdateDisplay() {
+        Fire.dataService.loadGames() {
+            (loadedGames)
+            in
+           
+            guard loadedGames.count != 0 else {
+                return
+            }
+            self.games = loadedGames
+            self.games?.sort(by: {(game1, game2) in game1.lastUpdated > game2.lastUpdated})
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+
         }
     }
     
+    func backBtnPushed() {
+    hamburgerControl.removeSlideOut()
+       
+        Fire.dataService.logOutUser{
+          
+          if let mainVC = UIApplication.shared.keyWindow?.rootViewController {
+               self.dismiss(animated: true, completion: nil)
+                mainVC.present(LoginVC(), animated: true, completion: nil)
+                
+            }
+            else{
+                print("can't let main vc present loginvc from display vc")
+            }
+            /*
+            
+            
+            
+            print("User successfully logged out! current user ID...should be nil==\(Auth.auth().currentUser?.uid)")
+            
+            if self.presentingViewController is LoginVC {
+                print("presenting is loginvc...about to dismiss display vc")
+                self.dismiss(animated: true, completion: nil)
+            }
+            else {
+            print("presenting vc is: \(self.presentingViewController)")
+            let loginVC = LoginVC()
+            self.present(loginVC, animated: true, completion: nil)
+            }
+ */
+        }
+    }
     
-    
+ 
     func newGameBtnPushed() {
+        hamburgerControl.removeSlideOut()
         present(StartNewGameVC(), animated: true, completion: nil)
     }
     
@@ -185,28 +222,29 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
         if let games = games {
-            print("In didSelectRowAt function...")
-            for game in games {
+         for game in games {
                 print("gameID: \(game.gameID)")
             }
             let game = games[indexPath.row]
-            print("you selected the game with ID: \(game.gameID)")
-            if mainVC != nil {
-                if let view =  mainVC!.view as? SKView {
+               if let mainVC = UIApplication.shared.keyWindow?.rootViewController {
+          
+                if let view =  mainVC.view as? SKView {
+                    mainVC.presentedViewController?.dismiss(animated: true, completion: nil)
+                    hamburgerControl.removeSlideOut()
                     if let scene = GameplayScene(fileNamed: "GameplayScene") {
-                        
-                        print("Again--you selected the game with ID: \(game.gameID)")
+                        scene.name = "Shiso GameScene"
                         scene.game = game
                         scene.scaleMode = .aspectFit
                         view.presentScene(scene)
-                        self.dismiss(animated: false, completion: nil)
-                        
+                       
+                       
                     }
                 }
+                else {
+                    print("can't let main vc have skview")
+                }
             }
-          
         }
     }
     
@@ -219,6 +257,10 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
 
     func presentInvitesVC() {
         present(InvitesController(), animated: true, completion: nil)
+    }
+    
+    deinit {
+        print("Game display VC deinitialized!")
     }
 
 }

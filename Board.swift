@@ -25,7 +25,11 @@ class Board {
         print("In set up board. grid empty: \(gridEmpty)")
         
         let board = SKSpriteNode()
-        board.size = GameConstants.BoardSize
+        board.color = .black
+        let boardDimension = GameConstants.TileSize.width * CGFloat(GameConstants.BoardNumCols + 1)
+            + GameConstants.BoardSeparatorWidth * CGFloat(GameConstants.BoardNumCols + 2 )
+        board.size = CGSize(width: boardDimension, height: boardDimension)
+        
         board.anchorPoint = GameConstants.BoardAnchorPoint
         let separatorWidth = GameConstants.BoardSeparatorWidth
         
@@ -34,56 +38,55 @@ class Board {
         var row = [Tile]()
         var rand = 0
         
-        for j in 0...GameConstants.BoardNumRows{
+        for j in 0...GameConstants.BoardNumRows {
            rand = Int(arc4random_uniform(UInt32(8)))
             for i in 0 ... GameConstants.BoardNumCols {
                
                 
                 let tile = gridEmpty ? Tile() : grid[j][i]
-                
-                if j == 0 {
-                    tile.showTileValues()
-                }
+             
                 if gridEmpty {
                 
-                if j==2 && i==2 || j==2 && i == 5 || j==5 && i==2 || j==5 && i==5 {
+                if j==2 && i==2 || j==2 && i == (GameConstants.BoardNumRows - 2) || j==((GameConstants.BoardNumRows - 2)) && i==2
+                    || (j==(GameConstants.BoardNumRows - 2) && i==(GameConstants.BoardNumRows - 2)) {
                    
                     tile.initializeTile(tileValueText: nil, includeRandomTextValue: true)
-                    
-                    while tile.tileLabel.text == "?" || tile.tileLabel.text == "X" {
+                    tile.color = UIColor(red: 158/255, green: 156/255, blue: 156/255, alpha: 1.0)
+                    print("In board, creating tiles, tile name: \(tile.name)")
+                    while tile.tileType == TileType.eraser || tile.tileType == TileType.wildcard {
                         
                          tile.setTileValue(value: Int(arc4random_uniform(25)))
+                         tile.texture = nil
+                         tile.tileType = TileType.regular
                     }
                     startingTiles.append(tile)
                 }
-
-                else {
-                    tile.initializeTile(tileValueText: nil)
+                else if j == 0 && i == 0 || j == 0 && i == 9 ||
+                    j == 9 && i == 9
+                    || j == 9 && i == 0
+                    || i == 3 && j == 3 || i == 3 && j == 8
+                    || i == 6 && j == 1 || i == 6 && j == 6
+                    
+                {
+                    tile.initializeTile(tileValueText: "+2")
+                    tile.tileLabel.fontColor = .gray
+                    bonusPointTiles.append(tile)
                 }
-                
-                
-               
+               else {
+                    tile.initializeTile(tileValueText: nil)
+                    }
+                    
                 tile.anchorPoint = GameConstants.TileAnchorPoint
-                //tile.color = (i == rand) ? SKColor.green : SKColor.brown
-                    if i == rand {
-                        tile.color = SKColor.green
-                    }
-                    else {
-                    tile.color = SKColor.brown
-                    }
-                   
                 tile.zPosition = GameConstants.TileZposition
                 tile.name = GameConstants.TileBoardTileName
                 tile.row = j
                 tile.col = i
-                
-                if i == rand {
-                    bonusPointTiles.append(tile)
-                }
-                
-                
-                tile.position = CGPoint(x:CGFloat(i + 1)*separatorWidth - (board.size.width)/2 + tile.size.width*CGFloat(i), y:
-                    board.size.height/2 - CGFloat(j + 1)*separatorWidth - tile.size.height - tile.size.height*CGFloat(j))
+                   
+                    tile.position.x = CGFloat(i + 1)*separatorWidth - board.size.width/2 + tile.size.width/2 + CGFloat(i)*tile.size.width
+                    tile.position.y = board.size.height/2 -  CGFloat(j + 1)*separatorWidth - tile.size.height/2 - CGFloat(j)*tile.size.height
+                        
+              //  tile.position = CGPoint(x:CGFloat(i + 1)*separatorWidth - (board.size.width)/2 + tile.size.width*CGFloat(i), y:
+              //      board.size.height/2 - CGFloat(j + 1)*separatorWidth - tile.size.height - tile.size.height*CGFloat(j))
                 tile.currentPosition = tile.position 
                 row.append(tile)
                 
@@ -226,7 +229,7 @@ class Board {
         var tiles = [Tile]()
         
         
-        for i in 0 ... 7 {
+        for i in 0 ... GameConstants.BoardNumCols {
             
             tiles.append(grid[i][col])
         }
@@ -234,7 +237,7 @@ class Board {
         return tiles
     }
     
-    func getTilesAtCol(col: Int, minRow: Int = 0, maxRow:Int = 7) -> [Tile] {
+    func getTilesAtCol(col: Int, minRow: Int = 0, maxRow:Int = GameConstants.BoardNumRows) -> [Tile] {
         
         var tiles = [Tile]()
         
@@ -247,7 +250,7 @@ class Board {
         return tiles
     }
     
-    func getTilesAtRow(row: Int, minCol: Int = 0, maxCol:Int = 7) -> [Tile] {
+    func getTilesAtRow(row: Int, minCol: Int = 0, maxCol:Int = GameConstants.BoardNumCols) -> [Tile] {
         
         var tiles = [Tile]()
         
@@ -275,7 +278,7 @@ class Board {
             }
         }
         
-        if row < 7 {
+        if row < GameConstants.BoardNumRows {
         otherTile = getTile(atRow: row + 1, andCol: col)
         if otherTile.inSelectedPlayerTiles == false && otherTile.tileIsEmpty == false {
             return true
@@ -291,7 +294,7 @@ class Board {
             }
         }
         
-        if col < 7 {
+        if col < GameConstants.BoardNumCols {
             
             otherTile = getTile(atRow: row, andCol: col + 1)
         if otherTile.inSelectedPlayerTiles == false && otherTile.tileIsEmpty == false {
@@ -396,13 +399,13 @@ class Board {
         var right1Tile: Tile?
         
 
-        if col + 1 <= 7 {
+        if col + 1 <= GameConstants.BoardNumCols {
             if !tileValueIsEmpty(row: row , col: col + 1) {
                 right1Tile = getTile(atRow: row, andCol: col + 1)
             }
         }
         
-        if col + 2 <= 7 {
+        if col + 2 <= GameConstants.BoardNumCols {
             if !tileValueIsEmpty(row: row , col: col + 2) {
                 right2Tile = getTile(atRow: row, andCol: col + 2)
             }
@@ -490,13 +493,13 @@ class Board {
         var bottom1Tile: Tile?
         var bottom2Tile: Tile?
         
-        if row + 1 <= 7 {
+        if row + 1 <= GameConstants.BoardNumRows {
             if !tileValueIsEmpty(row: row + 1 , col: col) {
                 bottom1Tile = getTile(atRow: row + 1, andCol: col)
             }
         }
         
-        if row + 2 <= 7 {
+        if row + 2 <= GameConstants.BoardNumRows {
             if !tileValueIsEmpty(row: row + 2, col: col) {
                 bottom2Tile = getTile(atRow: row + 2, andCol: col)
             }
@@ -686,8 +689,8 @@ class Board {
         
         tiles.append(boardTile)
         
-        if col + 1 <= 7 {
-            for rCol in (col + 1)...7 {
+        if col + 1 <= GameConstants.BoardNumCols {
+            for rCol in (col + 1)...GameConstants.BoardNumCols {
                
               
                     let rTile = getTile(atRow: row, andCol: rCol)
@@ -740,8 +743,8 @@ class Board {
         }
         tiles.append(boardTile)
         
-        if row + 1 <= 7 {
-            for bRow in (row + 1)...7 {
+        if row + 1 <= GameConstants.BoardNumRows {
+            for bRow in (row + 1)...GameConstants.BoardNumRows {
                let bTile = getTile(atRow: bRow, andCol: col)
                 if !bTile.tileIsEmpty {
                     tiles.append(bTile)

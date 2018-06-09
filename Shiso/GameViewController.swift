@@ -14,33 +14,42 @@ import FBSDKLoginKit
 
 
 class GameViewController: UIViewController {
-
+    var hamburgerControl = Hamburger()
     var goToLogin = false
- 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let newView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 200))
-        view.backgroundColor = .green
-        view.addSubview(newView)
-      
+        
+        perform(#selector(setUpHamburger), with: nil, afterDelay: 0.01)
+        
+       
         if FirebaseConstants.CurrentUserID  == nil || goToLogin == true {
-            perform(#selector(presentLoginVC), with: nil, afterDelay: 0.01)
+            
+     perform(#selector(presentLoginVC), with: nil, afterDelay: 0.01)
+            
         }
         else {
-            perform(#selector(presentDisplayVC), with: nil, afterDelay: 0.01)
+          
+          perform(#selector(presentDisplayVC), with: nil, afterDelay: 0.01)
             
         }
     
     }
     
     func presentDisplayVC() {
+        hamburgerControl.removeSlideOut()
         let vc = GameDisplayTableVC()
-        
+     //  vc.hamburgerControl.VC = self 
         present(vc, animated: true, completion: nil)
     }
+    
     func presentLoginVC() {
         let vc = LoginVC()   
         present(vc, animated: true, completion: nil)
+    }
+ 
+    func setUpHamburger(){
+        hamburgerControl.setUpNavBarWithHamburgerBtn(inVC: self)
+
     }
     override var shouldAutorotate: Bool {
         return false
@@ -62,8 +71,7 @@ class GameViewController: UIViewController {
     override var prefersStatusBarHidden: Bool {
         return true
     }
-    
-    
-
-    
+  
 }
+
+

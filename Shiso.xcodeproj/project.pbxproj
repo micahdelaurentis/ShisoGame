@@ -9,11 +9,13 @@
 /* Begin PBXBuildFile section */
 		32545EF054B00264A0A93989 /* Pods_ShisoUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 56572FB3CC4A0693A2C53A7D /* Pods_ShisoUITests.framework */; };
 		CF064CA81F9CD5F40075E72C /* Fire.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3776BE1F64281E00BCC246 /* Fire.swift */; };
+		CF2DEF5D2083CD5D007B0D7C /* SpriteBtn.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF2DEF5C2083CD5D007B0D7C /* SpriteBtn.swift */; };
 		CF3776C31F65CE4400BCC246 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3776C21F65CE4400BCC246 /* Game.swift */; };
 		CF3776C51F65D07500BCC246 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3776C41F65D07500BCC246 /* Player.swift */; };
 		CF55B8ED1EDCD0340024126E /* Board.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF55B8EC1EDCD0340024126E /* Board.swift */; };
 		CF55B8EF1EE2E8B30024126E /* Tile.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF55B8EE1EE2E8B30024126E /* Tile.swift */; };
 		CF55B8F31EEADEE80024126E /* TileRack.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF55B8F21EEADEE80024126E /* TileRack.swift */; };
+		CF589C31205D52B900EF5193 /* Hamburger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF589C30205D52B900EF5193 /* Hamburger.swift */; };
 		CF5B0D6D1FC07478006C3A8C /* WildCardPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5B0D6C1FC07478006C3A8C /* WildCardPickerView.swift */; };
 		CF73D6D8203B32AF007DF74B /* StartNewGameVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF73D6D7203B32AF007DF74B /* StartNewGameVC.swift */; };
 		CF7F6A3B2041DF3C001A0C36 /* LoginVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF7F6A3A2041DF3C001A0C36 /* LoginVC.swift */; };
@@ -68,12 +70,14 @@
 		62D66C8FC3E02F0CA3C18218 /* Pods-Shiso.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Shiso.release.xcconfig"; path = "Pods/Target Support Files/Pods-Shiso/Pods-Shiso.release.xcconfig"; sourceTree = "<group>"; };
 		87A7EE6C942E40C9ED60E102 /* Pods-ShisoUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShisoUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ShisoUITests/Pods-ShisoUITests.release.xcconfig"; sourceTree = "<group>"; };
 		CCC3D42085D0E6E576FF3757 /* Pods_Shiso.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Shiso.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CF2DEF5C2083CD5D007B0D7C /* SpriteBtn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteBtn.swift; sourceTree = "<group>"; };
 		CF3776BE1F64281E00BCC246 /* Fire.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Fire.swift; sourceTree = "<group>"; };
 		CF3776C21F65CE4400BCC246 /* Game.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
 		CF3776C41F65D07500BCC246 /* Player.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		CF55B8EC1EDCD0340024126E /* Board.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Board.swift; path = ../Board.swift; sourceTree = "<group>"; };
 		CF55B8EE1EE2E8B30024126E /* Tile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tile.swift; sourceTree = "<group>"; };
 		CF55B8F21EEADEE80024126E /* TileRack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TileRack.swift; sourceTree = "<group>"; };
+		CF589C30205D52B900EF5193 /* Hamburger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hamburger.swift; sourceTree = "<group>"; };
 		CF5B0D6C1FC07478006C3A8C /* WildCardPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WildCardPickerView.swift; sourceTree = "<group>"; };
 		CF73D6D7203B32AF007DF74B /* StartNewGameVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartNewGameVC.swift; sourceTree = "<group>"; };
 		CF7F6A3A2041DF3C001A0C36 /* LoginVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginVC.swift; sourceTree = "<group>"; };
@@ -173,12 +177,22 @@
 		CF5B0D6E1FC07487006C3A8C /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				CF2DEF5C2083CD5D007B0D7C /* SpriteBtn.swift */,
 				CFD06C52201E522C00788963 /* GameDisplayCell.swift */,
 				CF99405E1FF990AB00943861 /* InviteCell.swift */,
 				CF5B0D6C1FC07478006C3A8C /* WildCardPickerView.swift */,
 			);
 			name = Views;
 			path = Shiso;
+			sourceTree = "<group>";
+		};
+		CF9DBED420682ECB00885134 /* OLD */ = {
+			isa = PBXGroup;
+			children = (
+				CFF405751F59A36A00764E56 /* LoginScene.swift */,
+				CF9940561FE4293F00943861 /* Shiso_MainMenuScene.swift */,
+			);
+			path = OLD;
 			sourceTree = "<group>";
 		};
 		CFD7D0571EEC34570067A422 /* Scenes */ = {
@@ -189,14 +203,15 @@
 				CFE93BD11EDC5CEC004F81FE /* GameplayScene.sks */,
 			);
 			name = Scenes;
-			path = ..;
 			sourceTree = "<group>";
 		};
 		CFE93B911EDC5CBB004F81FE = {
 			isa = PBXGroup;
 			children = (
 				CFE93B9C1EDC5CBB004F81FE /* Shiso */,
+				CFD7D0571EEC34570067A422 /* Scenes */,
 				CF5B0D6E1FC07487006C3A8C /* Views */,
+				CF9DBED420682ECB00885134 /* OLD */,
 				CFE93BD41EDC5D16004F81FE /* Supporting Files */,
 				CFE93BB71EDC5CBB004F81FE /* ShisoTests */,
 				CFE93BC21EDC5CBB004F81FE /* ShisoUITests */,
@@ -219,12 +234,13 @@
 		CFE93B9C1EDC5CBB004F81FE /* Shiso */ = {
 			isa = PBXGroup;
 			children = (
+				CF589C30205D52B900EF5193 /* Hamburger.swift */,
 				CF3776BE1F64281E00BCC246 /* Fire.swift */,
 				CFE350CC1F891E1B0009AAFB /* GameConstants.swift */,
 				CFE350CA1F6DC3210009AAFB /* FirebaseConstants.swift */,
+				CFE93B9D1EDC5CBB004F81FE /* AppDelegate.swift */,
 				CF3776C61F65D28F00BCC246 /* model classes */,
 				CFF405721F59940800764E56 /* ViewControllers */,
-				CFD7D0571EEC34570067A422 /* Scenes */,
 				CFF0FDA71EDCC99B00908DC9 /* Game Classes */,
 				CFE93BD31EDC5CFE004F81FE /* Scene Classes */,
 			);
@@ -252,9 +268,7 @@
 		CFE93BD31EDC5CFE004F81FE /* Scene Classes */ = {
 			isa = PBXGroup;
 			children = (
-				CFF405751F59A36A00764E56 /* LoginScene.swift */,
 				CFE93BD51EDC5D74004F81FE /* GameplayScene.swift */,
-				CF9940561FE4293F00943861 /* Shiso_MainMenuScene.swift */,
 			);
 			name = "Scene Classes";
 			sourceTree = "<group>";
@@ -268,7 +282,6 @@
 				CFE93BAA1EDC5CBB004F81FE /* Assets.xcassets */,
 				CFE93BAF1EDC5CBB004F81FE /* Info.plist */,
 				CFE93BAC1EDC5CBB004F81FE /* LaunchScreen.storyboard */,
-				CFE93B9D1EDC5CBB004F81FE /* AppDelegate.swift */,
 			);
 			name = "Supporting Files";
 			path = Shiso;
@@ -629,6 +642,8 @@
 				CF3776C31F65CE4400BCC246 /* Game.swift in Sources */,
 				CFE350CB1F6DC3210009AAFB /* FirebaseConstants.swift in Sources */,
 				CFE93B9E1EDC5CBB004F81FE /* AppDelegate.swift in Sources */,
+				CF2DEF5D2083CD5D007B0D7C /* SpriteBtn.swift in Sources */,
+				CF589C31205D52B900EF5193 /* Hamburger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

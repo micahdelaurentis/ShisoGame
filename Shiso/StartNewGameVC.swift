@@ -24,26 +24,37 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         return bb
     }()
     
-
-
+    var findOpponentBtn: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
        
         print("IN STARTNEWGAMEVC VIEW DID LOAD")
+        
         mainVC = UIApplication.shared.keyWindow?.rootViewController
-        if mainVC == nil {
-            print("no main vc in start new game vc!")
-        }
-        else {
-            print("main vc set to \(mainVC) in start new game vc")
-        }
         tableView = UITableView(frame: CGRect(x: view.frame.midX - 150, y: view.frame.midY - 150, width: 300, height: 300), style: UITableViewStyle.plain)
         tableView.delegate  = self
         tableView.dataSource = self
         
+        
         view.addSubview(tableView)
 
         view.addSubview(backBtn)
+        
+        print("table view topAnchor: \(tableView.topAnchor)")
+        findOpponentBtn = UIButton()
+        findOpponentBtn.setTitle("Find me an opponent!", for: .normal)
+         findOpponentBtn.setTitleColor(.yellow, for: .normal)
+        findOpponentBtn.frame.size = CGSize(width: 200, height: 200)
+        view.addSubview(findOpponentBtn)
+        findOpponentBtn.translatesAutoresizingMaskIntoConstraints = false
+        findOpponentBtn.bottomAnchor.constraint(equalTo: tableView.topAnchor).isActive = true
+        findOpponentBtn.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive = true
+        
+       findOpponentBtn.addTarget(self, action: #selector(findOpponentBtnPressed), for: .touchUpInside)
+        
+        view.addSubview(findOpponentBtn)
+        
         
 
         backBtn.addTarget(self, action: #selector(backBtnPressed), for: .touchUpInside)
@@ -65,6 +76,20 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         
     }
     
+    func findOpponentBtnPressed() {
+    
+        Fire.dataService.createOpenInvite()
+        let confirmationAction = UIAlertController(title: "The search is on!", message: "Once we find you an opponent your game will appear in your games menu. Check back soon!", preferredStyle: .alert)
+        let ok = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
+        confirmationAction.addAction(ok)
+        self.present(confirmationAction, animated: true, completion: nil)
+    
+
+    }
+    
+    deinit {
+        print("Start new game VC deinitialized!")
+    }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return contacts.count

@@ -13,13 +13,14 @@ import SpriteKit
 class InviteCell: UITableViewCell {
     var invite: Invite?
     var invitesController: InvitesController?
-   
+    var gameDisplayVC: GameDisplayTableVC?
     var declineBtn: UIButton =
     {
         let db = UIButton(type: .system)
         db.translatesAutoresizingMaskIntoConstraints = false
         db.setTitle("✘", for: UIControlState.normal)
         db.backgroundColor = .red
+        db.titleLabel?.textColor = .black
         return db
         
         
@@ -30,13 +31,14 @@ class InviteCell: UITableViewCell {
         ab.translatesAutoresizingMaskIntoConstraints = false
         ab.setTitle("✔︎", for: UIControlState.normal)
         ab.backgroundColor = .green
+        ab.titleLabel?.textColor  = .black
         return ab
         
         
     }()
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        backgroundColor = .yellow
+        backgroundColor = .white
 
         self.layer.borderColor = UIColor.black.cgColor
         self.layer.borderWidth = 1.0
@@ -64,24 +66,38 @@ class InviteCell: UITableViewCell {
     func acceptBtnPressed() {
         if invite != nil {
 
-            Fire.dataService.createGame(invite: invite!)
+            Fire.dataService.createGame(invite: invite!){
+                self.gameDisplayVC?.newGameSet = true 
+            }
         }
         
         removeInviteFromInviteController()
       
+    
      }
     func removeInviteFromInviteController() {
         if let iC = invitesController, let iCInvites = iC.invites {
+            print("in removeInviteFromController()")
+            if iCInvites.count == 1 {
+                print("count is 1, so deleting only invitation!")
+                iC.invites?.removeAll()
+             /*   DispatchQueue.main.async {
+                    iC.tableView.reloadData()
+                } */
+            }
             
+            else {
             for (n,invite) in iCInvites.enumerated() {
                 if self.invite?.inviteID == invite.inviteID {
                     iC.invites?.remove(at: n)
-                    DispatchQueue.main.async {
+                    /*DispatchQueue.main.async {
                         iC.tableView.reloadData()
-                    }
+                    } */
                     
                 }
             }
+            }
+            
         }
     }
     func declineBtnPressed(){

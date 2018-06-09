@@ -18,13 +18,14 @@ struct FirebaseConstants {
     static var FBRef = Database.database().reference()
     static var CurrentUserID = Auth.auth().currentUser?.uid
     static var CurrentUserPath: DatabaseReference? = CurrentUserID != nil ? UsersNode.child("\(CurrentUserID!)") : nil
-   
+
 
     
   
   
     static let UsersNode = FBRef.child("Users")
     static let GamesNode = FBRef.child("Games")
+    static let OpenInvites = FBRef.child("Open_Invites")
     
     static let ChallengesReceived = "challenges_received"
     static let ChallengesSent = "challenges_sent"
@@ -43,13 +44,17 @@ struct FirebaseConstants {
     static let UserGames = "Games"
    
     
+    static let GameOver = "gameOver"
     static let GamePlayersNode = "Players"
     static let GameCurrentPlayerID = "currentPlayerID"
     static let GameNew = "newGame"
     static let GameBoard = "gameBoard"
     static let GameID = "gameID"
+    static let GameTilesLeft = "tilesLeft"
+    static let GameLastUpdated = "lastUpdated"
     
-
+    
+    static let LastTurnPassed = "lastTurnPassed"
     static let TileValue = "TileValue"
     static let TileRackPosition = "TileRackPosition"
     static let TileRow = "Row"

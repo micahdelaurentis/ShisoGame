@@ -27,7 +27,7 @@ class WildCardPickerView: SKSpriteNode {
         
         let selectATileLbl = SKLabelNode(text: "Select a tile!")
         addChild(selectATileLbl)
-        selectATileLbl.position = CGPoint(x: 0 , y: self.size.height/2 - selectATileLbl.frame.height/2 + separatorWidth - 100)
+        selectATileLbl.position = CGPoint(x: 0 , y: self.size.height/2 - selectATileLbl.frame.height/2 + separatorWidth - 85)
         selectATileLbl.fontSize = 40
         selectATileLbl.fontName = GameConstants.TileLabelFontName
         
@@ -35,7 +35,7 @@ class WildCardPickerView: SKSpriteNode {
         let exitBox = SKLabelNode(text: "⌫")
         addChild(exitBox)
         exitBox.fontName = GameConstants.TileLabelFontName
-        exitBox.fontSize = 20
+        exitBox.fontSize = 30
         exitBox.position = CGPoint(x: -self.size.width/2 +  exitBox.frame.width + separatorWidth, y: self.size.height/2 - exitBox.frame.height - separatorWidth)
         exitBox.name = GameConstants.WildCardPickerExitBoxName
         var text = 0
