@@ -71,4 +71,11 @@ struct FirebaseConstants {
     static let TilePlayer2TileColor = "red"
     static let TileBonusTileColor = "green"
     static let TileTypeName = "Name"
+    
+    static let StatsWins = "wins"
+    static let StatsLosses = "losses"
+    static let StatsTies = "ties"
+    
+    
+    
 }

@@ -74,17 +74,18 @@ class TileRack {
     }
 
     
-    func removeAndReplaceTileFromRack(tile: Tile, player: Int, completion: ((Tile) -> ())? = nil){
-        print("In removeAndReplaceTileFromRack...")
+    func removeAndReplaceTileFromRack(tile: Tile, player: Int,  completion: ((Tile) -> ())? = nil){
+      //  print("In removeAndReplaceTileFromRack...")
         let newTilePos = tile.startingPosition
         let newTileIndex = tile.rackPosition
         
-        print("replacing tile with value: \(tile.getTileLabelText()) and position: \(tile.startingPosition) and rack position \(tile.rackPosition)")
+       // print("replacing tile with value: \(tile.getTileLabelText()) and position: \(tile.startingPosition) and rack position \(tile.rackPosition)")
         
         
         let newTile = Tile()
         newTile.initializeTile(tileValueText: nil , includeRandomTextValue: true, player: player)
-
+        
+     
         
         tileRack.removeChildren(in: [tile])
         newTile.position = newTilePos
@@ -96,6 +97,41 @@ class TileRack {
         
         if completion != nil {
             completion!(newTile)
+        }
+    }
+  
+    func swapOutExchangedTiles(tiles: [Tile], playerN: Int) {
+        var tileText = [String]()
+        
+        for tile in tiles {
+            tileText.append(tile.getTileTextRepresentation())
+        }/*
+        for txt in tileText {
+            print("old tile value: \(txt)")
+        }*/
+        for tile in tiles {
+        var newTile = Tile()
+            newTile.initializeTile(tileValueText: nil, includeRandomTextValue: true, player: playerN)
+           // print("new tile text to try: \(newTile.getTileTextRepresentation())")
+            var textToTry = newTile.getTileTextRepresentation()
+            while tileText.contains(textToTry) {
+             //   print("we have to replace \(textToTry) that because it's not new!")
+               newTile = Tile()
+                newTile.initializeTile(tileValueText: nil, includeRandomTextValue: true, player: playerN)
+                textToTry = newTile.getTileTextRepresentation()
+               // print("trying new value: \(textToTry)")
+            }
+            
+            //print("final replacement of old value: \(tile.getTileTextRepresentation()) is: \(newTile.getTileTextRepresentation())")
+           
+            let newTilePos = tile.startingPosition
+            let newTileIndex = tile.rackPosition
+            tileRack.removeChildren(in: [tile])
+            newTile.position = newTilePos
+            newTile.rackPosition = newTileIndex
+            newTile.startingPosition = newTilePos
+            playerTiles[newTileIndex] = newTile
+            tileRack.addChild(newTile)
         }
     }
     

@@ -16,12 +16,16 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     var newGameSet: Bool = false
     var cellHeight: CGFloat = 0
     var tableView: UITableView!
-    var games: [Game]?
+    var games: [Game]? {
+        didSet {
+            print("Game added to games!!!! There are: \(games!.count) games")
+        }
+    }
     var tileh: Int = 20
     var tilew: Int = 20
-   
+ 
     var hamburgerControl = Hamburger()
-    
+    /*
     var backBtn: UIButton = {
         let bb = UIButton()
         bb.frame = CGRect(origin: CGPoint(x: 10, y: 50), size: CGSize(width: 70, height: 30))
@@ -29,7 +33,7 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
         bb.setTitle("🔙", for: .normal)
         
         return bb
-    }()
+    }() */
     
     let custGreenColor = UIColor(red: 85/255, green: 158/255, blue: 131/255, alpha: 1.0)
     lazy var newGameBtn: UIButton = {
@@ -59,17 +63,17 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     override func viewDidLoad() {
         super.viewDidLoad()
        print("IN GAMEDISPLAY VIEW DID LOAD")
-   
+     let singleGameViewHeight = CGFloat(tileh*(GameConstants.BoardNumCols + 1) + (GameConstants.BoardNumCols + 2))
      hamburgerControl.setUpNavBarWithHamburgerBtn(inVC: self)
     
-    tableView = UITableView(frame: CGRect(x: view.frame.midX - 150, y: view.frame.midY - 150, width: 300, height: 300), style: UITableViewStyle.plain)
-     
+    tableView =  UITableView(frame: CGRect(x: self.view.frame.midX - 150, y: self.view.frame.midY - 150, width: 300, height:  singleGameViewHeight ), style: UITableViewStyle.plain)
+    
     tableView.dataSource = self
     tableView.delegate = self
     tableView.register(UITableViewCell.self, forCellReuseIdentifier: "displayCell")
      view.addSubview(tableView)
      
-    view.addSubview(backBtn)
+   // view.addSubview(backBtn)
     view.addSubview(newGameBtn)
     
         Fire.dataService.checkForChallengesReceived { (challengesReceived) in
@@ -97,14 +101,29 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     view.addSubview(shisoPicImgView)
     
     
-        
-        
-    tableView.separatorColor = .black 
 
-    backBtn.addTarget(self, action: #selector(backBtnPushed), for: .touchUpInside)
+        
+    tableView.separatorColor = .black
+    
+    //backBtn.addTarget(self, action: #selector(backBtnPushed), for: .touchUpInside)
     newGameBtn.addTarget((self), action: #selector(newGameBtnPushed), for: .touchUpInside)
 
-    loadGamesAndUpdateDisplay()
+        loadGamesAndUpdateDisplay() {
+            (nGames)
+            in
+            let singleGameViewHeight = CGFloat(self.tileh*(GameConstants.BoardNumCols + 1) + (GameConstants.BoardNumCols + 2))
+            let ht =  nGames*singleGameViewHeight + 3*nGames
+            print("total height for tableview is: \(ht)")
+            print("single game view height: \(singleGameViewHeight)")
+            print("n games: \(nGames)")
+            self.tableView.frame.size.height = ht
+        
+            DispatchQueue.main.async {
+                   self.tableView.reloadData()
+            }
+         
+            
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -123,7 +142,7 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     }
     
   
-    func loadGamesAndUpdateDisplay() {
+    func loadGamesAndUpdateDisplay(completion: ((CGFloat) -> ())? = nil) {
         Fire.dataService.loadGames() {
             (loadedGames)
             in
@@ -136,8 +155,11 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
-
+            if completion != nil {
+                completion!(CGFloat(loadedGames.count))
+            }
         }
+        
     }
     
     func backBtnPushed() {
@@ -183,6 +205,8 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
      //let gameDisplayCell = tableView.dequeueReusableCell(withIdentifier: "gameDisplayCell", for: indexPath) as! GameDisplayCell
         
         let gameDisplayCell = UITableViewCell(style: UITableViewCellStyle.default, reuseIdentifier: "displayCell")
+        gameDisplayCell.backgroundColor = .black
+        
         if let game = games?[indexPath.row] {
          print("game with index: \(indexPath.row) in tableView cellforrow at has id: \(game.gameID). Grid empty: \(game.board.grid.isEmpty)")
         let gameBoardDisplay = game.board.convertBoardToView(tilew: tilew , tileh: tileh)
@@ -195,7 +219,6 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
             
         //gameDisplayCell.backgroundColor = .white
         gameDisplayCell.contentView.addSubview(gameBoardDisplay)
-        gameDisplayCell.backgroundColor = .black
             
             let gameLbl = UILabel(frame: CGRect(x: gameBoardDisplay.frame.size.width + 2, y: 0, width: 100, height: 100))
             gameLbl.text = "\(game.player1.userName!.capitalized)\n vs. \n\(game.player2.userName!.capitalized)"
@@ -204,12 +227,11 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
             gameLbl.textColor = .yellow 
            
      //  gameDisplayCell.separatorInset = UIEdgeInsets(top: 0, left: tableView.frame.size.width, bottom: 0, right: 0)
-        return gameDisplayCell
+      
         }
-        else {
-            print("no games yet!!!")
-            return UITableViewCell()
-        }
+    
+      return gameDisplayCell
+        
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

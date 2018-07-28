@@ -19,19 +19,21 @@ class InviteCell: UITableViewCell {
         let db = UIButton(type: .system)
         db.translatesAutoresizingMaskIntoConstraints = false
         db.setTitle("✘", for: UIControlState.normal)
-        db.backgroundColor = .red
-        db.titleLabel?.textColor = .black
+        db.backgroundColor = .white
+        db.setTitleColor(.gray, for: .normal)
+        db.titleLabel?.font = UIFont.boldSystemFont(ofSize: 35)
         return db
         
         
     }()
     var acceptBtn: UIButton =
     {
-        let ab = UIButton(type: .system)
+        let ab = UIButton(type: UIButtonType.system)
         ab.translatesAutoresizingMaskIntoConstraints = false
         ab.setTitle("✔︎", for: UIControlState.normal)
-        ab.backgroundColor = .green
-        ab.titleLabel?.textColor  = .black
+        ab.titleLabel?.font = UIFont.boldSystemFont(ofSize: 35)
+        ab.backgroundColor = .white
+        ab.setTitleColor(.black, for: .normal)
         return ab
         
         
@@ -48,13 +50,13 @@ class InviteCell: UITableViewCell {
         declineBtn.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -20).isActive = true
         declineBtn.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
         declineBtn.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -5).isActive = true
-        declineBtn.widthAnchor.constraint(equalToConstant: 20).isActive = true
+        declineBtn.widthAnchor.constraint(equalToConstant: 30).isActive = true
         declineBtn.addTarget(self, action: #selector(declineBtnPressed), for: .touchUpInside)
         addSubview(acceptBtn)
         acceptBtn.rightAnchor.constraint(equalTo: declineBtn.leftAnchor, constant: -10).isActive = true
         acceptBtn.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
         acceptBtn.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -5).isActive = true
-        acceptBtn.widthAnchor.constraint(equalToConstant: 20).isActive = true
+        acceptBtn.widthAnchor.constraint(equalToConstant: 30).isActive = true
         acceptBtn.addTarget(self, action: #selector(acceptBtnPressed), for: .touchUpInside)
         
     }

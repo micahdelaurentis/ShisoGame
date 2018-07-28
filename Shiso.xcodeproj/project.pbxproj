@@ -24,6 +24,7 @@
 		CF99405B1FF688F600943861 /* Shiso_MainMenuScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = CF99405A1FF688F600943861 /* Shiso_MainMenuScene.sks */; };
 		CF99405D1FF8115000943861 /* InvitesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF99405C1FF8115000943861 /* InvitesController.swift */; };
 		CF99405F1FF990AB00943861 /* InviteCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF99405E1FF990AB00943861 /* InviteCell.swift */; };
+		CFA7F40120DE87FF001D367E /* GameOverPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA7F40020DE87FF001D367E /* GameOverPanel.swift */; };
 		CFD06C53201E522D00788963 /* GameDisplayCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFD06C52201E522C00788963 /* GameDisplayCell.swift */; };
 		CFD4E8C020016B6F00C8F25B /* GameDisplayTableVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFD4E8BF20016B6F00C8F25B /* GameDisplayTableVC.swift */; };
 		CFE350CB1F6DC3210009AAFB /* FirebaseConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE350CA1F6DC3210009AAFB /* FirebaseConstants.swift */; };
@@ -86,6 +87,7 @@
 		CF99405A1FF688F600943861 /* Shiso_MainMenuScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Shiso_MainMenuScene.sks; sourceTree = "<group>"; };
 		CF99405C1FF8115000943861 /* InvitesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitesController.swift; sourceTree = "<group>"; };
 		CF99405E1FF990AB00943861 /* InviteCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteCell.swift; sourceTree = "<group>"; };
+		CFA7F40020DE87FF001D367E /* GameOverPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverPanel.swift; sourceTree = "<group>"; };
 		CFD06C52201E522C00788963 /* GameDisplayCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameDisplayCell.swift; sourceTree = "<group>"; };
 		CFD4E8BF20016B6F00C8F25B /* GameDisplayTableVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDisplayTableVC.swift; sourceTree = "<group>"; };
 		CFE350CA1F6DC3210009AAFB /* FirebaseConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirebaseConstants.swift; sourceTree = "<group>"; };
@@ -177,6 +179,7 @@
 		CF5B0D6E1FC07487006C3A8C /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				CFA7F40020DE87FF001D367E /* GameOverPanel.swift */,
 				CF2DEF5C2083CD5D007B0D7C /* SpriteBtn.swift */,
 				CFD06C52201E522C00788963 /* GameDisplayCell.swift */,
 				CF99405E1FF990AB00943861 /* InviteCell.swift */,
@@ -386,6 +389,7 @@
 				TargetAttributes = {
 					CFE93B991EDC5CBB004F81FE = {
 						CreatedOnToolsVersion = 8.3.2;
+						DevelopmentTeam = 82A8WXUS85;
 						ProvisioningStyle = Automatic;
 					};
 					CFE93BB31EDC5CBB004F81FE = {
@@ -633,6 +637,7 @@
 				CFE350CD1F891E1B0009AAFB /* GameConstants.swift in Sources */,
 				CF99405D1FF8115000943861 /* InvitesController.swift in Sources */,
 				CF73D6D8203B32AF007DF74B /* StartNewGameVC.swift in Sources */,
+				CFA7F40120DE87FF001D367E /* GameOverPanel.swift in Sources */,
 				CF55B8EF1EE2E8B30024126E /* Tile.swift in Sources */,
 				CFD4E8C020016B6F00C8F25B /* GameDisplayTableVC.swift in Sources */,
 				CF9940571FE4293F00943861 /* Shiso_MainMenuScene.swift in Sources */,
@@ -810,6 +815,7 @@
 			baseConfigurationReference = 46C328C0DCD0F7A444A8A965 /* Pods-Shiso.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 82A8WXUS85;
 				INFOPLIST_FILE = Shiso/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = MicahD.Shiso;
@@ -823,6 +829,7 @@
 			baseConfigurationReference = 62D66C8FC3E02F0CA3C18218 /* Pods-Shiso.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 82A8WXUS85;
 				INFOPLIST_FILE = Shiso/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = MicahD.Shiso;

@@ -51,8 +51,8 @@ class Board {
                     || (j==(GameConstants.BoardNumRows - 2) && i==(GameConstants.BoardNumRows - 2)) {
                    
                     tile.initializeTile(tileValueText: nil, includeRandomTextValue: true)
-                    tile.color = UIColor(red: 158/255, green: 156/255, blue: 156/255, alpha: 1.0)
-                    print("In board, creating tiles, tile name: \(tile.name)")
+                    tile.color = GameConstants.TileStartingTilesColor 
+                   //print("In board, creating tiles, tile name: \(tile.name)")
                     while tile.tileType == TileType.eraser || tile.tileType == TileType.wildcard {
                         
                          tile.setTileValue(value: Int(arc4random_uniform(25)))
@@ -395,6 +395,9 @@ class Board {
         
         let row = tile.row
         let col = tile.col
+        
+        print("in get right connected tiles...checking on tile: \(tile.getTileTextRepresentation())")
+    
         var right2Tile: Tile?
         var right1Tile: Tile?
         

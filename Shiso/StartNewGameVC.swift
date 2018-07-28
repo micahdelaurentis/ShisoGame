@@ -18,13 +18,15 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     var backBtn: UIButton = {
         let bb = UIButton()
         bb.frame = CGRect(origin: CGPoint(x: 10, y: 30), size: CGSize(width: 70, height: 30))
-        bb.backgroundColor = .yellow
+        bb.backgroundColor =  .white
+        bb.layer.cornerRadius = 3
         bb.setTitle("🔙", for: .normal)
         
         return bb
     }()
     
     var findOpponentBtn: UIButton!
+    var playAFriendlbl: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,20 +43,34 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
 
         view.addSubview(backBtn)
         
-        print("table view topAnchor: \(tableView.topAnchor)")
         findOpponentBtn = UIButton()
-        findOpponentBtn.setTitle("Find me an opponent!", for: .normal)
-         findOpponentBtn.setTitleColor(.yellow, for: .normal)
-        findOpponentBtn.frame.size = CGSize(width: 200, height: 200)
+        findOpponentBtn.setTitle("Find me an opponent", for: .normal)
+        
+        findOpponentBtn.setTitleColor(.white, for: .normal)
+        
+        findOpponentBtn.layer.cornerRadius = 10
+        findOpponentBtn.backgroundColor =  UIColor(red: 85/255, green: 158/255, blue: 131/255, alpha: 1.0)
         view.addSubview(findOpponentBtn)
         findOpponentBtn.translatesAutoresizingMaskIntoConstraints = false
-        findOpponentBtn.bottomAnchor.constraint(equalTo: tableView.topAnchor).isActive = true
+        findOpponentBtn.topAnchor.constraint(equalTo: backBtn.bottomAnchor, constant: 10).isActive = true
         findOpponentBtn.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive = true
+        findOpponentBtn.widthAnchor.constraint(equalToConstant: 200).isActive = true
+        findOpponentBtn.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
         
        findOpponentBtn.addTarget(self, action: #selector(findOpponentBtnPressed), for: .touchUpInside)
         
-        view.addSubview(findOpponentBtn)
         
+      
+        playAFriendlbl = UILabel()
+        playAFriendlbl.text = "Play a friend!"
+        playAFriendlbl.font = UIFont(name: GameConstants.TileLabelFontName, size: 25)
+        playAFriendlbl.backgroundColor = .black
+        playAFriendlbl.textColor = .white
+        view.addSubview(playAFriendlbl)
+       playAFriendlbl.translatesAutoresizingMaskIntoConstraints = false
+        playAFriendlbl.bottomAnchor.constraint(equalTo: tableView.topAnchor).isActive  = true
+        playAFriendlbl.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive  = true
         
 
         backBtn.addTarget(self, action: #selector(backBtnPressed), for: .touchUpInside)

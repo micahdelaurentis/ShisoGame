@@ -83,7 +83,7 @@ class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
      let hc = hamburgerContents[indexPath.row]
         removeSlideOut()
-        print("You selected \(hc)")
+       
      
         if let vc = VC as? GameViewController {
             

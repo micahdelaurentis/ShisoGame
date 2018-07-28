@@ -467,6 +467,52 @@ class Fire {
         }
     }
     
+    func createGame(p1: Player,p2: Player) {
+        
+        
+        let gamePath =  FirebaseConstants.GamesNode.childByAutoId()
+        let gameID = gamePath.key
+        let board = Board()
+        let _ = board.setUpBoard()
+        
+        let player1Assignment = arc4random_uniform(100) > 50
+        guard p1.userID != nil && p2.userID != nil && p1.userName != nil && p2.userName != nil else {
+            return
+        }
+        print("create a game between \(p1.userName) and \(p2.userName)" )
+        gamePath.updateChildValues(
+            
+            ["/\(FirebaseConstants.GamePlayersNode)/\(p1.userID!)/\(FirebaseConstants.UserTileRack)": "",
+             "/\(FirebaseConstants.GamePlayersNode)/\(p1.userID!)/\(FirebaseConstants.UserPlayer1)": player1Assignment,
+             "/\(FirebaseConstants.GamePlayersNode)/\(p1.userID!)/\(FirebaseConstants.UserScore)": 0,
+             "/\(FirebaseConstants.GamePlayersNode)/\(p1.userID!)/\(FirebaseConstants.UserID)": p1.userID!,
+             "/\(FirebaseConstants.GamePlayersNode)/\(p1.userID!)/\(FirebaseConstants.UserName)": p1.userName!,
+                
+                
+                
+                "/\(FirebaseConstants.GamePlayersNode)/\(p2.userID!)/\(FirebaseConstants.UserTileRack)": "",
+                "/\(FirebaseConstants.GamePlayersNode)/\(p2.userID!)/\(FirebaseConstants.UserPlayer1)": !player1Assignment,
+                "/\(FirebaseConstants.GamePlayersNode)/\(p2.userID!)/\(FirebaseConstants.UserScore)": 0,
+                "/\(FirebaseConstants.GamePlayersNode)/\(p2.userID!)/\(FirebaseConstants.UserID)": p2.userID!,
+                "/\(FirebaseConstants.GamePlayersNode)/\(p2.userID!)/\(FirebaseConstants.UserName)": p2.userName!,
+                
+                "/\(FirebaseConstants.GameCurrentPlayerID)": player1Assignment ? p1.userID! : p2.userID!,
+                
+                "/\(FirebaseConstants.GameBoard)": board.convertToDict(),
+                
+                "/\(FirebaseConstants.GameNew)": true,
+                FirebaseConstants.GameLastUpdated :  Int(NSDate().timeIntervalSince1970)])
+        
+        FirebaseConstants.UsersNode.updateChildValues(
+            ["/\(p1.userID!)/\(FirebaseConstants.UserGames)/\(gameID)": 1,
+             
+             
+             "/\(p2.userID!)/\(FirebaseConstants.UserGames)/\(gameID)": 1
+            ])
+        
+        
+    }
+    
     func declineInvitation(invite: Invite) {
         
         FirebaseConstants.CurrentUserPath?.child("challenges_received/\(invite.inviteID)").removeValue()
@@ -488,6 +534,60 @@ class Fire {
             
         }
         }
+   
+  
+    func updateStatsAndRemoveGame(game: Game){
+        var keyToIncrement: String = ""
+        var oppKeyToIncrement: String = ""
+        guard let opponentID = (game.player1.userID == Auth.auth().currentUser?.uid ? game.player2.userID : game.player1.userID) else {return}
+        
+        
+        if game.player1.score == game.player2.score {
+            keyToIncrement = FirebaseConstants.StatsTies
+            oppKeyToIncrement = FirebaseConstants.StatsTies
+        }
+        else if Auth.auth().currentUser?.uid  == (game.player1.score > game.player2.score ? game.player1.userID : game.player2.userID) {
+            keyToIncrement = FirebaseConstants.StatsWins
+            oppKeyToIncrement = FirebaseConstants.StatsLosses
+        }
+        else {
+            keyToIncrement = FirebaseConstants.StatsLosses
+            oppKeyToIncrement = FirebaseConstants.StatsWins
+            
+        }
+        
+   
+        incrementValue(atPath: FirebaseConstants.CurrentUserPath!.child("Stats/\(opponentID)"), forKey: keyToIncrement)
+        
+        
+        incrementValue(atPath: FirebaseConstants.UsersNode.child("\(opponentID)/Stats/\(FirebaseConstants.CurrentUserID!)"), forKey: oppKeyToIncrement)
+
+        
+        
+        guard let gameID = game.gameID else {return}
+        
+        
+        FirebaseConstants.CurrentUserPath!.child(FirebaseConstants.UserGames).child(gameID).removeValue()
+    }
+    
+    func incrementValue(atPath path: DatabaseReference, forKey k: String, incrementBy value: Int = 1){
+    
+        path.observeSingleEvent(of: .value, with: {(snap) in
+            if let snapshot = snap.value as? [String: Any] {
+                if let oldVal = snapshot[k] as? Int {
+                    let newVal = oldVal + value
+                
+                    path.updateChildValues(["\(k)": newVal])
+                }
+            }
+            else {
+                path.updateChildValues(["\(k)": 1])
+            }
+            
+        })
+    }
+
+    
     
     
     func getCurrentPlayerID() -> String {
@@ -778,12 +878,16 @@ class Fire {
                             if let tilesLeft = gameDict[FirebaseConstants.GameTilesLeft] as? Int {
                                 game.tilesLeft = tilesLeft
                             }
+                            if let gameOver = gameDict[FirebaseConstants.GameOver] as? Bool {
+                                game.gameOver = gameOver
+                            }
                             if let lastTurnPassed = gameDict[FirebaseConstants.LastTurnPassed] as? Bool {
                                 game.lastTurnPassed = lastTurnPassed
                             }
                             if let lastUpdated = gameDict[FirebaseConstants.GameLastUpdated] as? Int {
                                 game.lastUpdated = lastUpdated
                             }
+                            
                             //print("got gameDict for \(gameID), n = \(n)")
                             if let boardValues = gameDict[FirebaseConstants.GameBoard] as? [String:Any] {
                                 

@@ -27,7 +27,8 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
     var backBtn: UIButton = {
         let bb = UIButton()
         bb.frame = CGRect(origin: CGPoint(x: 10, y: 30), size: CGSize(width: 70, height: 30))
-        bb.backgroundColor = .yellow
+        bb.layer.cornerRadius = 3
+        bb.backgroundColor = .white
         bb.setTitle("🔙", for: .normal)
         
         return bb

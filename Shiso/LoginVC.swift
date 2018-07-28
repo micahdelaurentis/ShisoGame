@@ -21,21 +21,21 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
     var nameField: UITextField!
     var loginButton = FBSDKLoginButton()
    
-    var backBtn: UIButton = {
-        let bb = UIButton()
-        bb.frame = CGRect(origin: CGPoint(x: 10, y: 50), size: CGSize(width: 70, height: 30))
-        bb.backgroundColor = .yellow
-        bb.setTitle("🔙", for: .normal)
-        
-        return bb
-    }()
+  
     override func viewDidLoad() {
         super.viewDidLoad()
+    
+    print("In loginc VC!!!")
         
-       print("In loginc VC!!!")
-       
-
-        backBtn.addTarget(self, action: #selector(backbtnPushed), for: .touchUpInside)
+    let shisoBackGroundImgView = UIImageView(frame: UIScreen.main.bounds)
+        let shisoImg = UIImage(named: "GreenShisoLeavesCartoon")
+        shisoBackGroundImgView.image = shisoImg
+        shisoBackGroundImgView.contentMode = .scaleAspectFit
+        view.addSubview(shisoBackGroundImgView)
+        
+  
+    view.backgroundColor = .white
+      
      
         nameField = UITextField(frame: CGRect(x: view.frame.size.width/4, y: view.frame.size.height/3, width: 200, height: 30))
         
@@ -79,7 +79,7 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         registerButton.titleLabel?.textColor = .white
         registerButton.addTarget(self, action: #selector(registerButtonPressed), for: .touchUpInside)
         
-        view.addSubview(backBtn)
+
         view.addSubview(loginBtn)
         view.addSubview(registerButton)
         
@@ -91,9 +91,7 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         view.addSubview(loginButton)
     }
     
-    func backbtnPushed() {
-        self.dismiss(animated: true, completion: nil)
-    }
+ 
     func loginButton(_ loginButton: FBSDKLoginButton!, didCompleteWith result: FBSDKLoginManagerLoginResult!, error: Error!) {
         if error != nil {
             print("Error logging in with facebook: \(error.localizedDescription)")

@@ -35,12 +35,11 @@ struct GameConstants {
     static let WildCardCheckTileName = "WILDCARD CHECK TILE"
     static let WildCardXTileName = "WILD CARD X TILE"
     static let TileDefaultColor = UIColor(red: 243/255, green: 243/255, blue: 240/255, alpha: 1.0)
-    static let TileStartingSquaresColor =  UIColor(red: 158/255, green: 156/255, blue: 156/255, alpha: 1.0)
+    static let TileStartingTilesColor =  UIColor(red: 158/255, green: 156/255, blue: 156/255, alpha: 1.0)
     
     static let TilePlayer1TileColor = UIColor(red: 3/255, green: 146/255, blue: 207/255, alpha: 1.0)
     static let TilePlayer2TileColor = UIColor(red: 102/255, green: 101/255, blue: 71/255, alpha: 1.0)
     static let TileBoardTileColor = UIColor(red: 243/255, green: 243/255, blue: 240/255, alpha: 1.0)
-    static let TileBonusTileColor = SKColor.green
     
     static let BoardSize = CGSize(width: 800, height: 800)
     static let BoardAnchorPoint = CGPoint(x: 0.5  , y: 0.5)

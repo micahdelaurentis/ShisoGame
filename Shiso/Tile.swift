@@ -69,10 +69,10 @@ class Tile: SKSpriteNode {
                 }
                 
                 else {
-                    texture = SKTexture(image: #imageLiteral(resourceName: "ShisoEraserIcon"))
+                    texture = player == 1 ? SKTexture(imageNamed: "player1BlueEraser") : SKTexture(imageNamed: "player2GreenEraser")
                     self.name = GameConstants.TileDeleteTileName
                     tileType = TileType.eraser
-                }
+                    }
                 
             }
             
@@ -108,6 +108,16 @@ class Tile: SKSpriteNode {
     func getTileLabelText() -> String {
      
          return self.tileLabel.text ?? "" 
+    }
+    
+    func getTileTextRepresentation() -> String {
+        if tileLabel.text != nil {
+            return tileLabel.text!
+        }
+        else if tileType == TileType.eraser {
+            return GameConstants.TileDeleteTileSymbol
+        }
+        else { return "" }
     }
     
     func getTileValue() -> Int? {
@@ -170,9 +180,9 @@ class Tile: SKSpriteNode {
     
         if let dictTileValue = dict[FirebaseConstants.TileValue] as? String {
           //  print("tile value  = \(dictTileValue)")
-            if dictTileValue == GameConstants.TileDeleteTileSymbol  {
+            if dictTileValue == GameConstants.TileDeleteTileSymbol, let player = dict[FirebaseConstants.TilePlayer] as? Int {
                 tile.tileLabel.text = ""
-                tile.texture = SKTexture(image: #imageLiteral(resourceName: "ShisoEraserIcon"))
+                tile.texture = player == 1 ? SKTexture(imageNamed: "player1BlueEraser") : SKTexture(imageNamed: "player2GreenEraser")
                 tile.tileType = .eraser
             }
             else if dictTileValue == GameConstants.TileWildCardSymbol {
@@ -219,7 +229,7 @@ class Tile: SKSpriteNode {
         tile.row == GameConstants.BoardNumRows - 2 && tile.col == 2 ||
             tile.row == GameConstants.BoardNumRows - 2 && tile.col == GameConstants.BoardNumCols - 2 {
         
-        tile.color = GameConstants.TileStartingSquaresColor
+        tile.color = GameConstants.TileStartingTilesColor
         }
         else {
             tile.color = GameConstants.TileDefaultColor
@@ -251,5 +261,11 @@ class Tile: SKSpriteNode {
         }
         }
   
+    func tileInStartingTiles() -> Bool {
+       return  row == 2 &&  col == 2 ||
+            row == 2 &&  col == GameConstants.BoardNumCols - 2 ||
+            row == GameConstants.BoardNumRows - 2 &&  col == 2 ||
+            row == GameConstants.BoardNumRows - 2 &&  col == GameConstants.BoardNumCols - 2
+    }
     
 }
