@@ -16,6 +16,8 @@ class Tile: SKSpriteNode {
    
     var holdingValue: Int?
     var holdingColor: UIColor?
+    var holdingPlayer: Int?
+    
     var tileLabel = SKLabelNode()
     var player: Int!
     var tileIsEmpty: Bool {
@@ -31,15 +33,22 @@ class Tile: SKSpriteNode {
     var startingPosition = CGPoint()
     var currentPosition = CGPoint() 
     
+    
   
     
     var tileType: TileType!
     
     
-    
+
     func initializeTile(width: CGFloat = GameConstants.TileSize.width, height: CGFloat = GameConstants.TileSize.height, tileValueText: String?, includeRandomTextValue: Bool = false, player: Int = 0) {
         
+        
+       
+        
+        
         self.size = CGSize(width: width, height: height)
+       
+        
         self.zPosition = GameConstants.TileZposition
        
         self.anchorPoint = GameConstants.TileAnchorPoint 
@@ -51,7 +60,6 @@ class Tile: SKSpriteNode {
         case 2: self.color = GameConstants.TilePlayer2TileColor
         default: self.color = GameConstants.TileDefaultColor
         }
-        
         
         
         
@@ -99,7 +107,7 @@ class Tile: SKSpriteNode {
         
         self.tileLabel.zPosition = GameConstants.TileLabelZposition
         self.tileLabel.position = GameConstants.TileLabelPosition
-        self.tileLabel.fontSize = GameConstants.TileLabelFontSize
+        self.tileLabel.fontSize = 20 //GameConstants.TileLabelFontSize
         self.tileLabel.fontName = GameConstants.TileLabelFontName
         self.tileLabel.fontColor = GameConstants.TileLabelFontColor
     }
@@ -177,7 +185,7 @@ class Tile: SKSpriteNode {
     
         let tile = Tile()
         tile.initializeTile(tileValueText: nil)
-    
+        
         if let dictTileValue = dict[FirebaseConstants.TileValue] as? String {
           //  print("tile value  = \(dictTileValue)")
             if dictTileValue == GameConstants.TileDeleteTileSymbol, let player = dict[FirebaseConstants.TilePlayer] as? Int {
@@ -206,6 +214,9 @@ class Tile: SKSpriteNode {
  
     if let tileTypeName = dict[FirebaseConstants.TileTypeName] as? String {
         tile.name = tileTypeName
+    }
+    if let rackPos = dict[FirebaseConstants.TileRackPosition] as? Int {
+        tile.rackPosition = rackPos
     }
     if let tileRow = dict[FirebaseConstants.TileRow] as? Int {
         tile.row = tileRow
@@ -257,7 +268,7 @@ class Tile: SKSpriteNode {
     
     func showTileValues() {
       
-        if self.parent != nil { print("Showing tile values for tile. Value: \(String(describing: self.tileLabel.text)) row: \(self.row) col: \(self.col) player: \(player) parent: \(self.parent)")
+        if self.parent != nil { print("Showing tile values for tile. Value: \(String(describing: self.tileLabel.text)) row: \(self.row) col: \(self.col) player: \(player)  parent: \(self.parent)")
         }
         }
   
@@ -266,6 +277,13 @@ class Tile: SKSpriteNode {
             row == 2 &&  col == GameConstants.BoardNumCols - 2 ||
             row == GameConstants.BoardNumRows - 2 &&  col == 2 ||
             row == GameConstants.BoardNumRows - 2 &&  col == GameConstants.BoardNumCols - 2
+    }
+    
+    func setPositionInTileRack() {
+    let tileRackDisplayWidth = GameConstants.TileRackSeparatorWidth*8 + GameConstants.TileSize.width*7
+      let tileOffset = tileRackDisplayWidth/2
+      self.position.x =  size.width/2 - tileOffset + GameConstants.TileRackSeparatorWidth*CGFloat(rackPosition + 1) + size.width*CGFloat(rackPosition)
+     
     }
     
 }

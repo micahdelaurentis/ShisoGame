@@ -26,28 +26,33 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
     }
     var backBtn: UIButton = {
         let bb = UIButton()
-        bb.frame = CGRect(origin: CGPoint(x: 10, y: 30), size: CGSize(width: 70, height: 30))
+        bb.frame = CGRect(origin: CGPoint(x: 10, y: 30), size: CGSize(width: 50, height: 30))
         bb.layer.cornerRadius = 3
         bb.backgroundColor = .white
+        
         bb.setTitle("🔙", for: .normal)
         
         return bb
     }()
 
-
+    var headerTitle = UILabel()
+    var nChallenges: Int = 0 {
+        didSet {
+            headerTitle.text = "Challenges (\(nChallenges))"
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
       
-        
-        
-        Fire.dataService.loadInvites{
+         Fire.dataService.loadInvites {
            
         (loadedInvites)
             in
              print("Loaded invites....")
             //print("in closure with loaded invites: \(loadedInvites)")
             if let inviteList = loadedInvites {
+                self.nChallenges = inviteList.count
                 print("loadedInvites count= \(loadedInvites?.count) invite list count: \(inviteList.count)")
                 self.invites = inviteList
                 self.invites?.sort(by: { (invite1, invite2)
@@ -57,15 +62,33 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
                     
                 })
                 
-               
-              
+             
+              /*  if loadedInvites?.count == 0 {
+                    let noChallengesLbl = UILabel()
+                    noChallengesLbl.text = "You have 0 challenges."
+                    self.view.addSubview(noChallengesLbl)
+                    noChallengesLbl.frame = CGRect(x: 0, y: 0, width: self.tableView.frame.size.width, height: 100)
+                    noChallengesLbl.font = UIFont(name: GameConstants.FontArialBoldMT, size: 20)
+                    let xPos = (self.view.frame.size.width - noChallengesLbl.frame.size.width)/2
+                    noChallengesLbl.frame.origin.x = xPos
+                    noChallengesLbl.frame.origin.y = self.tableView.frame.minY + noChallengesLbl.frame.size.height
+                    
+                    
+                    
+                }
+              */
             }
+            
+           
         }
+        view.addSubview(backBtn)
+        print("presenting in view did load: \(presentingViewController)")
+        backBtn.addTarget(self, action: #selector(backBtnPushed), for: .touchUpInside)
+        
         
         view.backgroundColor = .white
         
-        
-        
+ 
         tableView = UITableView(frame: CGRect(x: view.frame.midX - 150, y: view.frame.midY - 150, width: 300, height: 300), style: UITableViewStyle.plain)
         tableView.delegate  = self
         tableView.dataSource = self
@@ -73,17 +96,19 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
         let header = UIView()
         header.backgroundColor = .lightGray
         header.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
-        let headerTitle = UILabel(frame: CGRect(origin: CGPoint(x: header.frame.midX - 50, y: header.frame.midY - 15) , size: CGSize(width: 100, height: 30)))
-        headerTitle.text = "Challenges"
+        headerTitle = UILabel(frame: CGRect(origin: CGPoint(x: header.frame.midX - 50, y: header.frame.midY - 15) , size: CGSize(width: 200, height: 30)))
+        headerTitle.text = "Challenges: \(invites?.count ?? 0)"
         headerTitle.font = UIFont.boldSystemFont(ofSize: 18)
         header.addSubview(headerTitle)
         tableView.tableHeaderView = header
         view.addSubview(tableView)
-        view.addSubview(backBtn)
         
-        backBtn.addTarget(self, action: #selector(backBtnPushed), for: .touchUpInside)
-        
+     
+       
     }
+   
+    
+    
     func backBtnPushed() {
      self.dismiss(animated: true, completion: nil)
     }
@@ -108,8 +133,9 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return invites?.count ?? 0
     }
-    
-    
- 
+     
+    deinit {
+        print("Invites VC GONE")
+    }
     
 }

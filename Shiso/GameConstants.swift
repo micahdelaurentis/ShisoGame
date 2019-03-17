@@ -10,9 +10,9 @@ import Foundation
 import SpriteKit
 
 struct GameConstants {
-  
-    static let GameplaySceneName  = "GameplayScene"
     
+    static let GameplaySceneName  = "GameplayScene"
+    static let TileRackSeparatorWidth:CGFloat = 5
     static let TileBoardTileName = "Board"
     static let TilePlayerTileName = "Player Tile"
     static let TileDeleteTileName = "DELETE"
@@ -23,7 +23,8 @@ struct GameConstants {
     
     static let BingoPoints = 10
     
-    static let TileSize = CGSize(width: 70, height: 70)
+  //  static let TileSize = CGSize(width: 70, height: 70)
+  
     static let TileZposition: CGFloat = 2
     static let TileAnchorPoint = CGPoint(x: 0.5, y: 0.5)
     static let WildCardPickerViewTileName = "WILDCARD PICKER TILE"
@@ -41,7 +42,8 @@ struct GameConstants {
     static let TilePlayer2TileColor = UIColor(red: 102/255, green: 101/255, blue: 71/255, alpha: 1.0)
     static let TileBoardTileColor = UIColor(red: 243/255, green: 243/255, blue: 240/255, alpha: 1.0)
     
-    static let BoardSize = CGSize(width: 800, height: 800)
+    //static let BoardSize = CGSize(width: 800, height: 800)
+    static let BoardSize = CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width)
     static let BoardAnchorPoint = CGPoint(x: 0.5  , y: 0.5)
     static let BoardSeparatorWidth: CGFloat = 2
     static let BoardPosition = CGPoint(x: 0, y: 0)
@@ -49,6 +51,17 @@ struct GameConstants {
     static let BoardNumRows: Int = 9
     static let BoardNumCols: Int = 9
     
+
+    static let TileSize: CGSize = {
+
+      let screenWidth = UIScreen.main.bounds.size.width
+      let screenHeight = UIScreen.main.bounds.size.height
+      let totalSepWidth: CGFloat = 22 //CGFloat((GameConstants.BoardNumCols + 2))*GameConstants.BoardSeparatorWidth
+        let actualCols: CGFloat = 10 //CGFloat(GameConstants.BoardNumCols + 1)
+      let tileWidth = (screenWidth - totalSepWidth)/actualCols
+        return CGSize(width: tileWidth , height: tileWidth )
+       // return CGSize(width: 70, height: 70)
+    }()
     static let TileRackDisplayPosition = CGPoint(x: -50, y: -450)
     static let TileRackDisplayName = "TILERACK DISPLAY"
     static let TileRackDisplaySize = CGSize(width: 430, height: 60)  
@@ -64,6 +77,9 @@ struct GameConstants {
     static let Invite_status_accepted = "ACCEPTED"
     static let Invite_status_declined = "DECLINED"
     
+    static let FontArialBoldMT = "Arial-BoldMT"
     static let ExchangeExitBtnName = "Exchange Exit Button"
+    
+    
 }
 

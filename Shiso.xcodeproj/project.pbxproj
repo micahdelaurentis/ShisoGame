@@ -8,8 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		32545EF054B00264A0A93989 /* Pods_ShisoUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 56572FB3CC4A0693A2C53A7D /* Pods_ShisoUITests.framework */; };
+		CF063F2A213ADA3900558A85 /* StatisticsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF063F29213ADA3900558A85 /* StatisticsVC.swift */; };
+		CF063F2C213ADE4600558A85 /* UserStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF063F2B213ADE4600558A85 /* UserStats.swift */; };
 		CF064CA81F9CD5F40075E72C /* Fire.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3776BE1F64281E00BCC246 /* Fire.swift */; };
+		CF161BCB223420A7003AE2D3 /* ValidMoveSound.wav in Resources */ = {isa = PBXBuildFile; fileRef = CF161BCA223420A7003AE2D3 /* ValidMoveSound.wav */; };
+		CF161BCD22342678003AE2D3 /* IllegalPlay.wav in Resources */ = {isa = PBXBuildFile; fileRef = CF161BCC22342677003AE2D3 /* IllegalPlay.wav */; };
+		CF161BCF2235546C003AE2D3 /* EraserSound1.wav in Resources */ = {isa = PBXBuildFile; fileRef = CF161BCE2235546C003AE2D3 /* EraserSound1.wav */; };
 		CF2DEF5D2083CD5D007B0D7C /* SpriteBtn.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF2DEF5C2083CD5D007B0D7C /* SpriteBtn.swift */; };
+		CF33637521BD779C003A2AC2 /* clickSound.wav in Resources */ = {isa = PBXBuildFile; fileRef = CF33637421BD779C003A2AC2 /* clickSound.wav */; };
+		CF33A3DD21B441AA00AA3C6F /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF33A3DC21B441AA00AA3C6F /* AVFoundation.framework */; };
 		CF3776C31F65CE4400BCC246 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3776C21F65CE4400BCC246 /* Game.swift */; };
 		CF3776C51F65D07500BCC246 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3776C41F65D07500BCC246 /* Player.swift */; };
 		CF55B8ED1EDCD0340024126E /* Board.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF55B8EC1EDCD0340024126E /* Board.swift */; };
@@ -19,6 +26,7 @@
 		CF5B0D6D1FC07478006C3A8C /* WildCardPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5B0D6C1FC07478006C3A8C /* WildCardPickerView.swift */; };
 		CF73D6D8203B32AF007DF74B /* StartNewGameVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF73D6D7203B32AF007DF74B /* StartNewGameVC.swift */; };
 		CF7F6A3B2041DF3C001A0C36 /* LoginVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF7F6A3A2041DF3C001A0C36 /* LoginVC.swift */; };
+		CF8B47E721A5B0F400AC5660 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF8B47E621A5B0F400AC5660 /* StoreKit.framework */; };
 		CF9940571FE4293F00943861 /* Shiso_MainMenuScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF9940561FE4293F00943861 /* Shiso_MainMenuScene.swift */; };
 		CF9940591FE5D19100943861 /* Invite.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF9940581FE5D19100943861 /* Invite.swift */; };
 		CF99405B1FF688F600943861 /* Shiso_MainMenuScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = CF99405A1FF688F600943861 /* Shiso_MainMenuScene.sks */; };
@@ -71,7 +79,14 @@
 		62D66C8FC3E02F0CA3C18218 /* Pods-Shiso.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Shiso.release.xcconfig"; path = "Pods/Target Support Files/Pods-Shiso/Pods-Shiso.release.xcconfig"; sourceTree = "<group>"; };
 		87A7EE6C942E40C9ED60E102 /* Pods-ShisoUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShisoUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ShisoUITests/Pods-ShisoUITests.release.xcconfig"; sourceTree = "<group>"; };
 		CCC3D42085D0E6E576FF3757 /* Pods_Shiso.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Shiso.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CF063F29213ADA3900558A85 /* StatisticsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsVC.swift; sourceTree = "<group>"; };
+		CF063F2B213ADE4600558A85 /* UserStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStats.swift; sourceTree = "<group>"; };
+		CF161BCA223420A7003AE2D3 /* ValidMoveSound.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ValidMoveSound.wav; sourceTree = "<group>"; };
+		CF161BCC22342677003AE2D3 /* IllegalPlay.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = IllegalPlay.wav; path = ../../../Downloads/IllegalPlay.wav; sourceTree = "<group>"; };
+		CF161BCE2235546C003AE2D3 /* EraserSound1.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = EraserSound1.wav; path = ../../../Downloads/EraserSound1.wav; sourceTree = "<group>"; };
 		CF2DEF5C2083CD5D007B0D7C /* SpriteBtn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteBtn.swift; sourceTree = "<group>"; };
+		CF33637421BD779C003A2AC2 /* clickSound.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = clickSound.wav; path = ../../../Downloads/clickSound.wav; sourceTree = "<group>"; };
+		CF33A3DC21B441AA00AA3C6F /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		CF3776BE1F64281E00BCC246 /* Fire.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Fire.swift; sourceTree = "<group>"; };
 		CF3776C21F65CE4400BCC246 /* Game.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
 		CF3776C41F65D07500BCC246 /* Player.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
@@ -82,6 +97,7 @@
 		CF5B0D6C1FC07478006C3A8C /* WildCardPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WildCardPickerView.swift; sourceTree = "<group>"; };
 		CF73D6D7203B32AF007DF74B /* StartNewGameVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartNewGameVC.swift; sourceTree = "<group>"; };
 		CF7F6A3A2041DF3C001A0C36 /* LoginVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginVC.swift; sourceTree = "<group>"; };
+		CF8B47E621A5B0F400AC5660 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		CF9940561FE4293F00943861 /* Shiso_MainMenuScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shiso_MainMenuScene.swift; sourceTree = "<group>"; };
 		CF9940581FE5D19100943861 /* Invite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Invite.swift; sourceTree = "<group>"; };
 		CF99405A1FF688F600943861 /* Shiso_MainMenuScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Shiso_MainMenuScene.sks; sourceTree = "<group>"; };
@@ -120,7 +136,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CF33A3DD21B441AA00AA3C6F /* AVFoundation.framework in Frameworks */,
 				F8BD3CC135E7E8C0BD5623E4 /* Pods_Shiso.framework in Frameworks */,
+				CF8B47E721A5B0F400AC5660 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -159,6 +177,8 @@
 		93DFFB0FCC621D58EA97D2FA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				CF33A3DC21B441AA00AA3C6F /* AVFoundation.framework */,
+				CF8B47E621A5B0F400AC5660 /* StoreKit.framework */,
 				CCC3D42085D0E6E576FF3757 /* Pods_Shiso.framework */,
 				F0F90D5D745921CB2716437B /* Pods_ShisoTests.framework */,
 				56572FB3CC4A0693A2C53A7D /* Pods_ShisoUITests.framework */,
@@ -169,6 +189,7 @@
 		CF3776C61F65D28F00BCC246 /* model classes */ = {
 			isa = PBXGroup;
 			children = (
+				CF063F2B213ADE4600558A85 /* UserStats.swift */,
 				CF9940581FE5D19100943861 /* Invite.swift */,
 				CF3776C21F65CE4400BCC246 /* Game.swift */,
 				CF3776C41F65D07500BCC246 /* Player.swift */,
@@ -279,6 +300,10 @@
 		CFE93BD41EDC5D16004F81FE /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				CF161BCE2235546C003AE2D3 /* EraserSound1.wav */,
+				CF161BCC22342677003AE2D3 /* IllegalPlay.wav */,
+				CF161BCA223420A7003AE2D3 /* ValidMoveSound.wav */,
+				CF33637421BD779C003A2AC2 /* clickSound.wav */,
 				CFF4056E1F4F113E00764E56 /* GoogleService-Info.plist */,
 				CFE93BA71EDC5CBB004F81FE /* Main.storyboard */,
 				CFE93BA11EDC5CBB004F81FE /* Actions.sks */,
@@ -303,8 +328,9 @@
 		CFF405721F59940800764E56 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
-				CF7F6A3A2041DF3C001A0C36 /* LoginVC.swift */,
+				CF063F29213ADA3900558A85 /* StatisticsVC.swift */,
 				CF99405C1FF8115000943861 /* InvitesController.swift */,
+				CF7F6A3A2041DF3C001A0C36 /* LoginVC.swift */,
 				CFE93BA51EDC5CBB004F81FE /* GameViewController.swift */,
 				CFD4E8BF20016B6F00C8F25B /* GameDisplayTableVC.swift */,
 				CF73D6D7203B32AF007DF74B /* StartNewGameVC.swift */,
@@ -384,13 +410,18 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0830;
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 1000;
 				ORGANIZATIONNAME = "Micah DeLaurentis";
 				TargetAttributes = {
 					CFE93B991EDC5CBB004F81FE = {
 						CreatedOnToolsVersion = 8.3.2;
 						DevelopmentTeam = 82A8WXUS85;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.InAppPurchase = {
+								enabled = 1;
+							};
+						};
 					};
 					CFE93BB31EDC5CBB004F81FE = {
 						CreatedOnToolsVersion = 8.3.2;
@@ -429,13 +460,17 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CF161BCB223420A7003AE2D3 /* ValidMoveSound.wav in Resources */,
 				CFE93BA91EDC5CBB004F81FE /* Main.storyboard in Resources */,
 				CFF405741F59A34D00764E56 /* LoginScene.sks in Resources */,
 				CFE93BAB1EDC5CBB004F81FE /* Assets.xcassets in Resources */,
 				CF99405B1FF688F600943861 /* Shiso_MainMenuScene.sks in Resources */,
 				CFE93BAE1EDC5CBB004F81FE /* LaunchScreen.storyboard in Resources */,
+				CF33637521BD779C003A2AC2 /* clickSound.wav in Resources */,
 				CFE93BD21EDC5CED004F81FE /* GameplayScene.sks in Resources */,
+				CF161BCF2235546C003AE2D3 /* EraserSound1.wav in Resources */,
 				CFE93BA21EDC5CBB004F81FE /* Actions.sks in Resources */,
+				CF161BCD22342678003AE2D3 /* IllegalPlay.wav in Resources */,
 				CFF4056F1F4F113E00764E56 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -625,6 +660,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CF063F2C213ADE4600558A85 /* UserStats.swift in Sources */,
 				CF3776C51F65D07500BCC246 /* Player.swift in Sources */,
 				CFE93BA61EDC5CBB004F81FE /* GameViewController.swift in Sources */,
 				CF7F6A3B2041DF3C001A0C36 /* LoginVC.swift in Sources */,
@@ -641,6 +677,7 @@
 				CF55B8EF1EE2E8B30024126E /* Tile.swift in Sources */,
 				CFD4E8C020016B6F00C8F25B /* GameDisplayTableVC.swift in Sources */,
 				CF9940571FE4293F00943861 /* Shiso_MainMenuScene.swift in Sources */,
+				CF063F2A213ADA3900558A85 /* StatisticsVC.swift in Sources */,
 				CFE93BD61EDC5D74004F81FE /* GameplayScene.swift in Sources */,
 				CF99405F1FF990AB00943861 /* InviteCell.swift in Sources */,
 				CF9940591FE5D19100943861 /* Invite.swift in Sources */,
@@ -717,6 +754,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -724,6 +762,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -756,6 +795,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -774,6 +814,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -781,6 +822,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -805,6 +847,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};

@@ -159,14 +159,14 @@ class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
             Fire.dataService.loginUser(email: emailField.text!, password: passwordField.text!, errorHandler: nil) {
                 print("BEFORE: FirebaseConstants.currentUserID: \(FirebaseConstants.CurrentUserID) FirebaseConstants.CurrentUserPath: \(FirebaseConstants.CurrentUserPath). Actual userID: \(Auth.auth().currentUser?.uid)")
               
-                
+                /*
                FirebaseConstants.CurrentUserID = Auth.auth().currentUser?.uid
                 guard let uid = FirebaseConstants.CurrentUserID else {
                     print("After loggin in no user ID!")
                     return
                 }
                 FirebaseConstants.CurrentUserPath = FirebaseConstants.UsersNode.child(uid)
-                
+                */
                 
            
             

@@ -21,13 +21,19 @@ class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
     
 
     func hamburgerMenuButtonTapped() {
-      toggleSlideOut()
+            toggleSlideOut()
     }
     
     
     var hamburgerMenuShowing: Bool = false
     
-    weak var VC: UIViewController?
+    weak var VC: UIViewController? {
+        didSet{
+            
+            print("VC in hamburger set to: \(VC)")
+      
+        }
+    }
     
     func showSlideOut() {
     if let window = UIApplication.shared.keyWindow {
@@ -80,38 +86,46 @@ class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
         cell.imageView?.image = UIImage(named: txt)
         return cell
     }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("IN SELECT ROW")
      let hc = hamburgerContents[indexPath.row]
         removeSlideOut()
        
      
         if let vc = VC as? GameViewController {
-            
-            print("PRESENTING VC: \(vc.presentingViewController) PRESENT-ED VC: \(vc.presentedViewController)")
-            if let skV = vc.view as? SKView {
-                print("current view's scene?: \(skV.scene)")
-              skV.presentScene(nil)
-                
-            }
+          
+         //   print("PRESENTING VC: \(vc.presentingViewController) PRESENT-ED VC: \(vc.presentedViewController)")
+          
             if hc == "My Games" {
+             
              if let _ = vc.presentedViewController as? GameDisplayTableVC {
                     print("already presenting game display!!!!!")
                 
                 }
              else {
+                //vc.dismiss(animated: false, completion: nil)
+                if let v = vc.view as? SKView {
+                    v.presentScene(nil)
+                }
                 vc.presentDisplayVC()
-                
                 }
             }
                 
             else if hc == "Log Out" {
+                if let v = vc.view as? SKView {
+                    v.presentScene(nil)
+                }
                 Fire.dataService.logOutUser{
                     vc.presentedViewController?.dismiss(animated: true, completion: nil)
-                    vc.presentLoginVC()
+                   vc.presentLoginVC()
                 }
                 
             }
-                
+            else if hc == "Statistics" {
+                vc.dismiss(animated: false, completion: nil)
+                vc.presentStatsVC()
+            }
             else {
                print("you selected something else")
             }
@@ -119,13 +133,16 @@ class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
             
         }
         else {
-            print("can't let vc = VC as gamevc")
+            
+            print("can't let vc = VC as gamevc. vc is \(VC)")
             
         }
 
     }
     
     func setUpNavBarWithHamburgerBtn(inVC vc: UIViewController) {
+        
+        print("setting up navbar with hamburger with vc:\(vc)")
         let navBar = UINavigationBar(frame: CGRect(x: 0, y: 0, width: vc.view.frame.size.width, height: 50))
         vc.view.addSubview(navBar)
         
@@ -137,14 +154,20 @@ class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
         navBar.setItems([navItem], animated: false)
         
         hamburgerMenuButton.action = #selector(hamburgerMenuButtonTapped)
-        
+        if let vc = vc as? GameDisplayTableVC {
+            print("setting up hamburget in vc gamedisplayvc")
+           self.VC = vc.gameVC
+            
+        }
+        else { self.VC = vc}
+        /*
         if let rootVC = UIApplication.shared.keyWindow?.rootViewController {
             print(" in vc: \(vc) and CAN set up VC as root vc!")
             VC = rootVC
         }
         else {
             print(" in vc: \(vc) and can't set up VC as root vc!")
-        }
+        } */
     }
     
 }

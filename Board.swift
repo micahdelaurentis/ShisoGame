@@ -23,16 +23,19 @@ class Board {
     func setUpBoard() -> SKSpriteNode {
         let gridEmpty = grid.isEmpty
         print("In set up board. grid empty: \(gridEmpty)")
-        
+ 
+        print(" grid empty: \(gridEmpty), n tiles in grid: \(grid.count)")
+    
         let board = SKSpriteNode()
         board.color = .black
         let boardDimension = GameConstants.TileSize.width * CGFloat(GameConstants.BoardNumCols + 1)
-            + GameConstants.BoardSeparatorWidth * CGFloat(GameConstants.BoardNumCols + 2 )
+           + GameConstants.BoardSeparatorWidth * CGFloat(GameConstants.BoardNumCols + 2 )
+       
         board.size = CGSize(width: boardDimension, height: boardDimension)
         
         board.anchorPoint = GameConstants.BoardAnchorPoint
-        let separatorWidth = GameConstants.BoardSeparatorWidth
         
+        let separatorWidth = GameConstants.BoardSeparatorWidth
         
         
         var row = [Tile]()
@@ -74,6 +77,7 @@ class Board {
                 }
                else {
                     tile.initializeTile(tileValueText: nil)
+                  
                     }
                     
                 tile.anchorPoint = GameConstants.TileAnchorPoint
@@ -81,10 +85,10 @@ class Board {
                 tile.name = GameConstants.TileBoardTileName
                 tile.row = j
                 tile.col = i
-                   
+                  
                     tile.position.x = CGFloat(i + 1)*separatorWidth - board.size.width/2 + tile.size.width/2 + CGFloat(i)*tile.size.width
                     tile.position.y = board.size.height/2 -  CGFloat(j + 1)*separatorWidth - tile.size.height/2 - CGFloat(j)*tile.size.height
-                        
+                    
               //  tile.position = CGPoint(x:CGFloat(i + 1)*separatorWidth - (board.size.width)/2 + tile.size.width*CGFloat(i), y:
               //      board.size.height/2 - CGFloat(j + 1)*separatorWidth - tile.size.height - tile.size.height*CGFloat(j))
                 tile.currentPosition = tile.position 
@@ -98,11 +102,14 @@ class Board {
             }
             
                 else {
-                    tile.position = tile.currentPosition
+                 //  tile.position = tile.currentPosition
+                tile.position.x = CGFloat(tile.col + 1)*separatorWidth - board.size.width/2 + tile.size.width/2 +  CGFloat(tile.col)*tile.size.width
+                    
+                tile.position.y = board.size.height/2 -  CGFloat(tile.row + 1)*separatorWidth - tile.size.height/2 - CGFloat(tile.row)*tile.size.height
                 }
            // print("about to add tile to board")
              //   tile.showTileValues()
-                
+            
                 board.addChild(tile)
             
             }
@@ -396,7 +403,7 @@ class Board {
         let row = tile.row
         let col = tile.col
         
-        print("in get right connected tiles...checking on tile: \(tile.getTileTextRepresentation())")
+        //print("in get right connected tiles...checking on tile: \(tile.getTileTextRepresentation())")
     
         var right2Tile: Tile?
         var right1Tile: Tile?
@@ -708,9 +715,7 @@ class Board {
             }
         }
     
-        for tile in tiles {
-            print("min span row tiles: \(tile.getTileValue()!) row: \(tile.row) col: \(tile.col)")
-        }
+     
         
     
         return tiles

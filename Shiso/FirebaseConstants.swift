@@ -16,10 +16,12 @@ struct FirebaseConstants {
    
   
     static var FBRef = Database.database().reference()
-    static var CurrentUserID = Auth.auth().currentUser?.uid
+    static var CurrentUserID: String? = Auth.auth().currentUser?.uid
+ 
+    
     static var CurrentUserPath: DatabaseReference? = CurrentUserID != nil ? UsersNode.child("\(CurrentUserID!)") : nil
 
-
+    
     
   
   
@@ -52,7 +54,7 @@ struct FirebaseConstants {
     static let GameID = "gameID"
     static let GameTilesLeft = "tilesLeft"
     static let GameLastUpdated = "lastUpdated"
-    
+    static let GameCurrentTurnPassed = "CurrentTurnPassed"
     
     static let LastTurnPassed = "lastTurnPassed"
     static let TileValue = "TileValue"
@@ -65,6 +67,7 @@ struct FirebaseConstants {
     static let TileCurrentPositionY = "CurrentPositionY"
     static let TileStartingPositionX = "StartingPositionX"
     static let TileStartingPositionY = "StartingPositionY"
+  
     static let TileColor = "Color"
     static let TileBoardTileColor = "brown"
     static let TilePlayer1TileColor = "blue"
@@ -72,10 +75,19 @@ struct FirebaseConstants {
     static let TileBonusTileColor = "green"
     static let TileTypeName = "Name"
     
+    static let StatsNode = "Stats"
+    static let StatsTotalWins = "totalWins"
+    static let StatsTotalLosses = "totalLosses"
     static let StatsWins = "wins"
     static let StatsLosses = "losses"
     static let StatsTies = "ties"
-    
+    static let StatsHighScore = "highscore"
+    static let StatsNumberOfGames = "NumberOfGames"
+    static let StatsWinningStreak = "WinningStreak"
+    static let StatsLongestWinningStreak = "LongestWinningStreak"
+    static let StatsSinglePlayer_2Min_HighScore = "SinglePlayer_2Min_HighScore"
+    static let StatsSinglePlayer_5Min_HighScore = "SinglePlayer_5Min_HighScore"
+    static let StatsSinglePlayer_10Min_HighScore = "SinglePlayer_10Min_HighScore"
     
     
 }

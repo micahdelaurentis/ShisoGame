@@ -10,10 +10,13 @@ import Foundation
 import UIKit
 import FBSDKLoginKit
 import FirebaseAuth
+import Firebase
 
 class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  {
  
-
+    var newUserBtn: UIButton!
+    var registerMessageLbl: UILabel!
+    var reverseBtn: UIButton!
     var loginBtn: UIButton!
     var registerButton: UIButton!
     var passwordField: UITextField!
@@ -25,7 +28,6 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
     override func viewDidLoad() {
         super.viewDidLoad()
     
-    print("In loginc VC!!!")
         
     let shisoBackGroundImgView = UIImageView(frame: UIScreen.main.bounds)
         let shisoImg = UIImage(named: "GreenShisoLeavesCartoon")
@@ -37,6 +39,8 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
     view.backgroundColor = .white
       
      
+
+        
         nameField = UITextField(frame: CGRect(x: view.frame.size.width/4, y: view.frame.size.height/3, width: 200, height: 30))
         
         emailField = UITextField(frame: CGRect(x: nameField.frame.origin.x, y: nameField.frame.origin.y + 35, width: nameField.frame.size.width , height: nameField.frame.size.height))
@@ -48,6 +52,38 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         view.addSubview(emailField)
         view.addSubview(passwordField)
         
+        nameField.isHidden = true
+        
+        newUserBtn = UIButton()
+        newUserBtn.setTitle("New User? Click here", for: .normal)
+        newUserBtn.backgroundColor = .white
+        newUserBtn.setTitleColor(.black, for: .normal)
+        newUserBtn.layer.cornerRadius = 4
+        newUserBtn.layer.masksToBounds = true
+         newUserBtn.frame.size = CGSize(width: nameField.frame.size.width, height: nameField.frame.size.height)
+        newUserBtn.frame.origin.x = nameField.frame.origin.x
+        newUserBtn.frame.origin.y = 50
+        newUserBtn.addTarget(self, action: #selector(newUserBtnTapped), for: .touchUpInside)
+        view.addSubview(newUserBtn)
+        
+        registerMessageLbl = UILabel()
+        view.addSubview(registerMessageLbl)
+        registerMessageLbl.text = "Register below!"
+        registerMessageLbl.translatesAutoresizingMaskIntoConstraints = false 
+        registerMessageLbl.centerXAnchor.constraint(equalTo: newUserBtn.centerXAnchor).isActive = true
+        registerMessageLbl.topAnchor.constraint(equalTo: newUserBtn.bottomAnchor).isActive = true
+        registerMessageLbl.widthAnchor.constraint(equalToConstant: view.frame.size.width/3).isActive = true 
+        registerMessageLbl.heightAnchor.constraint(equalTo: newUserBtn.heightAnchor).isActive = true
+        registerMessageLbl.isHidden = true
+     
+        
+        
+        reverseBtn = UIButton()
+        reverseBtn.setImage(UIImage(named: "goBackIconBlue"), for: .normal)
+        reverseBtn.frame = CGRect(x: newUserBtn.frame.origin.x - reverseBtn.frame.size.width - 30, y: newUserBtn.frame.origin.y, width: newUserBtn.frame.size.height, height: newUserBtn.frame.size.height)
+        reverseBtn.addTarget(self, action: #selector(reverseBtnTapped), for: .touchUpInside)
+        view.addSubview(reverseBtn)
+        reverseBtn.isHidden = true
         
         setUpTextField(tf: nameField, placeHolderTxt: "Username")
         setUpTextField(tf: emailField, placeHolderTxt: "Email")
@@ -70,15 +106,14 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         registerButton = UIButton()
         registerButton.setTitle("Register", for: .normal)
         registerButton.titleLabel?.font = UIFont(name:"AppleSDGothicNeo-Regular", size: 30)
-        registerButton.frame.origin.y = loginBtn.frame.maxY + 10
-        registerButton.frame.origin.x = passwordField.frame.origin.x
+        registerButton.frame.origin = loginBtn.frame.origin
         registerButton.frame.size = CGSize(width: passwordField.frame.size.width, height: passwordField.frame.size.height)
         registerButton.backgroundColor = .blue
         registerButton.layer.cornerRadius = 4
         registerButton.layer.masksToBounds = true
         registerButton.titleLabel?.textColor = .white
         registerButton.addTarget(self, action: #selector(registerButtonPressed), for: .touchUpInside)
-        
+        registerButton.isHidden = true
 
         view.addSubview(loginBtn)
         view.addSubview(registerButton)
@@ -91,6 +126,22 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         view.addSubview(loginButton)
     }
     
+    func newUserBtnTapped() {
+        loginBtn.isHidden = true
+        registerButton.isHidden = false
+        nameField.isHidden = false
+        reverseBtn.isHidden = false
+        registerMessageLbl.isHidden = false
+    }
+    
+    func reverseBtnTapped() {
+        loginBtn.isHidden = false
+        registerButton.isHidden = true
+        nameField.isHidden = true
+        registerButton.isHidden = true
+        reverseBtn.isHidden = true
+        registerMessageLbl.isHidden = true
+    }
  
     func loginButton(_ loginButton: FBSDKLoginButton!, didCompleteWith result: FBSDKLoginManagerLoginResult!, error: Error!) {
         if error != nil {
@@ -159,23 +210,55 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
 
     func loginBtnPressed() {
         Fire.dataService.loginUser(email: emailField.text!, password: passwordField.text!, errorHandler: self) {
-            FirebaseConstants.CurrentUserID = Auth.auth().currentUser?.uid
-            guard let uid = FirebaseConstants.CurrentUserID else {
-                print("After loggin in no user ID!")
+           
+            guard let uid = Auth.auth().currentUser?.uid else {
+                print("in register function: After logging in no user ID!")
                 return
             }
-            FirebaseConstants.CurrentUserPath = FirebaseConstants.UsersNode.child(uid)
+             FirebaseConstants.CurrentUserID = uid
+          FirebaseConstants.CurrentUserPath = FirebaseConstants.UsersNode.child(uid) 
           // self.dismiss(animated: true, completion: nil)
             
+            Fire.dataService.checkIfAnyGames(){
+                (anyGames)
+                in
+                print("any games? \(anyGames)")
+                if anyGames {
+                    if let gameVC = self.presentingViewController as? GameViewController {
+                        self.dismiss(animated: true, completion: nil)
+                            gameVC.presentDisplayVC()
+                        
+                    }
+                    else {
+                        print(" in login VC: can't get presenting vc be game VC!")
+                    }
+                }
+                else {
+                    if let gameVC = self.presentingViewController as? GameViewController {
+                        self.dismiss(animated: true, completion: nil)
+                        gameVC.presentStartNewGameVC()
+                        
+                    }
+                    else {
+                        print(" in login VC: can't get presenting vc be game VC!")
+                    }
+                }
+            }
+   
             
-         if let mainVC = UIApplication.shared.keyWindow?.rootViewController {
+            
+            /*
+            
+            if let gameVC = self.presentingViewController as? GameViewController {
                 self.dismiss(animated: true, completion: nil)
-                mainVC.present(GameDisplayTableVC(), animated: true, completion: nil)
+                gameVC.presentDisplayVC()
                 
             }
+          
+        
             else {
-                print("can't let main vc present display vc from loginvc")
-            }
+                print("can't let game vc present display vc from loginvc")
+            }*/
             /*if self.presentingViewController is GameDisplayTableVC {
                 print("presenting is game vc. about to dismiss login vc")
                 self.dismiss(animated: true, completion: nil)
@@ -189,8 +272,9 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
             
         }
     }
-    
+
     func registerButtonPressed() {
+   
         print("In register button pressed function")
         guard emailField.text != nil else {
             return
@@ -201,14 +285,26 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         guard passwordField.text != nil else {
             return
         }
+    
+        
         
         Fire.dataService.registerUser(email: emailField.text!, password: passwordField.text!, username: nameField.text!, errorHandler: self) {
-   
-            self.present(GameDisplayTableVC(), animated: true, completion: nil)
-            print("register success: userID: \(Auth.auth().currentUser?.uid)")
+            
+            guard let uid = Auth.auth().currentUser?.uid else {
+                print("After loggin in no user ID!")
+                return
+            }
+            print("User ID after registering:  \(uid)")
+            FirebaseConstants.CurrentUserPath = FirebaseConstants.UsersNode.child(uid)
+            FirebaseConstants.CurrentUserID = Auth.auth().currentUser?.uid
+            let blackView = UIView(frame: self.view.frame)
+            blackView.backgroundColor = .black
+            self.view.addSubview(blackView)
+        
+            self.present(StartNewGameVC(), animated: true, completion: nil)
+         
         }
-       
-    
+      
     }
     
     deinit {

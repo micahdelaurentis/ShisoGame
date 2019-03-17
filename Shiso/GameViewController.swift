@@ -18,8 +18,8 @@ class GameViewController: UIViewController {
     var goToLogin = false
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        perform(#selector(setUpHamburger), with: nil, afterDelay: 0.01)
+    
+      perform(#selector(setUpHamburger), with: nil, afterDelay: 0.01)
         
        
         if FirebaseConstants.CurrentUserID  == nil || goToLogin == true {
@@ -38,12 +38,21 @@ class GameViewController: UIViewController {
     func presentDisplayVC() {
         hamburgerControl.removeSlideOut()
         let vc = GameDisplayTableVC()
-     //  vc.hamburgerControl.VC = self 
+        vc.gameVC = self 
+     
         present(vc, animated: true, completion: nil)
     }
     
     func presentLoginVC() {
         let vc = LoginVC()   
+        present(vc, animated: true, completion: nil)
+    }
+    func presentStartNewGameVC() {
+        let vc = StartNewGameVC()
+        present(vc, animated: true, completion: nil)
+    }
+    func presentStatsVC() {
+        let vc = StatisticsVC()
         present(vc, animated: true, completion: nil)
     }
  
