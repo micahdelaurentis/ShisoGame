@@ -27,10 +27,19 @@ class Game {
     var lastUpdated: Int
     var singlePlayerMode: Bool
     var timeSelection: TimeSelection
+    var selectedPlayerTiles =  [Tile]()
+    
     init(currentPlayerID: String, player1: Player, player2: Player,
          board: Board, gameID: String, tilesLeft: Int,
          gameOver: Bool = false, lastTurnPassed: Bool = false , lastUpdated: Int =  Int(NSDate().timeIntervalSince1970),
-         singlePlayerMode: Bool = false, timeSelection: TimeSelection = .untimed, currentTurnPassed: Bool = true ) {
+         singlePlayerMode: Bool = false,
+         timeSelection: TimeSelection = .untimed,
+         currentTurnPassed: Bool = true,
+         selectedPlayerTiles: [Tile] = [Tile]()
+        
+        )
+ 
+    {
         self.currentPlayerID = currentPlayerID
         self.player1 = player1
         self.player2 = player2
@@ -43,6 +52,8 @@ class Game {
         self.singlePlayerMode = singlePlayerMode
         self.timeSelection = timeSelection
         self.currentTurnPassed = currentTurnPassed
+        self.selectedPlayerTiles = selectedPlayerTiles
+
     }
     init() {
         currentPlayerID = ""
@@ -57,7 +68,7 @@ class Game {
         lastUpdated =  Int(NSDate().timeIntervalSince1970)
         singlePlayerMode = false
         currentTurnPassed = true
+        selectedPlayerTiles = [Tile]()
     }
-    
-    
+  
 }

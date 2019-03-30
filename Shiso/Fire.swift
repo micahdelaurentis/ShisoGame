@@ -1453,58 +1453,69 @@ class Fire {
     }
  
     
-    func saveGameData(game: Game, completion: (()->())? ) {
+//    func saveGameData(game: Game, completion: (()->())? ) {
+//
+//        print("In saveGameData...")
+//
+//
+//        guard let gameID = game.gameID else {
+//            print("no game ID in saveGameData")
+//            return
+//        }
+//
+//        FirebaseConstants.GamesNode.child(gameID).observeSingleEvent(of: .value, with: { (snapshot) in
+//            if let FBGameDict = snapshot.value as? [String: Any], let currentPlayerID = FBGameDict[FirebaseConstants.GameCurrentPlayerID] as? String {
+//
+//                let currentPlayer = game.player1.userID == game.currentPlayerID ? game.player1! : game.player2!
+//                let currentPlayerID = currentPlayer.userID!
+//                let newCurrentPlayerID = currentPlayerID == game.player1.userID ? game.player2.userID! : game.player1.userID!
+//
+//                // Save current player data
+//
+//                print("about to save data with updateChildValues")
+//                print("current Player was: \(currentPlayer.userName!). Score: \(currentPlayer.score)")
+//                FirebaseConstants.GamesNode.child(gameID).updateChildValues(
+//                    [FirebaseConstants.GameNew: false,
+//                     FirebaseConstants.GameCurrentPlayerID: newCurrentPlayerID,
+//                     FirebaseConstants.GameTilesLeft : game.tilesLeft,
+//                     FirebaseConstants.LastTurnPassed: game.lastTurnPassed,
+//                     FirebaseConstants.GameOver : game.gameOver,
+//                     FirebaseConstants.GameLastUpdated: game.lastUpdated,
+//                     FirebaseConstants.GameBoard : game.board.convertToDict(),
+//                "/\(FirebaseConstants.GamePlayersNode)/\(currentPlayerID)/\(FirebaseConstants.UserScore)": currentPlayer.score,
+//                "/\( FirebaseConstants.GamePlayersNode)/\(currentPlayerID)/\(FirebaseConstants.UserTileRack)": currentPlayer.tileRack.convertToDict()
+//
+//                ])
+//
+//
+//                 if completion != nil { completion!()}
+//
+//                }
+//            else {
+//                print("save game data: Cannot get game dict" )
+//            }
+//
+//
+//        })
+//
+//    }
     
-        print("In saveGameData...")
-        
-
-        guard let gameID = game.gameID else {
-            print("no game ID in saveGameData")
-            return
-        }
     
-        FirebaseConstants.GamesNode.child(gameID).observeSingleEvent(of: .value, with: { (snapshot) in
-            if let FBGameDict = snapshot.value as? [String: Any], let currentPlayerID = FBGameDict[FirebaseConstants.GameCurrentPlayerID] as? String {
-                
-                let currentPlayer = game.player1.userID == game.currentPlayerID ? game.player1! : game.player2!
-                let currentPlayerID = currentPlayer.userID!
-                let newCurrentPlayerID = currentPlayerID == game.player1.userID ? game.player2.userID! : game.player1.userID!
-                
-                // Save current player data
-                
-                print("about to save data with updateChildValues")
-                print("current Player was: \(currentPlayer.userName!). Score: \(currentPlayer.score)")
-                FirebaseConstants.GamesNode.child(gameID).updateChildValues(
-                    [FirebaseConstants.GameNew: false,
-                     FirebaseConstants.GameCurrentPlayerID: newCurrentPlayerID,
-                     FirebaseConstants.GameTilesLeft : game.tilesLeft,
-                     FirebaseConstants.LastTurnPassed: game.lastTurnPassed,
-                     FirebaseConstants.GameOver : game.gameOver,
-                     FirebaseConstants.GameLastUpdated: game.lastUpdated,
-                     FirebaseConstants.GameBoard : game.board.convertToDict(),
-                "/\(FirebaseConstants.GamePlayersNode)/\(currentPlayerID)/\(FirebaseConstants.UserScore)": currentPlayer.score,
-                "/\( FirebaseConstants.GamePlayersNode)/\(currentPlayerID)/\(FirebaseConstants.UserTileRack)": currentPlayer.tileRack.convertToDict()
-                
-                ])
-                
-                
-                 if completion != nil { completion!()}
-                
-                }
-            else {
-                print("save game data: Cannot get game dict" )
-            }
+    func convertTilesToDict(tiles: [Tile]) -> [String: Any] {
+        var tileDict = [String: Any]()
+        for (n, tile) in tiles.enumerated(){
             
+            tileDict["STile_\(n)"] = tile.convertToDict()
+        }
         
-        })
-      
+        return tileDict
     }
     
     
-    func saveGameData1(game: Game, completion: ((Game)->())? ) {
+    func saveGameData1(game: Game, completion: (() -> ())?) {
         
-      print("save game data 1.........")
-        guard let gameID = game.gameID else {
+    
+         guard let gameID = game.gameID else {
             print("no game ID in saveGameData")
             return
         }
@@ -1539,23 +1550,145 @@ class Fire {
              FirebaseConstants.GameLastUpdated: game.lastUpdated,
              FirebaseConstants.GameBoard : game.board.convertToDict(),
              "/\(FirebaseConstants.GamePlayersNode)/\(currentUserID)/\(FirebaseConstants.UserScore)": currentUser.score,
-             "/\( FirebaseConstants.GamePlayersNode)/\(currentUserID)/\(FirebaseConstants.UserTileRack)": currentUser.tileRack.convertToDict()
+             "/\( FirebaseConstants.GamePlayersNode)/\(currentUserID)/\(FirebaseConstants.UserTileRack)": currentUser.tileRack.convertToDict(),
+             FirebaseConstants.GameSelectedPlayerTiles: convertTilesToDict(tiles: game.selectedPlayerTiles)
                 
             ])
+        if completion != nil {
+        completion!()
+        }
+//      FirebaseConstants.GamesNode.child(gameID).observe(.value, with: { (snapshot) in
+//
+//            print("in observe in save game data1 with gameID: \(gameID)")
+//            let game = Game()
+//            game.gameID = gameID
+//
+//            if let gameDict = snapshot.value as? [String: Any] {
+//                if let currentPlayerID = gameDict[FirebaseConstants.GameCurrentPlayerID] as? String {
+//                    print("current player ID as string: \(currentPlayerID)")
+//                }
+//                else {
+//                    print("Can't get current player id as string")
+//                }
+//                if let lastTurnPassed = gameDict[FirebaseConstants.LastTurnPassed] as? Bool {
+//                    game.lastTurnPassed = lastTurnPassed
+//                }
+//                if let tilesLeft = gameDict[FirebaseConstants.GameTilesLeft] as? Int {
+//                    game.tilesLeft = tilesLeft
+//                }
+//                if let currentTurnPassed = gameDict[FirebaseConstants.GameCurrentTurnPassed] as? Bool {
+//                    game.currentTurnPassed = currentTurnPassed
+//                }
+//                if let boardValues = gameDict[FirebaseConstants.GameBoard] as? [String:Any] {
+//                    print("got board values")
+//                    for i in 0 ... GameConstants.BoardNumRows {
+//                        var tileRow = [Tile]()
+//                        for j in 0 ... GameConstants.BoardNumCols {
+//                            if let tileDict = boardValues["Row\(i)_Col\(j)"] as? [String: Any] {
+//                                let tile = Tile.initializeFromDict(dict: tileDict)
+//
+//                                tileRow.append(tile)
+//                                if j == GameConstants.BoardNumCols {
+//                                    game.board.appendTileRowInGrid(tileRow: tileRow)
+//
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                else {
+//                    print("cannot get board values")
+//                }
+//
+//                if let currentPlayerID = gameDict[FirebaseConstants.GameCurrentPlayerID] as? String {
+//                    print("got current player ID")
+//                    game.currentPlayerID = currentPlayerID
+//
+//                    if let playersDict = gameDict[FirebaseConstants.GamePlayersNode] as? [String: Any] {
+//                        print("Got players dict")
+//                        for player in playersDict.values {
+//                            // print("player in playerDict: \(player)")
+//                            if let playerDict = player as? [String:Any] {
+//                                print("got player dict again, correct")
+//                                let player = Player()
+//                                var playerN = ""
+//                                if let isPlayer1 = playerDict[FirebaseConstants.UserPlayer1] as? Bool {
+//                                    player.player1 = isPlayer1
+//                                    playerN = isPlayer1 == true ? "Player 1" : "Player 2"
+//                                }
+//                                if  let playerScore = playerDict[FirebaseConstants.UserScore] as? Int {
+//                                    player.score = playerScore
+//                                }
+//                                if let playerName = playerDict[FirebaseConstants.UserName] as? String {
+//
+//                                    player.userName = playerName
+//                                }
+//                                if let playerID = playerDict[FirebaseConstants.UserID] as? String {
+//                                    player.userID = playerID
+//                                }
+//
+//                                if let playerTileRack = playerDict[FirebaseConstants.UserTileRack] as?
+//                                    [String:Any] {
+//
+//                                    player.tileRack = TileRack.convertFromDictToTileRack(dict: playerTileRack)
+//
+//                                }
+//                                else {
+//
+//                                    print("no tile rack available for \(playerN)")
+//
+//                                }
+//
+//                                if player.player1 == true {
+//                                    game.player1 = player
+//                                }
+//                                else {
+//                                    game.player2 = player
+//                                }
+//                            }
+//                        }
+//
+//
+//                        //print("showing board grid now...")
+//                        //game.board.showBoard()
+//
+//                    }
+//
+//
+//                }
+//
+//                if completion != nil {
+//                    print("about to run completion. game current turn passed = \(game.currentTurnPassed)")
+//                    completion!(game)
+//                }
+//                else {
+//                    print("completion is nil, not running")
+//                }
+//
+//            }
+//
+//
+//        })
+      
         
-      FirebaseConstants.GamesNode.child(gameID).observe(.value, with: { (snapshot) in
-       
-            print("in observe in save game data1 with gameID: \(gameID)")
+    }
+    
+    
+ 
+    
+    func loadGameWithObserver(gameID: String, completion: ((Game) -> ())?){
+        guard gameID != nil else {
+            print("NO GAME ID in load game with obs. -- returning")
+            return
+        }
+        FirebaseConstants.GamesNode.child(gameID).observe(.value, with: { (snapshot) in
+            
+            print("in loadGameWithObserver")
             let game = Game()
             game.gameID = gameID
-        
+            
             if let gameDict = snapshot.value as? [String: Any] {
-                if let currentPlayerID = gameDict[FirebaseConstants.GameCurrentPlayerID] as? String {
-                    print("current player ID as string: \(currentPlayerID)")
-                }
-                else {
-                    print("Can't get current player id as string")
-                }
+              
                 if let lastTurnPassed = gameDict[FirebaseConstants.LastTurnPassed] as? Bool {
                     game.lastTurnPassed = lastTurnPassed
                 }
@@ -1564,6 +1697,18 @@ class Fire {
                 }
                 if let currentTurnPassed = gameDict[FirebaseConstants.GameCurrentTurnPassed] as? Bool {
                     game.currentTurnPassed = currentTurnPassed
+                }
+                if let gameOver =  gameDict[FirebaseConstants.GameOver] as? Bool {
+                    game.gameOver = gameOver 
+                }
+                
+                if let selectedTilesDict = gameDict[FirebaseConstants.GameSelectedPlayerTiles] as? [String:Any] {
+                    for tilesDict in selectedTilesDict.values {
+                        if let tDict = tilesDict as? [String:Any] {
+                            game.selectedPlayerTiles.append(Tile.initializeFromDict(dict: tDict))
+                           
+                        }
+                    }
                 }
                 if let boardValues = gameDict[FirebaseConstants.GameBoard] as? [String:Any] {
                     print("got board values")
@@ -1585,7 +1730,7 @@ class Fire {
                 else {
                     print("cannot get board values")
                 }
-
+                
                 if let currentPlayerID = gameDict[FirebaseConstants.GameCurrentPlayerID] as? String {
                     print("got current player ID")
                     game.currentPlayerID = currentPlayerID
@@ -1633,28 +1778,28 @@ class Fire {
                                 }
                             }
                         }
-                    
+                        
                         
                         //print("showing board grid now...")
                         //game.board.showBoard()
-                     
+                        
                     }
                     
                     
                 }
                 
                 if completion != nil {
-                    print("about to run completion. game current turn passed = \(game.currentTurnPassed)")
+                    print("about to run completion in loadGameWithObserver")
                     completion!(game)
                 }
+            
                 
             }
-          
-       
+            
+            
         })
-      
-        
     }
+    
     
     func removeObserversFromGamesNode(game: Game) {
          FirebaseConstants.GamesNode.child(game.gameID).removeObserver(withHandle: databaseHandle)

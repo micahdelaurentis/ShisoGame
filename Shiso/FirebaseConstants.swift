@@ -55,6 +55,7 @@ struct FirebaseConstants {
     static let GameTilesLeft = "tilesLeft"
     static let GameLastUpdated = "lastUpdated"
     static let GameCurrentTurnPassed = "CurrentTurnPassed"
+    static let GameSelectedPlayerTiles = "SelectedPlayerTiles"
     
     static let LastTurnPassed = "lastTurnPassed"
     static let TileValue = "TileValue"
@@ -67,6 +68,7 @@ struct FirebaseConstants {
     static let TileCurrentPositionY = "CurrentPositionY"
     static let TileStartingPositionX = "StartingPositionX"
     static let TileStartingPositionY = "StartingPositionY"
+    static let TileBonusTile = "BonusTile"
   
     static let TileColor = "Color"
     static let TileBoardTileColor = "brown"

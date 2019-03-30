@@ -32,7 +32,7 @@ class Tile: SKSpriteNode {
     var rackPosition = Int()
     var startingPosition = CGPoint()
     var currentPosition = CGPoint() 
-    
+    var bonusTile = false 
     
   
     
@@ -169,7 +169,7 @@ class Tile: SKSpriteNode {
         dict[FirebaseConstants.TileRow] = row
         dict[FirebaseConstants.TileCol] = col
         
-
+        dict[FirebaseConstants.TileBonusTile] = bonusTile
         dict[FirebaseConstants.TilePlayer] = self.player
        
         dict[FirebaseConstants.TileRackPosition] = rackPosition
@@ -215,6 +215,11 @@ class Tile: SKSpriteNode {
     if let tileTypeName = dict[FirebaseConstants.TileTypeName] as? String {
         tile.name = tileTypeName
     }
+    
+    if let tileIsBonusTile = dict[FirebaseConstants.TileBonusTile] as? Bool {
+        tile.bonusTile = tileIsBonusTile
+    }
+    
     if let rackPos = dict[FirebaseConstants.TileRackPosition] as? Int {
         tile.rackPosition = rackPos
     }

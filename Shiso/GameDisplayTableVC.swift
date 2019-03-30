@@ -71,7 +71,8 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
          let singleGameViewHeight = CGFloat(tileh*(GameConstants.BoardNumCols + 1) + (GameConstants.BoardNumCols + 2))
    
         
-        hamburgerControl.setUpNavBarWithHamburgerBtn(inVC: self)
+    
+    hamburgerControl.setUpNavBarWithHamburgerBtn(inVC: self)
     
     tableView =  UITableView(frame: CGRect(x: 0, y: 0, width: 0, height: 0 ), style: UITableViewStyle.plain)
     tableView.isScrollEnabled = true

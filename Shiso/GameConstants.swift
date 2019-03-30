@@ -19,6 +19,7 @@ struct GameConstants {
     static let TileWildcardTileName = "WILDCARD"
     static let TileWildCardSymbol = "?"
     static let TileDeleteTileSymbol =  "X"
+    static let TileBonusTileText = "+2"
     static let WildCardPickerExitBoxName = "EXIT WILDCARD PICKER VIEW"
     
     static let BingoPoints = 10

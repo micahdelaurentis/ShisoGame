@@ -22,7 +22,7 @@ class GameplayScene: SKScene {
     var bonusTilesUsed = [Tile]()
    
     var timeLabel = SKLabelNode()
-    
+    var nTimesSaved: Int = 0
     var timeLeft: Int? {
         didSet {
           
@@ -220,7 +220,7 @@ class GameplayScene: SKScene {
     func initializeGame () {
         print("in initializeGame")
  
-    
+
         
     gameBoard = game.board
     gameBoardDisplay = gameBoard.setUpBoard()
@@ -317,8 +317,8 @@ class GameplayScene: SKScene {
         
         //game.singlePlayerMode = true
         if game.singlePlayerMode {
-            //timeLeft = 45
-            timeLeft = game.timeSelection.rawValue*60
+            timeLeft = 45
+           // timeLeft = game.timeSelection.rawValue*60
         }
         if !game.singlePlayerMode {
             tilesLeft = game.tilesLeft
@@ -349,7 +349,7 @@ class GameplayScene: SKScene {
         
         
         currentPlayerTileRack = currentPlayer.tileRack
-        currentPlayerTileRack.setUpPlayerTileRack(player: currentPlayerN)
+        currentPlayerTileRack.setUpPlayerTileRack(player: 1,createAllNewTiles: true)
         currentPlayerTileRackDisplay = currentPlayerTileRack.tileRack
         currentPlayerTileRackDisplay.name = GameConstants.TileRackDisplayName
         
@@ -362,20 +362,209 @@ class GameplayScene: SKScene {
         currentPlayerTileRackDisplay.position.x = 0
         currentPlayerTileRackDisplay.position.y = -gameBoardDisplay.size.height/2 - currentPlayerTileRackDisplay.size.height/2 - 10
         addChild(currentPlayerTileRackDisplay)
-        
-        
+        guard view != nil else {
+            print("No view, returning!")
+            return
+        }
+        setUpInitialView(view: view!)
     }
     
+    var setUpGame2CompletionShouldRun = true
+    var endOfTurn = false
+    
+    func setUpGame2(){
+        print("in set up Game 2: current User ID: \(FirebaseConstants.CurrentUserID)")
+        self.scene?.removeChildren(in: [currentPlayerTileRackDisplay, gameBoardDisplay])
+        
+        print("after removing...currentplayertilerackdisplay: \(self.currentPlayerTileRackDisplay)")
+   
+        
+        
+        // load game again to add observer. Use gameID
+        
+        
+        
+        currentPlayerTileRackDisplay = SKSpriteNode()
+        gameBoardDisplay = SKSpriteNode()
+        
+        guard !game.singlePlayerMode else {
+            print("SINGLE PLAYER MODE...set up init view and return")
+            setUpInitialView(view: view!)
+            return
+        }
+        Fire.dataService.loadGameWithObserver(gameID: game.gameID){
+            (game)
+            
+            in
+            
+            guard !self.endOfTurn else {
+                print("not running observe closure in load game because end turn btn pressed!")
+                return
+            }
+            
+            print("In closure in set up game 2..")
+            self.scene?.removeChildren(in: [self.currentPlayerTileRackDisplay, self.gameBoardDisplay])
+            
+            
+            
+            
+            
+            self.selectedPlayerTiles = game.selectedPlayerTiles
+            self.nonDeleteSelectedPlayerTiles = game.selectedPlayerTiles.filter{$0.tileType != TileType.eraser}
+     
+            
+            
+            self.game = game
+            
+            self.gameBoard = game.board
+            self.gameBoardDisplay = self.gameBoard.setUpBoard()
+            self.gameBoardDisplay.name = GameConstants.GameBoardDisplayName
+            
+            
+            if game.gameOver {
+                print("GAME OVER....about to show game over panel. in observe closure")
+              self.presentGameOverPanel()
+                
+              FirebaseConstants.CurrentUserPath!.child(FirebaseConstants.UserGames).child(game.gameID).removeValue()
+                FirebaseConstants.GamesNode.child(game.gameID).removeValue()
+            }
+ 
+            
+        
+            self.tilesLeft = game.tilesLeft
+         
+            
+            self.player1 = game.player1
+            self.player2 = game.player2
+            
+            //Determine who the current player is
+            self.currentPlayer = self.player1.userID == game.currentPlayerID ? self.player1 : self.player2
+            self.currentPlayerN = self.currentPlayer.player1 == true ? 1 : 2
+            
+         
+            
+            let currentUserPlayer = self.player1.userID == FirebaseConstants.CurrentUserID ? self.player1 : self.player2
+            guard currentUserPlayer != nil else {
+                print("Current user player is nil. returning....")
+                return
+            }
+            let currentUserPlayerN = currentUserPlayer!.player1 ? 1 : 2
+            
+            self.currentUserIsCurrentPlayer = currentUserPlayerN == self.currentPlayerN
+            print("Current user is current player? --> \(self.currentUserIsCurrentPlayer)")
+            if !self.currentUserIsCurrentPlayer {
+                self.disableGame = true
+                self.currentPlayerTileRack = currentUserPlayer!.tileRack
+            }
+            else {
+                self.currentPlayerTileRack = self.currentPlayer.tileRack
+                self.disableGame = false
+            }
+            
+            self.currentPlayerTileRack.setUpPlayerTileRack(player: currentUserPlayerN,
+                                                      createAllNewTiles: currentUserPlayer!.tileRack.playerTiles.count == 0
+                                                        && game.currentTurnPassed == true)
+            
+            
+            if currentUserPlayer!.tileRack.playerTiles.count == 0 && game.currentTurnPassed == false {
+                print("player used all tiles...ending turn. tiles left = \(self.tilesLeft)")
+                self.turnIsOver = true
+      }
+            
+            self.player1ScoreLbl.text =  "\(self.player1.userName!): \(self.player1.score)"
+            self.player2ScoreLbl.text = "\(self.player2.userName!): \(self.player2.score)"
+            
+            
+            self.currentScoreLbl = self.currentPlayerN == 1 ? self.player1ScoreLbl : self.player2ScoreLbl
+            self.otherScoreLbl = self.currentPlayerN == 1 ? self.player2ScoreLbl : self.player1ScoreLbl
+            self.currentScoreLbl.fontColor = self.currentPlayerN == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
+            self.otherScoreLbl.fontColor =  UIColor.white
+            
+            
+            self.currentPlayerTileRackDisplay = self.currentPlayerTileRack.tileRack
+            self.currentPlayerTileRackDisplay.name = GameConstants.TileRackDisplayName
+            
+            self.gameBoardDisplay.position = GameConstants.BoardPosition
+            
+            
+            
+            self.addChild(self.gameBoardDisplay)
+            
+   
+            self.currentPlayerTileRackDisplay.position.y = -self.gameBoardDisplay.size.height/2 - self.currentPlayerTileRackDisplay.size.height/2 - 10
+            
+            self.addChild(self.currentPlayerTileRackDisplay)
+            
+            
+            if self.nonDeleteSelectedPlayerTiles.count > 0 {
+                
+                self.lightUpPlayedTiles{
+                  
+                    (tiles) in
+                    
+                      print("in light up played tiles closure!")
+                    for tile in tiles {
+                        tile.color = self.currentPlayerN == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
+                        
+                    }
+                    if self.tilesUsedThisTurn.count == 7 && !self.game.singlePlayerMode {
+                        self.showBingo()
+                    }
+                    
+                    if self.turnIsOver {
+                        print("turn is over, used all tiles....switching players")
+                        self.switchPlayers()
+                    }
+                    
+                }
+            }
+
+            
+            if self.setUpGame2CompletionShouldRun {
+                print("About to run setUpInitialView...")
+                self.setUpInitialView(view: self.view!)
+            }
+            else {
+                print("NOT supposed to run set up initial view")
+            }
+            
+            
+            
+        }//end of loadgame closure
+        
+      
+        //game.singlePlayerMode = true
+     
+     
+        
+        
+        // print("in initializeGame: setting player 1 score label for: \(player1.userName!) and player 2 to: \(player2.userName!)")
+ 
+
+     
+        
+}//END of function setUpGame2()
+        
+        
     func setUpGame1(){
         print("in set up Game: current User ID: \(FirebaseConstants.CurrentUserID)")
         self.scene?.removeChildren(in: [currentPlayerTileRackDisplay, gameBoardDisplay])
       
-        print("In set up game....current turn passed  = \(game.currentTurnPassed). last turn passed: \(game.lastTurnPassed)")
+        print("In set up game....current turn passed  = \(game.currentTurnPassed). last turn passed: \(game.lastTurnPassed)" )
+        
+        
+        // load game again to add observer. Use gameID
+        
+        
         
         currentPlayerTileRackDisplay = SKSpriteNode()
-   
-        
         gameBoardDisplay = SKSpriteNode()
+        
+        
+        
+        
+        
+        
         
         gameBoard = game.board
         gameBoardDisplay = gameBoard.setUpBoard()
@@ -480,224 +669,231 @@ class GameplayScene: SKScene {
         print("Showing currentUserTileRack...") 
         currentPlayerTileRack.showTileRack()
     }
+   func setUpInitialView(view: SKView){
+    /*setUpNodeWithText(nodeLabel: "Node with Text!", lblFontColor: .red, lblFontSize: 40, nodeSize: CGSize(width:300,height:50), nodePos: CGPoint(x:0,y:0), nodeColor: .black)
+     */
     
+    self.playBtn_NEW = SKShapeNode(rect: CGRect(x: 0, y: 0, width: self.currentPlayerTileRackDisplay.size.width/3, height: 0.5*self.currentPlayerTileRackDisplay.size.height + 5), cornerRadius: 5)
+    self.playBtn_NEW.fillColor =  UIColor(red: 85/255, green: 158/255, blue: 131/255, alpha: 1.0)
+    let playBtnText = SKLabelNode(text: "Play+")
+    playBtnText.fontColor = .white
+    playBtnText.fontName = GameConstants.TileLabelFontName
+    playBtnText.fontSize = 20
+    
+    self.playBtn_NEW.position = CGPoint(x: self.currentPlayerTileRackDisplay.frame.minX,
+    y: self.currentPlayerTileRackDisplay.position.y - self.currentPlayerTileRackDisplay.size.height/2 - self.playBtn_NEW.frame.size.height/2 - 20)
+    playBtnText.horizontalAlignmentMode = .center
+    playBtnText.verticalAlignmentMode  = .center
+    
+    
+    
+    // playBtn_NEW.position = CGPoint(x: -350, y:  -self.size.height/2 + 150)
+    playBtnText.position = CGPoint(x: self.playBtn_NEW.position.x + self.playBtn_NEW.frame.width/2, y: self.playBtn_NEW.position.y + self.playBtn_NEW.frame.height/2)
+    
+    playBtnText.position = CGPoint(x: self.playBtn_NEW.frame.midX, y: self.playBtn_NEW.frame.midY)
+    
+    
+    
+    print("about to add play btn new")
+    
+    self.addChild(self.playBtn_NEW)
+    self.addChild(playBtnText)
+    
+    
+    self.recallTilesBtn = SKShapeNode(rect: CGRect(x: 0, y:0, width: self.playBtn_NEW.frame.size.width, height: self.playBtn_NEW.frame.size.height - 3), cornerRadius: 5)
+    self.recallTilesBtn.fillColor = UIColor(red: 238/255, green: 238/255, blue: 238/255, alpha: 1.0)
+    self.recallTilesBtn.position = CGPoint(x: self.currentPlayerTileRackDisplay.frame.maxX - self.recallTilesBtn.frame.size.width, y: self.playBtn_NEW.position.y)
+    
+    
+    let recallTilesBtnText = SKLabelNode(text: "Recall")
+    recallTilesBtnText.fontColor = UIColor(red: 67/255, green: 84/255, blue: 167/255, alpha: 1.0)
+    recallTilesBtnText.fontName = GameConstants.TileLabelFontName
+    recallTilesBtnText.fontSize = 20
+    recallTilesBtnText.position = CGPoint(x: self.recallTilesBtn.position.x + self.recallTilesBtn.frame.width/2, y: self.recallTilesBtn.position.y + self.recallTilesBtn.frame.height/2)
+    recallTilesBtnText.horizontalAlignmentMode = .center
+    recallTilesBtnText.verticalAlignmentMode = .center
+    recallTilesBtnText.zPosition = self.recallTilesBtn.zPosition + 1
+    
+    self.addChild(self.recallTilesBtn)
+    self.addChild(recallTilesBtnText)
+    
+    
+    //add score Labels
+    
+    self.player1ScoreLbl.position = CGPoint(x: self.game.singlePlayerMode ? 0 : self.gameBoardDisplay.frame.minX + self.player1ScoreLbl.frame.size.width/2 + 20, y: self.gameBoardDisplay.frame.maxY + self.player1ScoreLbl.frame.size.height/2 + 20)
+    self.player1ScoreLbl.zPosition = 2
+    self.player1ScoreLbl.fontSize = 25
+    self.player1ScoreLbl.fontName = "Arial"
+    
+    self.addChild(self.player1ScoreLbl)
+    
+    
+    self.player2ScoreLbl.position = CGPoint(x: self.gameBoardDisplay.frame.maxX - self.player1ScoreLbl.frame.size.width/2 - 20, y: self.player1ScoreLbl.position.y)
+    self.player2ScoreLbl.zPosition = 2
+    self.player2ScoreLbl.fontSize = 25
+    self.player2ScoreLbl.fontName = "Arial"
+    
+    self.addChild(self.player2ScoreLbl)
+    
+    
+    
+    self.endTurnBtn = SKShapeNode(rect: CGRect(x: 0, y:0, width: self.playBtn_NEW.frame.size.width, height: self.playBtn_NEW.frame.size.height - 3), cornerRadius: 5)
+    self.endTurnBtn.fillColor = UIColor(red: 238/255, green: 238/255, blue: 238/255, alpha: 1.0)
+    self.endTurnBtn.position = CGPoint(x: self.playBtn_NEW.position.x , y: self.playBtn_NEW.position.y - self.playBtn_NEW.frame.height - 5)
+    let endTurnText = SKLabelNode(text: "End Turn")
+    endTurnText.fontColor = UIColor.red
+    endTurnText.fontName = GameConstants.TileLabelFontName
+    endTurnText.fontSize = 20
+    endTurnText.position = CGPoint(x: self.endTurnBtn.position.x + self.endTurnBtn.frame.width/2, y: self.endTurnBtn.position.y + self.playBtn_NEW.frame.height/2)
+    endTurnText.horizontalAlignmentMode = .center
+    endTurnText.verticalAlignmentMode = .center
+    endTurnText.zPosition = self.endTurnBtn.zPosition + 1
+    // addChild(playBtn)
+    
+    self.addChild(self.endTurnBtn)
+    self.addChild(endTurnText)
+    
+    self.exchangeBtn = SKShapeNode(rect:CGRect(x:0,y:0, width: self.playBtn_NEW.frame.size.width, height: self.playBtn_NEW.frame.size.height - 3), cornerRadius: 5)
+    self.exchangeBtn.fillColor = UIColor(red: 238/255, green: 238/255, blue: 238/255, alpha: 1.0)
+    self.exchangeBtn.position = CGPoint(x: self.recallTilesBtn.position.x, y: self.endTurnBtn.position.y)
+    
+    let exchangeBtnText = SKLabelNode(text: "Exchange")
+    exchangeBtnText.fontColor = UIColor(red: 67/255, green: 84/255, blue: 167/255, alpha: 1.0)
+    exchangeBtnText.fontName = GameConstants.TileLabelFontName
+    exchangeBtnText.fontSize = 20
+    exchangeBtnText.position = CGPoint(x: self.exchangeBtn.position.x + self.exchangeBtn.frame.width/2,y: self.exchangeBtn.position.y + self.exchangeBtn.frame.height/2)
+    exchangeBtnText.horizontalAlignmentMode = .center
+    exchangeBtnText.verticalAlignmentMode = .center
+    exchangeBtnText.zPosition = self.exchangeBtn.zPosition + 1
+    
+    self.addChild(self.exchangeBtn)
+    self.addChild(exchangeBtnText)
+    
+    
+    
+    
+    
+    //add separator bar between two score labels
+    let labelSeparatorBar = SKSpriteNode(color: .black, size: CGSize(width: 5, height: 2*self.player1ScoreLbl.frame.size.height))
+    labelSeparatorBar.position.y = self.player1ScoreLbl.position.y
+    self.addChild(labelSeparatorBar)
+    
+    
+    self.tilesLeftLbl.position.y = //tileBag.position.y - tileBag.size.height/2 - tilesLeftLbl.frame.size.height/2 - 5
+    labelSeparatorBar.position.y + labelSeparatorBar.size.height/2 + 10
+    self.tilesLeftLbl.fontSize = 16
+    self.addChild(self.tilesLeftLbl)
+    self.tilesLeftLbl.fontName = GameConstants.TileLabelFontName
+    
+    
+    self.bingoLabel.fontName = "Arial-BoldMT"
+    self.bingoLabel.fontSize = 50
+    self.bingoLabel.fontColor = .yellow
+    self.bingoLabel.zPosition = 2
+    self.bingoLabel.isHidden = true
+    self.addChild(self.bingoLabel)
+    
+    
+    
+    self.wildCardPicker.initializePicker(tileColor: .lightGray)
+    
+    self.addChild(self.wildCardPicker)
+    
+    self.wildCardPicker.zPosition = 50
+    self.wildCardPicker.isHidden = true
+    
+    if self.game.singlePlayerMode {
+    
+    labelSeparatorBar.isHidden = true
+    self.player2ScoreLbl.isHidden = true
+    self.player1ScoreLbl.text = "Score: \(self.player1.score)"
+    //exchangeBtnText.isHidden = true
+    self.exchangeBtn.isHidden = true
+    
+    self.playBtn_NEW.position.y = self.currentPlayerTileRackDisplay.position.y - self.currentPlayerTileRackDisplay.size.height/2 - self.playBtn_NEW.frame.size.height/2 - 50
+    playBtnText.position = CGPoint(x: self.playBtn_NEW.frame.midX, y: self.playBtn_NEW.frame.midY)
+    
+    
+    
+    self.singlePlayerRefreshtiles =  SKShapeNode(rect:CGRect(x:0,y:0, width: self.playBtn_NEW.frame.size.width, height: self.playBtn_NEW.frame.size.height - 3), cornerRadius: 5)
+    self.singlePlayerRefreshtiles.fillColor = UIColor(red: 238/255, green: 238/255, blue: 238/255, alpha: 1.0)
+    self.addChild(self.singlePlayerRefreshtiles)
+    
+    self.recallTilesBtn.position.x = self.playBtn_NEW.frame.maxX + 10
+    
+    self.recallTilesBtn.position.y = self.playBtn_NEW.position.y
+    
+    // singlePlayerRefreshtiles.setScale(0.7)
+    self.singlePlayerRefreshtiles.position.x = self.recallTilesBtn.frame.maxX + 10
+    self.singlePlayerRefreshtiles.position.y = self.playBtn_NEW.position.y
+    exchangeBtnText.position.x = self.singlePlayerRefreshtiles.frame.midX
+    exchangeBtnText.position.y = self.singlePlayerRefreshtiles.frame.midY
+    
+    
+    // recallTilesBtn.setScale(0.7)
+    recallTilesBtnText.position.x = self.recallTilesBtn.frame.midX
+    recallTilesBtnText.position.y = self.recallTilesBtn.frame.midY
+    
+    
+    //playBtn_NEW.setScale(1.5)
+    //  playBtn_NEW.position.y = recallTilesBtn.position.y - playBtn_NEW.frame.size.height/2
+    endTurnText.isHidden = true
+    self.endTurnBtn.isHidden  = true
+    
+    // timeLabel.position = CGPoint(x: tilesLeftLbl.position.x, y: tilesLeftLbl.position.y - 10)
+    self.timeLabel.position = CGPoint(x: 0, y: self.player1ScoreLbl.frame.maxY + self.timeLabel.frame.size.height/2 + 2)
+    self.timeLabel.zPosition = 50
+    self.timeLabel.fontName = "Arial-BoldMT"
+    self.timeLabel.fontColor = .white
+    self.timeLabel.fontSize = 20
+    self.gameTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.updateTimer), userInfo: nil, repeats: true)
+    
+    self.addChild(self.timeLabel)
+    
+    self.singlePlayerPauseButton.text = "PAUSE"
+    self.singlePlayerPauseButton.fontName = "Arial-BoldMT"
+    self.singlePlayerPauseButton.fontColor = .blue
+    self.singlePlayerPauseButton.fontSize = 15
+    self.singlePlayerPauseButton.position = CGPoint(x:  view.frame.size.width/2 - self.singlePlayerPauseButton.frame.size.width, y:
+    self.currentScoreLbl.position.y)
+    self.addChild(self.singlePlayerPauseButton)
+    
+    self.resumeGameButton = SKLabelNode()
+    self.resumeGameButton.text = "RESUME"
+    self.resumeGameButton.fontColor = .white
+    self.resumeGameButton.fontSize = 20
+    self.resumeGameButton.fontName = "Arial-BoldMT"
+    
+    self.pauseView.isHidden = true
+    self.pauseView.size = self.size
+    self.pauseView.color = .black
+    self.pauseView.zPosition = 100
+    self.addChild(self.pauseView)
+    self.pauseView.addChild(self.resumeGameButton)
+    self.resumeGameButton.position = CGPoint(x: 0, y: 200)
+    /*
+     singlePlayerRefreshtiles.position.x = recallTilesBtnText.position.x
+     singlePlayerRefreshtiles.position.y = recallTilesBtn.position.y - recallTilesBtn.frame.size.height/2 - singlePlayerRefreshtiles.frame.size.height - 30
+     singlePlayerRefreshtiles.fontSize = 80
+     addChild(singlePlayerRefreshtiles)
+     */
+    
+    
+    
+    }
+    
+    self.setUpGame2CompletionShouldRun = false
+    }
     override func didMove(to view: SKView) {
-        
-        print("in didMove to view. Game ID: \(game.gameID)")
-     
-        self.setUpGame1()
-      
-         /*setUpNodeWithText(nodeLabel: "Node with Text!", lblFontColor: .red, lblFontSize: 40, nodeSize: CGSize(width:300,height:50), nodePos: CGPoint(x:0,y:0), nodeColor: .black)
-       */
-      
-        playBtn_NEW = SKShapeNode(rect: CGRect(x: 0, y: 0, width: currentPlayerTileRackDisplay.size.width/3, height: 0.5*currentPlayerTileRackDisplay.size.height + 5), cornerRadius: 5)
-        playBtn_NEW.fillColor =  UIColor(red: 85/255, green: 158/255, blue: 131/255, alpha: 1.0)
-        let playBtnText = SKLabelNode(text: "Play+")
-        playBtnText.fontColor = .white
-        playBtnText.fontName = GameConstants.TileLabelFontName
-        playBtnText.fontSize = 20
-
-       playBtn_NEW.position = CGPoint(x: currentPlayerTileRackDisplay.frame.minX,
-        y: currentPlayerTileRackDisplay.position.y - currentPlayerTileRackDisplay.size.height/2 - playBtn_NEW.frame.size.height/2 - 20)
-        playBtnText.horizontalAlignmentMode = .center
-        playBtnText.verticalAlignmentMode  = .center
-        
-        
-        
-       // playBtn_NEW.position = CGPoint(x: -350, y:  -self.size.height/2 + 150)
-       playBtnText.position = CGPoint(x: playBtn_NEW.position.x + playBtn_NEW.frame.width/2, y: playBtn_NEW.position.y + playBtn_NEW.frame.height/2)
-        
-             playBtnText.position = CGPoint(x: playBtn_NEW.frame.midX, y: playBtn_NEW.frame.midY)
-        
-        addChild(playBtn_NEW)
-        addChild(playBtnText)
-        
-        
-        recallTilesBtn = SKShapeNode(rect: CGRect(x: 0, y:0, width: playBtn_NEW.frame.size.width, height: playBtn_NEW.frame.size.height - 3), cornerRadius: 5)
-        recallTilesBtn.fillColor = UIColor(red: 238/255, green: 238/255, blue: 238/255, alpha: 1.0)
-        recallTilesBtn.position = CGPoint(x: currentPlayerTileRackDisplay.frame.maxX - recallTilesBtn.frame.size.width, y: playBtn_NEW.position.y)
-        
-        
-        let recallTilesBtnText = SKLabelNode(text: "Recall")
-        recallTilesBtnText.fontColor = UIColor(red: 67/255, green: 84/255, blue: 167/255, alpha: 1.0)
-        recallTilesBtnText.fontName = GameConstants.TileLabelFontName
-        recallTilesBtnText.fontSize = 20
-        recallTilesBtnText.position = CGPoint(x: recallTilesBtn.position.x + recallTilesBtn.frame.width/2, y: recallTilesBtn.position.y + recallTilesBtn.frame.height/2)
-        recallTilesBtnText.horizontalAlignmentMode = .center
-        recallTilesBtnText.verticalAlignmentMode = .center
-        recallTilesBtnText.zPosition = recallTilesBtn.zPosition + 1
-        
-        addChild(recallTilesBtn)
-        addChild(recallTilesBtnText)
-        
-        
-      //add score Labels
-        
-        player1ScoreLbl.position = CGPoint(x: game.singlePlayerMode ? 0 : gameBoardDisplay.frame.minX + player1ScoreLbl.frame.size.width/2 + 20, y: gameBoardDisplay.frame.maxY + player1ScoreLbl.frame.size.height/2 + 20)
-        player1ScoreLbl.zPosition = 2
-        player1ScoreLbl.fontSize = 25
-        player1ScoreLbl.fontName = "Arial"
-        
-        addChild(player1ScoreLbl)
-        
-        
-        player2ScoreLbl.position = CGPoint(x: gameBoardDisplay.frame.maxX - player1ScoreLbl.frame.size.width/2 - 20, y: player1ScoreLbl.position.y)
-        player2ScoreLbl.zPosition = 2
-        player2ScoreLbl.fontSize = 25
-        player2ScoreLbl.fontName = "Arial"
-        
-        addChild(player2ScoreLbl)
-        
-    
-     
-            endTurnBtn = SKShapeNode(rect: CGRect(x: 0, y:0, width: playBtn_NEW.frame.size.width, height: playBtn_NEW.frame.size.height - 3), cornerRadius: 5)
-            endTurnBtn.fillColor = UIColor(red: 238/255, green: 238/255, blue: 238/255, alpha: 1.0)
-            endTurnBtn.position = CGPoint(x: playBtn_NEW.position.x , y: playBtn_NEW.position.y - playBtn_NEW.frame.height - 5)
-            let endTurnText = SKLabelNode(text: "End Turn")
-            endTurnText.fontColor = UIColor.red
-            endTurnText.fontName = GameConstants.TileLabelFontName
-            endTurnText.fontSize = 20
-            endTurnText.position = CGPoint(x: endTurnBtn.position.x + endTurnBtn.frame.width/2, y: endTurnBtn.position.y + playBtn_NEW.frame.height/2)
-            endTurnText.horizontalAlignmentMode = .center
-            endTurnText.verticalAlignmentMode = .center
-            endTurnText.zPosition = endTurnBtn.zPosition + 1
-            // addChild(playBtn)
-    
-            addChild(endTurnBtn)
-            addChild(endTurnText)
-            
-            exchangeBtn = SKShapeNode(rect:CGRect(x:0,y:0, width: playBtn_NEW.frame.size.width, height: playBtn_NEW.frame.size.height - 3), cornerRadius: 5)
-            exchangeBtn.fillColor = UIColor(red: 238/255, green: 238/255, blue: 238/255, alpha: 1.0)
-            exchangeBtn.position = CGPoint(x: recallTilesBtn.position.x, y: endTurnBtn.position.y)
-            
-            let exchangeBtnText = SKLabelNode(text: "Exchange")
-            exchangeBtnText.fontColor = UIColor(red: 67/255, green: 84/255, blue: 167/255, alpha: 1.0)
-            exchangeBtnText.fontName = GameConstants.TileLabelFontName
-            exchangeBtnText.fontSize = 20
-            exchangeBtnText.position = CGPoint(x: exchangeBtn.position.x + exchangeBtn.frame.width/2,y: exchangeBtn.position.y + exchangeBtn.frame.height/2)
-            exchangeBtnText.horizontalAlignmentMode = .center
-            exchangeBtnText.verticalAlignmentMode = .center
-            exchangeBtnText.zPosition = exchangeBtn.zPosition + 1
-            
-            addChild(exchangeBtn)
-            addChild(exchangeBtnText)
-        
-        
-        
-            
-        
-            //add separator bar between two score labels
-            let labelSeparatorBar = SKSpriteNode(color: .black, size: CGSize(width: 5, height: 2*player1ScoreLbl.frame.size.height))
-            labelSeparatorBar.position.y = player1ScoreLbl.position.y
-            addChild(labelSeparatorBar)
-            
-            
-            tilesLeftLbl.position.y = //tileBag.position.y - tileBag.size.height/2 - tilesLeftLbl.frame.size.height/2 - 5
-                labelSeparatorBar.position.y + labelSeparatorBar.size.height/2 + 10
-            tilesLeftLbl.fontSize = 16
-            addChild(tilesLeftLbl)
-            tilesLeftLbl.fontName = GameConstants.TileLabelFontName
-        
-        
-        bingoLabel.fontName = "Arial-BoldMT"
-        bingoLabel.fontSize = 50
-        bingoLabel.fontColor = .yellow
-        bingoLabel.zPosition = 2
-        bingoLabel.isHidden = true
-        addChild(bingoLabel)
-     
-
-     
-        wildCardPicker.initializePicker(tileColor: .lightGray)
-        
-        addChild(wildCardPicker)
-        
-        wildCardPicker.zPosition = 50
-        wildCardPicker.isHidden = true
-        
         if game.singlePlayerMode {
-            
-            labelSeparatorBar.isHidden = true
-            player2ScoreLbl.isHidden = true
-            player1ScoreLbl.text = "Score: \(player1.score)"
-           //exchangeBtnText.isHidden = true
-            exchangeBtn.isHidden = true
-            
-            playBtn_NEW.position.y = currentPlayerTileRackDisplay.position.y - currentPlayerTileRackDisplay.size.height/2 - playBtn_NEW.frame.size.height/2 - 50
-            playBtnText.position = CGPoint(x: playBtn_NEW.frame.midX, y: playBtn_NEW.frame.midY)
-            
-            
-            
-            singlePlayerRefreshtiles =  SKShapeNode(rect:CGRect(x:0,y:0, width: playBtn_NEW.frame.size.width, height: playBtn_NEW.frame.size.height - 3), cornerRadius: 5)
-            singlePlayerRefreshtiles.fillColor = UIColor(red: 238/255, green: 238/255, blue: 238/255, alpha: 1.0)
-            addChild(singlePlayerRefreshtiles)
-            
-            recallTilesBtn.position.x = playBtn_NEW.frame.maxX + 10
-            
-            recallTilesBtn.position.y = playBtn_NEW.position.y
-            
-           // singlePlayerRefreshtiles.setScale(0.7)
-            singlePlayerRefreshtiles.position.x = recallTilesBtn.frame.maxX + 10
-            singlePlayerRefreshtiles.position.y = playBtn_NEW.position.y
-            exchangeBtnText.position.x = singlePlayerRefreshtiles.frame.midX
-            exchangeBtnText.position.y = singlePlayerRefreshtiles.frame.midY
-            
-            
-           // recallTilesBtn.setScale(0.7)
-            recallTilesBtnText.position.x = recallTilesBtn.frame.midX
-            recallTilesBtnText.position.y = recallTilesBtn.frame.midY
-            
-            
-            //playBtn_NEW.setScale(1.5)
-         //  playBtn_NEW.position.y = recallTilesBtn.position.y - playBtn_NEW.frame.size.height/2
-           endTurnText.isHidden = true
-            endTurnBtn.isHidden  = true
-
-           // timeLabel.position = CGPoint(x: tilesLeftLbl.position.x, y: tilesLeftLbl.position.y - 10)
-            timeLabel.position = CGPoint(x: 0, y: player1ScoreLbl.frame.maxY + timeLabel.frame.size.height/2 + 2)
-            timeLabel.zPosition = 50
-            timeLabel.fontName = "Arial-BoldMT"
-            timeLabel.fontColor = .white
-            timeLabel.fontSize = 20
-            gameTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
-           
-            addChild(timeLabel)
-            
-            singlePlayerPauseButton.text = "PAUSE"
-            singlePlayerPauseButton.fontName = "Arial-BoldMT"
-            singlePlayerPauseButton.fontColor = .blue
-            singlePlayerPauseButton.fontSize = 15
-            singlePlayerPauseButton.position = CGPoint(x: view.frame.size.width/2 - singlePlayerPauseButton.frame.size.width, y:
-                currentScoreLbl.position.y)
-            addChild(singlePlayerPauseButton)
-            
-            resumeGameButton = SKLabelNode()
-            resumeGameButton.text = "RESUME"
-            resumeGameButton.fontColor = .white
-            resumeGameButton.fontSize = 20
-            resumeGameButton.fontName = "Arial-BoldMT"
-      
-            pauseView.isHidden = true
-            pauseView.size = self.size
-            pauseView.color = .black
-            pauseView.zPosition = 100
-            addChild(pauseView)
-            pauseView.addChild(resumeGameButton)
-            resumeGameButton.position = CGPoint(x: 0, y: 200)
-            /*
-            singlePlayerRefreshtiles.position.x = recallTilesBtnText.position.x
-            singlePlayerRefreshtiles.position.y = recallTilesBtn.position.y - recallTilesBtn.frame.size.height/2 - singlePlayerRefreshtiles.frame.size.height - 30
-            singlePlayerRefreshtiles.fontSize = 80
-            addChild(singlePlayerRefreshtiles)
-            */
-            
-            
-         
+            setUpGame()
         }
-        
+        else {
+        setUpGame2()
+        }
         }
     
-       let newHighScoreLbl = SKLabelNode(text: "New High Score!!")
+    let newHighScoreLbl = SKLabelNode(text: "New High Score!!")
 
     func updateTimer(){
         guard disableGame == false else {return}
@@ -715,10 +911,12 @@ class GameplayScene: SKScene {
                     
                     if beatHighScore != nil && beatHighScore! {
                      
-                       self.newHighScoreLbl.fontSize = 70
+                       self.newHighScoreLbl.fontSize = 30
                         self.newHighScoreLbl.fontColor = .red
                         self.newHighScoreLbl.fontName = "Avenir-Heavy"
                         self.newHighScoreLbl.zPosition = 100
+                        self.newHighScoreLbl.position.y = self.player1ScoreLbl.position.y
+                        self.player1ScoreLbl.removeFromParent()
                         self.addChild(self.newHighScoreLbl)
                         let fontColorTimer =  Timer.scheduledTimer(timeInterval: 0.3, target: self, selector: #selector(self.updateFontColors), userInfo: nil, repeats: true)
                    
@@ -736,14 +934,15 @@ class GameplayScene: SKScene {
     }
     
     override func willMove(from view: SKView) {
-        print("in will move from view...about to saveGameData1.....")
+        print("in will move from view...nothing will run, commented out")
         
-        
+     /*
         recall()
         if !game.gameOver && !game.singlePlayerMode {
             Fire.dataService.saveGameData1(game: game,completion: nil)
         
         }
+ */
         
     }
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -763,13 +962,13 @@ class GameplayScene: SKScene {
                
             }
             
-            
+            /*
             if !wildCardPicker.isHidden {
                 
                 
                 let wildCardLoc = touch.location(in: self)
                 wildCardPicker.position = wildCardLoc
-              /*  if (wildCardLoc.y - wildCardPicker.frame.height/2 > playBtn_NEW.frame.maxY) &&
+                if (wildCardLoc.y - wildCardPicker.frame.height/2 > playBtn_NEW.frame.maxY) &&
                     (wildCardLoc.y + wildCardPicker.frame.height/2 < self.scene!.frame.maxY)
                     && (wildCardLoc.x  - wildCardPicker.frame.width/2 > self.scene!.frame.minX)
                     && (wildCardLoc.x + wildCardPicker.frame.width/2 < self.scene!.frame.maxX)
@@ -777,11 +976,11 @@ class GameplayScene: SKScene {
                     
                     wildCardPicker.position = wildCardLoc
                     
-                } */
+                }
               
              
             
-            }
+            } */
 
         }
     }
@@ -1364,6 +1563,8 @@ class GameplayScene: SKScene {
                     
             }
             //RECALL TILES
+            
+          
                 if wildCardPicker.isHidden && nodes(at: location).contains(recallTilesBtn), selectedPlayerTiles.count > 0 {
                   recall()
                     
@@ -1374,11 +1575,7 @@ class GameplayScene: SKScene {
                 //MARK: End Turn button hit
             if wildCardPicker.isHidden && nodes(at: location).contains(endTurnBtn) && deactivateGameNodes == false {
                 
-                if endGame {
-                    displayEndOfGamePanel()
-                    break
-                }
-               
+                
                 
                 if  playBtnPushed || selectedPlayerTiles.count == 0 {
                     
@@ -1441,6 +1638,9 @@ class GameplayScene: SKScene {
                     selectedTile.alpha = 1.0
                 }
                 
+                
+             
+                
                 for node in nodes(at: location) {
                     if let targetTile = node as? Tile {
                 
@@ -1459,9 +1659,8 @@ class GameplayScene: SKScene {
                             selectedTile.isHidden = true
                       
                             
-                            if targetTile.tileLabel.text == "+2" {
-                                bonusTilesUsed.append(targetTile)
-                                print("in touchesEnded: bonus Tile touched!!!")
+                            if targetTile.tileLabel.text == GameConstants.TileBonusTileText {
+                                selectedTile.bonusTile = true
                             }
                             
                             
@@ -1541,7 +1740,13 @@ class GameplayScene: SKScene {
         }
     }
     
-
+    func tilePlayedIsBonusTile(tile: Tile) -> Bool {
+        
+        
+        return true
+    }
+    
+    
     func removeTileFromArray(tile: Tile, array: inout [Tile]) {
         for (index, t) in array.enumerated() {
             if t == tile {
@@ -1681,7 +1886,7 @@ class GameplayScene: SKScene {
         print("In turnDone")
         if tilesUsedThisTurn.count == 7 && !game.singlePlayerMode {
             
-         //   showBingo()
+       showBingo()
             print("BINGO BINGO BINGO BINGO")
             
         }
@@ -1716,15 +1921,16 @@ class GameplayScene: SKScene {
  
     //bold other player's name and unbold current player
         
-  
-    
-     
+        endOfTurn = true
+
       print("after refill tile rack...")
         selectedPlayerTiles.removeAll()
-        selectedPlayerTile = nil
         tilesUsedThisTurn.removeAll()
+        selectedPlayerTile = nil
+        
         playBtnPushed = false
         game.currentPlayerID = player1.userID == currentPlayer.userID ? player2.userID : player1.userID
+        game.selectedPlayerTiles.removeAll()
         
         if (game.lastTurnPassed && game.currentTurnPassed) || (currentPlayerTileRack.playerTiles.count == 0 && tilesLeft == 0) {
             game.gameOver = true
@@ -1732,9 +1938,7 @@ class GameplayScene: SKScene {
            // presentGameOverPanel()
             
             Fire.dataService.saveGameData1(game: game){
-                (game)
-                in
-                print("in switch players, game over. presenting game over panel")
+              print("in switch players, game over. presenting game over panel")
                 self.presentGameOverPanel()
             }
             
@@ -1752,10 +1956,11 @@ class GameplayScene: SKScene {
             print("about to disable game")
           
             self.disableGame = true
-
+         
+            Fire.dataService.saveGameData1(game: self.game, completion: nil)
         }
  
-    Fire.dataService.saveGameData1(game: self.game, completion: nil)
+       
        /*
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0){
             print("about to save...current player (player \(self.currentPlayerN)) score: \(self.currentPlayer.score) player 1 score: \(self.player1.score) player2 score = \(self.player2.score)")
@@ -1785,6 +1990,7 @@ class GameplayScene: SKScene {
         return gameBoard.getTile(atRow: tileData.row, andCol: tileData.col)
     }
     
+
     
     func play1() {
   
@@ -1802,10 +2008,7 @@ class GameplayScene: SKScene {
         // if so, set values on board and remove tiles, if not alert user and return tiles
         // replace player tiles that were played
         
-        for tile in selectedPlayerTiles {
-            print("showing selected tiles before saving..tile value: \(tile.getTileTextRepresentation()) tile type: \(tile.tileType) tile row/col : \(tile.row),\(tile.col) starting pos: \(tile.startingPosition)")
-        }
-        
+
         if legalMove {
           
            game.currentTurnPassed = false 
@@ -1815,6 +2018,8 @@ class GameplayScene: SKScene {
                 let row = tile.row
                 let col = tile.col
                 let gameBoardTile = gameBoard!.getTile(atRow: row, andCol: col)
+                
+                
                 gameBoardTile.inSelectedPlayerTiles = false
                 
                 if tile.tileType == TileType.eraser {
@@ -1824,85 +2029,11 @@ class GameplayScene: SKScene {
                 
             }
             
+            game.selectedPlayerTiles = selectedPlayerTiles
             currentPlayerTileRack.removeTilesFromRack(tiles: selectedPlayerTiles)
         
             if !game.singlePlayerMode {
-                /*** TRY: save game data and update automatically ****/
-                
-                for tile in nonDeleteSelectedPlayerTiles {
-                    tile.showTileValues()
-                    selectedPlayerTilesTileData.append(convertTileToTileData(tile: tile))
-                }
-                
-                for tile in currentPlayerTileRack.playerTiles.values {
-                    print("tile in player tile rack...rack pos: \(tile.rackPosition) value: \(tile.getTileTextRepresentation()) row/col: \(tile.row), \(tile.col)")
-            
-                }
-                if currentPlayerN == 1 {
-                    print("game.player1.tileRack == currentplayerTilerack? --> \(currentPlayerTileRack.playerTiles == game.player1.tileRack.playerTiles)")
-                }
-                else {
-                    print("game.player2.tileRack == currentplayerTilerack? --> \(game.player2.tileRack.playerTiles == currentPlayerTileRack.playerTiles)")
-                }
-                var nTimesSaved = 0
-                Fire.dataService.saveGameData1(game: game){
-                    
-                   (game)
-                    
-                    in
-                    
-                    print("in save game data1 closure in gameplayscene!!!!!!!!!!!!!!!!!")
-                    
-                    nTimesSaved += 1
-                    print("GAME UPDATED. N: \(nTimesSaved)")
-                   guard nTimesSaved == 1 else { return }
-                    
-                    self.game = game
-                    self.setUpGame1()
-                    
-                    /*
-                    self.gameBoard = game.board
-                    self.gameBoardDisplay.removeFromParent()
-                    self.gameBoardDisplay = SKSpriteNode()
-                    self.gameBoardDisplay = self.gameBoard.setUpBoard()
-                    self.addChild(self.gameBoardDisplay)
-                    */
-                    
-                    for td in self.selectedPlayerTilesTileData {
-                        let t = self.convertTileDatatoTile(tileData: td)
-                    
-                        self.selectedPlayerTiles.append(t)
-                        t.showTileValues()
-                
-                    }
-                    
-                    for tile in self.currentPlayerTileRack.playerTiles.values {
-                        print("showing tiles in currentPlayerTileRack after save Game data. tile val: \(tile.getTileTextRepresentation()) rack pos: \(tile.rackPosition)")
-                    }
- 
-
-                    self.selectedPlayerTilesTileData.removeAll()
-                    
-                    
-                    self.lightUpPlayedTiles {
-                        
-                        (tiles) in
-                        for tile in tiles {
-                            tile.color = self.currentPlayerN == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
-                            print("in light up played tiles closure, self.currentPlayerN: \(self.currentPlayerN)")
-                        }
-                        print("tiles used this turn: \(self.tilesUsedThisTurn.count)")
-                        if self.tilesUsedThisTurn.count == 7 && !self.game.singlePlayerMode {
-                            self.showBingo()
-                        }
-                        
-                        if self.turnIsOver {
-                            print("turn is over, used all tiles....switching players")
-                            self.switchPlayers()
-                        }
-                        
-                    }
-                }
+                Fire.dataService.saveGameData1(game: game,completion: nil)
             }
             
 
@@ -2115,7 +2246,14 @@ class GameplayScene: SKScene {
             currentPlayerTileRack.removeAndReplaceTileFromRack(tile: tile, player: currentPlayerN)
         }
     }
-    
+    func gameBoardTileIsBonusTile(tile: Tile) -> Bool {
+        for sTile in nonDeleteSelectedPlayerTiles where sTile.bonusTile {
+            if sTile.row == tile.row && sTile.col == tile.col {
+                return true
+            }
+        }
+        return false
+    }
     func lightUpPlayedTiles(completion: ([Tile]) -> ()) {
     
         var color: SKColor = SKColor()
@@ -2136,14 +2274,18 @@ class GameplayScene: SKScene {
         let seq = SKAction.sequence([ wait, shrinkTile, changeBack])
        let changeToYellowAndPlaySound = SKAction.group([changeToYellow,playValidMove])
         calculateScore()
-        //let points = scoreIncrement
+       
         print("in light up tiles, after calculateScore(). points = \(scoreIncrement)")
        
         
         for  (i,tile) in gameBoardTiles.enumerated() {
            tile.run(expandTile)
             tile.zPosition = 4
-           
+            
+            if gameBoardTileIsBonusTile(tile: tile){
+                currentPlayer.score += 2
+                showPoints(atLocation: tile.position, points: 2, color: .gray)
+            }
             
             tile.run(changeToYellowAndPlaySound){
                 tile.run(seq){
@@ -2152,7 +2294,7 @@ class GameplayScene: SKScene {
                         var loc = gameBoardTiles[i].position
                         loc.x = min(self.gameBoardDisplay.frame.maxX - 15, loc.x)
                        // self.showPoints(atLocation: loc, points: points)
-                       self.showPoints(atLocation: loc, points: self.scoreIncrement)
+                       self.showPoints(atLocation: loc, points: self.scoreIncrement, color:  nil)
                        
                         self.selectedPlayerTiles.removeAll()
                     }
@@ -2194,22 +2336,30 @@ class GameplayScene: SKScene {
                 print("in convertnonDelete... tile value is \(tile.getTileValue()) at row \(tile.row) and col \(tile.col)")
                 if tile.tileType != TileType.eraser {
                     print("Tile val: \(tile.getTileValue()) row: \(tile.row) col: \(tile.col)")
-                        
-                gameBoardTiles.append(gameBoard!.getTile(atRow: tile.row, andCol: tile.col))
+                    if let gameBoard = gameBoard {
+                gameBoardTiles.append(gameBoard.getTile(atRow: tile.row, andCol: tile.col))
+                    }
                 }
             }
         }
         return gameBoardTiles
     }
     
-    func showPoints(atLocation location: CGPoint,points: Int) {
+    func showPoints(atLocation location: CGPoint,points: Int, color: UIColor?) {
   
         let pointDisplay = SKLabelNode(text: "+ \(points)!")
       
         pointDisplay.fontName = "AvenirNext-Bold"
         pointDisplay.fontSize = 50
-        pointDisplay.fontColor = currentPlayerN == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
-        pointDisplay.position = CGPoint(x: location.x , y: location.y)
+        
+        if let displayColor = color {
+            pointDisplay.fontColor = color
+        }
+        else {
+            pointDisplay.fontColor = currentPlayerN == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
+        }
+        
+            pointDisplay.position = CGPoint(x: location.x , y: location.y)
        
     
         pointDisplay.zPosition = 5
@@ -2705,16 +2855,14 @@ class GameplayScene: SKScene {
 
     
     func calculateScore()  {
- 
         var nonDeleteSelectedPlayerTiles = [Tile]()
         for tile in selectedPlayerTiles where tile.tileType !=  TileType.eraser {
            nonDeleteSelectedPlayerTiles.append(tile)
+            
         }
-        print("in calculate score: bonus tiles used = \(bonusTilesUsed.count)")
-        for btile in bonusTilesUsed {
-            print("bonus tile at row: \(btile.row) and col: \(btile.col)")
-        }
-        let points = 2*bonusTilesUsed.count + nonDeleteSelectedPlayerTiles.count * nonDeleteSelectedPlayerTiles.count
+     
+      
+        let points =  nonDeleteSelectedPlayerTiles.count * nonDeleteSelectedPlayerTiles.count
         print("before adding points...current player score is: \(currentPlayer.score)")
         currentPlayer.score += points
         
