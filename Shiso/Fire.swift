@@ -1519,12 +1519,12 @@ class Fire {
             print("no game ID in saveGameData")
             return
         }
-        print("saving game with currentTurnPassed = \(game.currentTurnPassed) and last turn passed: \(game.lastTurnPassed)")
+        print("saving game with currentTurnPassed = \(game.currentTurnPassed) and last turn passed: \(game.lastTurnPassed) and current player: \(game.currentPlayerID)")
         
         //CHANGED from current player ID to current User ID....1/27/19
         let currentUser = game.player1.userID == FirebaseConstants.CurrentUserID ? game.player1! : game.player2!
         let currentUserID = currentUser.userID!
-        
+        print("Current user is save game data1: \(currentUser.userName)")
         
     /*
         FirebaseConstants.GamesNode.child(gameID).updateChildValues(
@@ -1706,7 +1706,7 @@ class Fire {
                     for tilesDict in selectedTilesDict.values {
                         if let tDict = tilesDict as? [String:Any] {
                             game.selectedPlayerTiles.append(Tile.initializeFromDict(dict: tDict))
-                           print("Got selected player tiles")
+                            print("Got selected player tiles: \(game.selectedPlayerTiles)")
                         }
                     }
                 }
@@ -1732,7 +1732,7 @@ class Fire {
                 }
                 
                 if let currentPlayerID = gameDict[FirebaseConstants.GameCurrentPlayerID] as? String {
-                    print("got current player ID")
+                    print("got current player ID: \(currentPlayerID)")
                     game.currentPlayerID = currentPlayerID
                     
                     if let playersDict = gameDict[FirebaseConstants.GamePlayersNode] as? [String: Any] {

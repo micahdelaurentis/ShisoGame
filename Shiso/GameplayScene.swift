@@ -16,7 +16,7 @@ class GameplayScene: SKScene {
       var turnIsOver: Bool = false
     var game = Game() {
         didSet{
-            print("game set in GameplayScene!!! single player: \(game.singlePlayerMode) GameID: \(game.gameID) tiles left: \(game.tilesLeft)")
+            print("game set in GameplayScene! current player ID: \(game.currentPlayerID)")
         }
     }
     var bonusTilesUsed = [Tile]()
@@ -413,7 +413,7 @@ class GameplayScene: SKScene {
             */
             
             
-            
+        
             
             
             self.scene?.removeChildren(in: [self.currentPlayerTileRackDisplay, self.gameBoardDisplay])
@@ -481,10 +481,10 @@ class GameplayScene: SKScene {
                                                         && game.currentTurnPassed == true)
             
             
-            if self.currentPlayer.tileRack.playerTiles.count == 0 && game.currentTurnPassed == false {
+            print("current player tile rack count: \(self.currentPlayer.tileRack.playerTiles.count)")
+            if self.currentUserIsCurrentPlayer && self.currentPlayer.tileRack.playerTiles.count == 0 && game.currentTurnPassed == false {
                 print("player used all tiles...ending turn. tiles left = \(self.tilesLeft)")
                 self.turnIsOver = true
-                
             }
             
             self.player1ScoreLbl.text =  "\(self.player1.userName!): \(self.player1.score)"
@@ -511,7 +511,7 @@ class GameplayScene: SKScene {
             
             self.addChild(self.currentPlayerTileRackDisplay)
             
-            
+          
             if self.nonDeleteSelectedPlayerTiles.count > 0 {
                 
                 self.lightUpPlayedTiles{
@@ -529,6 +529,7 @@ class GameplayScene: SKScene {
                     
                     if self.turnIsOver {
                         print("turn is over, used all tiles....switching players")
+                        self.turnIsOver = false
                         self.switchPlayers()
                     }
                     
@@ -542,7 +543,7 @@ class GameplayScene: SKScene {
             }
             else {
                 print("NOT supposed to run set up initial view")
-            }
+             }
             
             
             
@@ -901,6 +902,7 @@ class GameplayScene: SKScene {
     self.setUpGame2CompletionShouldRun = false
     }
     override func didMove(to view: SKView) {
+        print("IN DID MOVE TO VIEW!!!!")
         if game.singlePlayerMode {
             setUpGame()
         }
@@ -1948,8 +1950,8 @@ class GameplayScene: SKScene {
            // presentGameOverPanel()
             
             Fire.dataService.saveGameData1(game: game){
-              print("in switch players, game over. presenting game over panel")
-                self.presentGameOverPanel()
+              print("in switch players, game over.")
+               // self.presentGameOverPanel()
             }
             
             Fire.dataService.updateStatsAndRemoveGame(game: game)
