@@ -370,7 +370,11 @@ class GameplayScene: SKScene {
     }
     
     var setUpGame2CompletionShouldRun = true
-    var endOfTurn = false
+    var endOfTurn = false {
+        didSet{
+            print("END OF TURN SET!!!!!!!!!!!!!")
+        }
+    }
     
     func setUpGame2(){
         print("in set up Game 2: current User ID: \(FirebaseConstants.CurrentUserID)")
@@ -397,12 +401,18 @@ class GameplayScene: SKScene {
             
             in
             
+             print("In load game closure. end of turn> \(self.endOfTurn)")
+            print("showing game data in loadgame closure. game id: \(game.gameID) player1: \(game.player1.userName) player2: \(game.player2.userName) current player ID: \(game.currentPlayerID) current User: \(FirebaseConstants.CurrentUserID)")
+            
+           /*
             guard !self.endOfTurn else {
                 print("not running observe closure in load game because end turn btn pressed!")
                 return
             }
+           
+            */
             
-            print("In closure in set up game 2..")
+            
             self.scene?.removeChildren(in: [self.currentPlayerTileRackDisplay, self.gameBoardDisplay])
             
             
@@ -441,7 +451,7 @@ class GameplayScene: SKScene {
             self.currentPlayer = self.player1.userID == game.currentPlayerID ? self.player1 : self.player2
             self.currentPlayerN = self.currentPlayer.player1 == true ? 1 : 2
             
-         
+            print("the current player is \(self.currentPlayer.userName)")
             
             let currentUserPlayer = self.player1.userID == FirebaseConstants.CurrentUserID ? self.player1 : self.player2
             guard currentUserPlayer != nil else {
@@ -450,15 +460,17 @@ class GameplayScene: SKScene {
             }
             let currentUserPlayerN = currentUserPlayer!.player1 ? 1 : 2
             
+            print("the current user is \(currentUserPlayer!.userName)")
+            
             self.currentUserIsCurrentPlayer = currentUserPlayerN == self.currentPlayerN
             print("Current user is current player? --> \(self.currentUserIsCurrentPlayer)")
             if !self.currentUserIsCurrentPlayer {
-                self.disableGame = true
+               // self.disableGame = true
                 self.currentPlayerTileRack = currentUserPlayer!.tileRack
             }
             else {
                 self.currentPlayerTileRack = self.currentPlayer.tileRack
-                self.disableGame = false
+              //  self.disableGame = false
             }
             
             self.currentPlayerTileRack.setUpPlayerTileRack(player: currentUserPlayerN,
@@ -466,10 +478,11 @@ class GameplayScene: SKScene {
                                                         && game.currentTurnPassed == true)
             
             
-            if currentUserPlayer!.tileRack.playerTiles.count == 0 && game.currentTurnPassed == false {
+            if self.currentPlayer.tileRack.playerTiles.count == 0 && game.currentTurnPassed == false {
                 print("player used all tiles...ending turn. tiles left = \(self.tilesLeft)")
                 self.turnIsOver = true
-      }
+                
+            }
             
             self.player1ScoreLbl.text =  "\(self.player1.userName!): \(self.player1.score)"
             self.player2ScoreLbl.text = "\(self.player2.userName!): \(self.player2.score)"

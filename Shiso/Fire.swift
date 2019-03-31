@@ -1683,7 +1683,7 @@ class Fire {
         }
         FirebaseConstants.GamesNode.child(gameID).observe(.value, with: { (snapshot) in
             
-            print("in loadGameWithObserver")
+            print("in fire loadGameWithObserver")
             let game = Game()
             game.gameID = gameID
             
@@ -1706,7 +1706,7 @@ class Fire {
                     for tilesDict in selectedTilesDict.values {
                         if let tDict = tilesDict as? [String:Any] {
                             game.selectedPlayerTiles.append(Tile.initializeFromDict(dict: tDict))
-                           
+                           print("Got selected player tiles")
                         }
                     }
                 }
@@ -1766,12 +1766,13 @@ class Fire {
                                 }
                                 else {
                                     
-                                    print("no tile rack available for \(playerN)")
+                                    print("no tile rack available for \(playerN);\(player.userName)")
                                     
                                 }
                                 
                                 if player.player1 == true {
                                     game.player1 = player
+                                    
                                 }
                                 else {
                                     game.player2 = player
@@ -1794,6 +1795,9 @@ class Fire {
                 }
             
                 
+            }
+            else {
+                print("can't get game dict in loadgame...returning")
             }
             
             
