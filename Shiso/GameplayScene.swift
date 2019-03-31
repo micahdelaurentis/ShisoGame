@@ -413,6 +413,9 @@ class GameplayScene: SKScene {
             */
             
             
+            
+            
+            
             self.scene?.removeChildren(in: [self.currentPlayerTileRackDisplay, self.gameBoardDisplay])
             
             
@@ -454,10 +457,10 @@ class GameplayScene: SKScene {
             print("the current player is \(self.currentPlayer.userName)")
             
             let currentUserPlayer = self.player1.userID == FirebaseConstants.CurrentUserID ? self.player1 : self.player2
-            guard currentUserPlayer != nil else {
+            /*guard currentUserPlayer != nil else {
                 print("Current user player is nil. returning....")
                 return
-            }
+            } */
             let currentUserPlayerN = currentUserPlayer!.player1 ? 1 : 2
             
             print("the current user is \(currentUserPlayer!.userName)")
@@ -1931,12 +1934,6 @@ class GameplayScene: SKScene {
         print("in switch players")
      refillTileRack()
         //showCurrentTileRack()
- 
-    //bold other player's name and unbold current player
-        
-        endOfTurn = true
-
-      print("after refill tile rack...")
         selectedPlayerTiles.removeAll()
         tilesUsedThisTurn.removeAll()
         selectedPlayerTile = nil
@@ -1967,9 +1964,7 @@ class GameplayScene: SKScene {
             game.currentTurnPassed = true
             game.lastUpdated =  Int(NSDate().timeIntervalSince1970)
             print("about to disable game")
-          
-            self.disableGame = true
-         
+        
             Fire.dataService.saveGameData1(game: self.game, completion: nil)
         }
  
