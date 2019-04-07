@@ -51,6 +51,8 @@ class GameplayScene: SKScene {
     
     var mainVC: UIViewController? = UIApplication.shared.keyWindow?.rootViewController
     
+    var currentUserPlayer: Player!
+    var currentUserPlayerTileRackIsEmpty = false
     var currentUserIsCurrentPlayer: Bool = false
     var player1: Player!
     var player2: Player!
@@ -85,7 +87,7 @@ class GameplayScene: SKScene {
     
     var player1Score = 0
     var player2Score = 0
-    
+    var ignoreGameOver = false
     var timer = Timer()
     var player1ScoreLbl = SKLabelNode()
     var player2ScoreLbl = SKLabelNode()
@@ -105,7 +107,7 @@ class GameplayScene: SKScene {
     var playBtnPushed = false
     var endGame = false
     
-    
+    var switchedPlayers = false
     let player1TileRack = TileRack()
     let player2TileRack = TileRack()
     
@@ -367,6 +369,8 @@ class GameplayScene: SKScene {
             return
         }
         setUpInitialView(view: view!)
+        
+        
     }
     
     var setUpGame2CompletionShouldRun = true
@@ -377,55 +381,43 @@ class GameplayScene: SKScene {
     }
     
     func setUpGame2(){
+        
+        
         print("in set up Game 2: current User ID: \(FirebaseConstants.CurrentUserID)")
+       
+        
         self.scene?.removeChildren(in: [currentPlayerTileRackDisplay, gameBoardDisplay])
         
-        print("after removing...currentplayertilerackdisplay: \(self.currentPlayerTileRackDisplay)")
-   
-        
-        
-        // load game again to add observer. Use gameID
-        
-        
+      
         
         currentPlayerTileRackDisplay = SKSpriteNode()
         gameBoardDisplay = SKSpriteNode()
         
-        guard !game.singlePlayerMode else {
-            print("SINGLE PLAYER MODE...set up init view and return")
-            setUpInitialView(view: view!)
-            return
-        }
+
         Fire.dataService.loadGameWithObserver(gameID: game.gameID){
             (game)
             
             in
             
-             print("In load game closure. end of turn> \(self.endOfTurn)")
-            print("showing game data in loadgame closure. game id: \(game.gameID) player1: \(game.player1.userName) player2: \(game.player2.userName) current player ID: \(game.currentPlayerID) current User: \(FirebaseConstants.CurrentUserID)")
+           print("In load game closure. end of turn> \(self.endOfTurn) ignore game over? ---> \(self.ignoreGameOver)")
+           print("showing game data in loadgame closure. game id:\(game.gameID) player1: \(game.player1.userName) player2: \(game.player2.userName) current player ID: \(game.currentPlayerID) current User: \(FirebaseConstants.CurrentUserID)")
             
-           /*
-            guard !self.endOfTurn else {
-                print("not running observe closure in load game because end turn btn pressed!")
+       
+
+            
+          /*
+            guard !self.turnIsOver else {
+                print("not running observe closure because turn is over. is game over too: \(game.gameOver)")
                 return
             }
-           
             */
             
-            
-        
-            
-            
+      
+            if !self.switchedPlayers {
             self.scene?.removeChildren(in: [self.currentPlayerTileRackDisplay, self.gameBoardDisplay])
-            
-            
-            
-            
-            
+            }
             self.selectedPlayerTiles = game.selectedPlayerTiles
             self.nonDeleteSelectedPlayerTiles = game.selectedPlayerTiles.filter{$0.tileType != TileType.eraser}
-     
-            
             
             self.game = game
             
@@ -433,22 +425,12 @@ class GameplayScene: SKScene {
             self.gameBoardDisplay = self.gameBoard.setUpBoard()
             self.gameBoardDisplay.name = GameConstants.GameBoardDisplayName
             
-            
-            if game.gameOver {
-                print("GAME OVER....about to show game over panel. in observe closure")
-              self.presentGameOverPanel()
-                
-              FirebaseConstants.CurrentUserPath!.child(FirebaseConstants.UserGames).child(game.gameID).removeValue()
-                FirebaseConstants.GamesNode.child(game.gameID).removeValue()
-            }
- 
-            
-        
             self.tilesLeft = game.tilesLeft
          
-            
             self.player1 = game.player1
             self.player2 = game.player2
+            
+            
             
             //Determine who the current player is
             self.currentPlayer = self.player1.userID == game.currentPlayerID ? self.player1 : self.player2
@@ -456,53 +438,73 @@ class GameplayScene: SKScene {
             
             print("the current player is \(self.currentPlayer.userName)")
             
-            let currentUserPlayer = self.player1.userID == FirebaseConstants.CurrentUserID ? self.player1 : self.player2
-            /*guard currentUserPlayer != nil else {
-                print("Current user player is nil. returning....")
-                return
-            } */
-            let currentUserPlayerN = currentUserPlayer!.player1 ? 1 : 2
+            self.currentUserPlayer = self.player1.userID == FirebaseConstants.CurrentUserID ? self.player1 : self.player2
+ 
+            let currentUserPlayerN = self.currentUserPlayer!.player1 ? 1 : 2
             
-            print("the current user is \(currentUserPlayer!.userName)")
+            print("the current user is \(self.currentUserPlayer!.userName)")
             
             self.currentUserIsCurrentPlayer = currentUserPlayerN == self.currentPlayerN
             print("Current user is current player? --> \(self.currentUserIsCurrentPlayer)")
+            
+            //if the current user is not the current player, i.e. it's not their turn
             if !self.currentUserIsCurrentPlayer {
-               // self.disableGame = true
-                self.currentPlayerTileRack = currentUserPlayer!.tileRack
+                self.disableGame = true
+                self.currentPlayerTileRack = self.currentUserPlayer!.tileRack
             }
             else {
                 self.currentPlayerTileRack = self.currentPlayer.tileRack
-              //  self.disableGame = false
+                self.disableGame = false
+            
             }
             
+            
+            
+            self.currentUserPlayerTileRackIsEmpty = self.currentUserPlayer!.tileRack.playerTiles.count == 0
+            
             self.currentPlayerTileRack.setUpPlayerTileRack(player: currentUserPlayerN,
-                                                      createAllNewTiles: currentUserPlayer!.tileRack.playerTiles.count == 0
+                                                      createAllNewTiles: self.currentUserPlayerTileRackIsEmpty
                                                         && game.currentTurnPassed == true)
             
             
-            print("current player tile rack count: \(self.currentPlayer.tileRack.playerTiles.count)")
+            //if the current user has the turn and they've already played a valid move (current turn passed = false) and they have 0 tiles left, they must have used all their tiles, so the turn is over
             if self.currentUserIsCurrentPlayer && self.currentPlayer.tileRack.playerTiles.count == 0 && game.currentTurnPassed == false {
                 print("player used all tiles...ending turn. tiles left = \(self.tilesLeft)")
                 self.turnIsOver = true
             }
+            else {
+                self.turnIsOver = false
+                print("Turn is over reset to: \(self.turnIsOver)")
+            }
+            
+            
+            
+            
             
             self.player1ScoreLbl.text =  "\(self.player1.userName!): \(self.player1.score)"
             self.player2ScoreLbl.text = "\(self.player2.userName!): \(self.player2.score)"
             
-            
+            //Set text and font colors of score labels based on whose turn it is
             self.currentScoreLbl = self.currentPlayerN == 1 ? self.player1ScoreLbl : self.player2ScoreLbl
             self.otherScoreLbl = self.currentPlayerN == 1 ? self.player2ScoreLbl : self.player1ScoreLbl
+            
             self.currentScoreLbl.fontColor = self.currentPlayerN == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
             self.otherScoreLbl.fontColor =  UIColor.white
             
-            
+
             self.currentPlayerTileRackDisplay = self.currentPlayerTileRack.tileRack
             self.currentPlayerTileRackDisplay.name = GameConstants.TileRackDisplayName
             
+            
+            guard !self.switchedPlayers else {
+                print("not adding board/tile rack and running light up tiles in closure because players just switched and it's done")
+                self.switchedPlayers = false
+                return
+            }
+            
+            
+            
             self.gameBoardDisplay.position = GameConstants.BoardPosition
-            
-            
             
             self.addChild(self.gameBoardDisplay)
             
@@ -512,13 +514,16 @@ class GameplayScene: SKScene {
             self.addChild(self.currentPlayerTileRackDisplay)
             
           
-            if self.nonDeleteSelectedPlayerTiles.count > 0 {
+            
+            
+            if self.nonDeleteSelectedPlayerTiles.count >= 0 {
+
                 
                 self.lightUpPlayedTiles{
                   
                     (tiles) in
                     
-                      print("in light up played tiles closure!")
+                    print("in light up played tiles closure. non delete selected tiles count: \(self.nonDeleteSelectedPlayerTiles.count)")
                     for tile in tiles {
                         tile.color = self.currentPlayerN == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
                         
@@ -528,15 +533,20 @@ class GameplayScene: SKScene {
                     }
                     
                     if self.turnIsOver {
-                        print("turn is over, used all tiles....switching players")
-                        self.turnIsOver = false
+                        print("in light up tiles turn is over, used all tiles....switching players. tiles used this turn: \(self.tilesUsedThisTurn.count)")
+                        
                         self.switchPlayers()
+                    }
+                    else {
+                        print("in light up tiles, turn is not over")
                     }
                     
                 }
             }
-
+        
             
+            
+            //if it's the first time after didMoveToView, need to set up all the player's other view
             if self.setUpGame2CompletionShouldRun {
                 print("About to run setUpInitialView...")
                 self.setUpInitialView(view: self.view!)
@@ -560,118 +570,7 @@ class GameplayScene: SKScene {
 
      
         
-}//END of function setUpGame2()
-        
-        
-    func setUpGame1(){
-        print("in set up Game: current User ID: \(FirebaseConstants.CurrentUserID)")
-        self.scene?.removeChildren(in: [currentPlayerTileRackDisplay, gameBoardDisplay])
-      
-        print("In set up game....current turn passed  = \(game.currentTurnPassed). last turn passed: \(game.lastTurnPassed)" )
-        
-        
-        // load game again to add observer. Use gameID
-        
-        
-        
-        currentPlayerTileRackDisplay = SKSpriteNode()
-        gameBoardDisplay = SKSpriteNode()
-        
-        
-        
-        
-        
-        
-        
-        gameBoard = game.board
-        gameBoardDisplay = gameBoard.setUpBoard()
-        gameBoardDisplay.name = GameConstants.GameBoardDisplayName
-        
-      
-        if game.gameOver {
-            print("in set up game...game over, presenting game over panel")
-            presentGameOverPanel()
-            
-            FirebaseConstants.CurrentUserPath!.child(FirebaseConstants.UserGames).child(game.gameID).removeValue()
-            FirebaseConstants.GamesNode.child(game.gameID).removeValue()
-        }
-        
-       
-        
-        //game.singlePlayerMode = true
-        if game.singlePlayerMode {
-            //timeLeft = 45
-            timeLeft = game.timeSelection.rawValue*60
-        }
-        if !game.singlePlayerMode {
-            tilesLeft = game.tilesLeft
-            print("tiles Left = \(tilesLeft)")
-        }
-        else {
-            tilesLeft = 1000
-        }
-        
-        player1 = game.player1
-        player2 = game.player2
-        
-        
-        
-        currentPlayer = player1.userID == game.currentPlayerID ? player1 : player2
-        currentPlayerN = currentPlayer.player1 == true ? 1 : 2
-        
-        let currentUserPlayer = game.player1.userID == FirebaseConstants.CurrentUserID ? player1 : player2
-        guard currentUserPlayer != nil else {
-            print("Current user player is nil. returning....")
-            return
-        }
-        let currentUserPlayerN = currentUserPlayer!.player1 ? 1 : 2
-        currentUserIsCurrentPlayer = currentUserPlayerN == currentPlayerN
-        print("Current user is current player? --> \(currentUserIsCurrentPlayer)")
-        if !currentUserIsCurrentPlayer {
-            disableGame = true
-            currentPlayerTileRack = currentUserPlayer!.tileRack
-        }
-        else {
-            currentPlayerTileRack = currentPlayer.tileRack
-        }
-        
-        
-        // print("in initializeGame: setting player 1 score label for: \(player1.userName!) and player 2 to: \(player2.userName!)")
-        player1ScoreLbl.text =  "\(player1.userName!): \(player1.score)"
-        player2ScoreLbl.text = "\(player2.userName!): \(player2.score)"
-        
-        
-        currentScoreLbl = currentPlayerN == 1 ? player1ScoreLbl : player2ScoreLbl
-        otherScoreLbl = currentPlayerN == 1 ? player2ScoreLbl : player1ScoreLbl
-        currentScoreLbl.fontColor = currentPlayerN == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
-        otherScoreLbl.fontColor =  UIColor.white
-     
-        print("in set up game 1....player tile rack tile count: \(currentUserPlayer?.tileRack.playerTiles.count) and current turn passed: \(game.currentTurnPassed)")
-   
-      currentPlayerTileRack.setUpPlayerTileRack(player: currentUserPlayerN,
-    createAllNewTiles: currentUserPlayer?.tileRack.playerTiles.count == 0 && game.currentTurnPassed == true)
-      
-        
-        currentPlayerTileRackDisplay = currentPlayerTileRack.tileRack
-        currentPlayerTileRackDisplay.name = GameConstants.TileRackDisplayName
-  
-        gameBoardDisplay.position = GameConstants.BoardPosition
-        addChild(gameBoardDisplay)
-        
-        currentPlayerTileRackDisplay.position.x = 0
-        currentPlayerTileRackDisplay.position.y = -gameBoardDisplay.size.height/2 - currentPlayerTileRackDisplay.size.height/2 - 10
-        
-        addChild(currentPlayerTileRackDisplay)
-        
-        if currentUserPlayer?.tileRack.playerTiles.count == 0 && game.currentTurnPassed == false {
-            print("player used all tiles...ending turn. tiles left = \(tilesLeft)")
-            turnIsOver = true
-           
-        }
-      
-        
-        
-    }
+}
     
     func updateScoreLabel() {
         if game.singlePlayerMode {
@@ -898,7 +797,13 @@ class GameplayScene: SKScene {
     
     
     }
-    
+    if self.game.gameOver && !self.ignoreGameOver {
+        print("GAME OVER....about to show game over panel. in observe closure")
+        self.presentGameOverPanel()
+        
+        FirebaseConstants.CurrentUserPath!.child(FirebaseConstants.UserGames).child(game.gameID).removeValue()
+        FirebaseConstants.GamesNode.child(game.gameID).removeValue()
+    }
     self.setUpGame2CompletionShouldRun = false
     }
     override func didMove(to view: SKView) {
@@ -908,7 +813,7 @@ class GameplayScene: SKScene {
         }
         else {
         setUpGame2()
-        }
+         }
         }
     
     let newHighScoreLbl = SKLabelNode(text: "New High Score!!")
@@ -952,15 +857,15 @@ class GameplayScene: SKScene {
     }
     
     override func willMove(from view: SKView) {
-        print("in will move from view...nothing will run, commented out")
-        
-     /*
+        print("in will move from view...")
+
         recall()
-        if !game.gameOver && !game.singlePlayerMode {
+        if currentUserPlayerTileRackIsEmpty && !self.turnIsOver && !game.gameOver && !game.singlePlayerMode {
+            print("Saving tile rack for the first time from will move from view")
             Fire.dataService.saveGameData1(game: game,completion: nil)
         
         }
- */
+  
         
     }
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -1550,7 +1455,7 @@ class GameplayScene: SKScene {
                         self.resetExchange()
                         
                         self.game.currentTurnPassed = false
-                        self.turnDone()
+                        self.switchPlayers()
                         
                     })
                     let exchangeAlertCancel = UIAlertAction(title: "Cancel", style: .cancel, handler: {
@@ -1603,7 +1508,7 @@ class GameplayScene: SKScene {
                       
                        
                         
-                        self.turnDone()
+                        self.switchPlayers()
                     })
                     let cancel = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel, handler: nil)
                     
@@ -1899,20 +1804,7 @@ class GameplayScene: SKScene {
     
         
     }
-    func turnDone() {
-       
-        print("In turnDone")
-        if tilesUsedThisTurn.count == 7 && !game.singlePlayerMode {
-            
-       showBingo()
-            print("BINGO BINGO BINGO BINGO")
-            
-        }
-      
-            switchPlayers()
-        
-        
-    }
+    
     
     func refreshTiles(completion: (() -> ())?) {
         print("Refresh tiles hit...")
@@ -1934,7 +1826,8 @@ class GameplayScene: SKScene {
     
     func switchPlayers() {
         print("in switch players")
-     refillTileRack()
+        refillTileRack()
+        switchedPlayers = true
         //showCurrentTileRack()
         selectedPlayerTiles.removeAll()
         tilesUsedThisTurn.removeAll()
@@ -1946,16 +1839,13 @@ class GameplayScene: SKScene {
         
         if (game.lastTurnPassed && game.currentTurnPassed) || (currentPlayerTileRack.playerTiles.count == 0 && tilesLeft == 0) {
             game.gameOver = true
-            print("GAME OVER")
-           // presentGameOverPanel()
-            
-            Fire.dataService.saveGameData1(game: game){
-              print("in switch players, game over.")
-               // self.presentGameOverPanel()
-            }
+            print("GAME OVER from switch players")
+            presentGameOverPanel()
+            ignoreGameOver = true
             
             Fire.dataService.updateStatsAndRemoveGame(game: game)
             
+            Fire.dataService.saveGameData1(game: game, completion: nil)
             
         }
         else {
@@ -1966,7 +1856,7 @@ class GameplayScene: SKScene {
             game.currentTurnPassed = true
             game.lastUpdated =  Int(NSDate().timeIntervalSince1970)
             print("about to disable game")
-        
+            disableGame = true
             Fire.dataService.saveGameData1(game: self.game, completion: nil)
         }
  
@@ -2266,12 +2156,12 @@ class GameplayScene: SKScene {
     }
     func lightUpPlayedTiles(completion: ([Tile]) -> ()) {
     
+ 
         var color: SKColor = SKColor()
         
         color = currentPlayerN == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
         
-        print("current player N: \(currentPlayerN)")
-        
+    
         let gameBoardTiles = convertNonDeleteSelectedPlayerTilesIntoBoardTiles()
         
         let expandTile = SKAction.scale(by: 1.2, duration: 0.1)
@@ -2283,6 +2173,7 @@ class GameplayScene: SKScene {
         let wait = SKAction.wait(forDuration: 0.1)
         let seq = SKAction.sequence([ wait, shrinkTile, changeBack])
        let changeToYellowAndPlaySound = SKAction.group([changeToYellow,playValidMove])
+        
         calculateScore()
        
         print("in light up tiles, after calculateScore(). points = \(scoreIncrement)")

@@ -61,7 +61,7 @@ class Game {
         player2 = Player()
         board = Board()
         gameID = ""
-        tilesLeft = 15
+        tilesLeft = 1
         timeSelection = .untimed
         gameOver = false
         lastTurnPassed =  false
