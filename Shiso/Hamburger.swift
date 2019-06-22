@@ -11,7 +11,7 @@ import SpriteKit
 class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
 
     var hamburgerContents = ["My Games", "Settings", "Statistics",  "Log Out"]
-    
+    var navBar: UINavigationBar!
     lazy var slideOutMenu: UITableView = {
         let tv = UITableView()
         tv.delegate = self
@@ -95,7 +95,7 @@ class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
      
         if let vc = VC as? GameViewController {
           
-         //   print("PRESENTING VC: \(vc.presentingViewController) PRESENT-ED VC: \(vc.presentedViewController)")
+             print("PRESENTING VC: \(vc.presentingViewController) PRESENT-ED VC: \(vc.presentedViewController)")
           
             if hc == "My Games" {
              
@@ -123,8 +123,16 @@ class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
                 
             }
             else if hc == "Statistics" {
+                print("vc = \(vc) presented: \(vc.presentedViewController) presenting: \(vc.presentingViewController)")
+                if let v = vc.view as? SKView {
+                    v.presentScene(nil)
+                }
                 vc.dismiss(animated: false, completion: nil)
                 vc.presentStatsVC()
+               // vc.dismiss(animated: false, completion: nil)
+               // vc.presentStatsVC()
+                
+
             }
             else {
                print("you selected something else")
@@ -143,8 +151,19 @@ class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
     func setUpNavBarWithHamburgerBtn(inVC vc: UIViewController) {
         
         print("setting up navbar with hamburger with vc:\(vc)")
-        let navBar = UINavigationBar(frame: CGRect(x: 0, y: 0, width: vc.view.frame.size.width, height: 50))
+          navBar = UINavigationBar(frame: CGRect(x: 0, y: 0, width: vc.view.frame.size.width, height: 50))
+       
         vc.view.addSubview(navBar)
+        
+        navBar.translatesAutoresizingMaskIntoConstraints = false
+        if #available(iOS 11.0, *) {
+            navBar.topAnchor.constraint(equalTo: vc.view.safeAreaLayoutGuide.topAnchor).isActive = true
+        } else {
+          navBar.topAnchor.constraint(equalTo: vc.view.topAnchor).isActive = true
+        }
+        navBar.leadingAnchor.constraint(equalTo: vc.view.leadingAnchor).isActive = true
+        navBar.trailingAnchor.constraint(equalTo: vc.view.trailingAnchor).isActive = true
+        navBar.heightAnchor.constraint(equalToConstant: 50).isActive = true 
         
         let hamburgerImg = UIImage(named: "hamburger")
         let hamburgerMenuButton = UIBarButtonItem(image: hamburgerImg, style: .plain, target: self, action: nil)
@@ -169,5 +188,7 @@ class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
             print(" in vc: \(vc) and can't set up VC as root vc!")
         } */
     }
+    
+    
     
 }

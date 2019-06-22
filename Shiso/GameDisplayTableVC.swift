@@ -22,11 +22,11 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     var tableView: UITableView!
     var games: [Game]? {
         didSet {
-            if self.games!.count == 1 {
+            if self.games?.count == 1 {
                 numberOfGamesLbl.text = "You have 1 active game!"
             }
             else {
-                numberOfGamesLbl.text = "You have \(self.games!.count) active games!"
+                numberOfGamesLbl.text = self.games == nil ? "You have 0 active games!" : "You have \(self.games!.count) active games!"
             }
         }
     }
@@ -39,16 +39,12 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     let custGreenColor = UIColor(red: 85/255, green: 158/255, blue: 131/255, alpha: 1.0)
     lazy var newGameBtn: UIButton = {
         let ng = UIButton()
-        ng.frame.size.width = 200
-        ng.frame.size.height = 50
-        ng.frame.origin.x = self.view.center.x - ng.frame.size.width/2
-        ng.frame.origin.y = 75
- 
-        
+    
         ng.backgroundColor = self.custGreenColor
         ng.setTitle("New Game", for: .normal)
         ng.layer.cornerRadius = 5
         ng.layer.masksToBounds = true
+        ng.translatesAutoresizingMaskIntoConstraints = false
         
         return ng
     }()
@@ -56,8 +52,8 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     let notificationCircle: UIView = {
         let nc = UIView()
         nc.backgroundColor = .red
-        nc.frame.size = CGSize(width: 8, height: 8)
-        nc.layer.cornerRadius = nc.frame.size.width/2
+        //nc.frame.size = CGSize(width: 10, height: 10)
+        
         return nc
     }()
     var numberOfGamesLbl = UILabel()
@@ -84,6 +80,12 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
    // view.addSubview(backBtn)
     view.addSubview(newGameBtn)
     
+        newGameBtn.topAnchor.constraint(equalTo: hamburgerControl.navBar.bottomAnchor).isActive = true
+        newGameBtn.widthAnchor.constraint(equalToConstant: 200).isActive = true
+        newGameBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        newGameBtn.heightAnchor.constraint(equalToConstant: 50).isActive = true 
+        
+        
      //   numberOfGamesLbl.frame = CGRect(x: 0, y: newGameBtn.frame.maxY, width: view.frame.size.width, height: 75)
         view.addSubview(numberOfGamesLbl)
         numberOfGamesLbl.font = UIFont(name: GameConstants.TileLabelFontName, size: 20)
@@ -102,17 +104,37 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
         
      
    
-    view.addSubview(notificationCircle)
+   // view.addSubview(notificationCircle)
+        
     let shisoPicImgView = UIImageView()
     shisoPicImgView.image = UIImage(named: "ShisoLeaf")
-    shisoPicImgView.frame.size = CGSize(width: 30, height: 30)
+    view.addSubview(shisoPicImgView)
+    /*shisoPicImgView.frame.size = CGSize(width: 30, height: 30)
     shisoPicImgView.frame.origin.x = view.frame.maxX - shisoPicImgView.frame.width - 5
     shisoPicImgView.frame.origin.y = 50
+    */
+        shisoPicImgView.translatesAutoresizingMaskIntoConstraints = false
+        shisoPicImgView.topAnchor.constraint(equalTo: newGameBtn.topAnchor).isActive = true
+        shisoPicImgView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -5).isActive = true
+        shisoPicImgView.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        shisoPicImgView.heightAnchor.constraint(equalToConstant: 40).isActive = true
+    
+    
+    notificationCircle.isHidden = true
     shisoPicImgView.addSubview(notificationCircle)
-    notificationCircle.frame.origin.x = shisoPicImgView.frame.size.width - notificationCircle.frame.size.width
+
+    //notificationCircle.frame.origin.x = shisoPicImgView.frame.size.width - notificationCircle.frame.size.width
+    notificationCircle.translatesAutoresizingMaskIntoConstraints = false
+    notificationCircle.topAnchor.constraint(equalTo: shisoPicImgView.topAnchor).isActive = true
+    notificationCircle.trailingAnchor.constraint(equalTo: shisoPicImgView.trailingAnchor).isActive = true
+    notificationCircle.heightAnchor.constraint(equalToConstant: 10).isActive = true
+    notificationCircle.widthAnchor.constraint(equalToConstant: 10).isActive = true
+   
+    
+        
     shisoPicImgView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(shisoPicImgViewPressed)))
     shisoPicImgView.isUserInteractionEnabled = true
-    view.addSubview(shisoPicImgView)
+    //view.addSubview(shisoPicImgView)
     
         Fire.dataService.checkForChallengesReceived { (challengesReceived) in
             
@@ -132,7 +154,7 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     //backBtn.addTarget(self, action: #selector(backBtnPushed), for: .touchUpInside)
     newGameBtn.addTarget((self), action: #selector(newGameBtnPushed), for: .touchUpInside)
 
-        loadGamesAndUpdateDisplay()
+        loadGamesAndUpdateDisplay1()
         
         if let games = games {
             print("in viewdidload for games display there are \(games.count) games")
@@ -162,7 +184,7 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
         
         if newGameSet {
             print("GAME DISPLAY VC: NEW GAME JUST SET")
-            loadGamesAndUpdateDisplay()
+            loadGamesAndUpdateDisplay1()
             self.newGameSet = false
         }
         else {
@@ -206,6 +228,48 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
         }
         
     }
+    
+    func loadGamesAndUpdateDisplay1(completion: ((CGFloat) -> ())? = nil) {
+        Fire.dataService.loadGames1() {
+            (loadedGame)
+            
+            in
+            
+            print("got \(loadedGame.gameID) in load games 1 closure")
+            // replace game in games array at top with the newly loaded game
+            
+            self.games = self.games?.filter{(game) in game.gameID != loadedGame.gameID }
+           
+            
+            if loadedGame.currentPlayerID == FirebaseConstants.CurrentUserID {
+                
+                print("current user's turn in loaded game")
+                if self.games?.count == nil {
+                    self.games = [loadedGame]
+                }
+                else { self.games?.insert(loadedGame, at: 0)}
+            }
+            else {
+                print("NOT current user's turn in loaded game")
+                
+                if self.games?.count == nil {
+                    self.games = [loadedGame]
+                }
+                else { self.games?.append(loadedGame) }
+            }
+            print("games, after appending, has count: \(self.games?.count)")
+            
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+            if  completion != nil {
+                completion!(CGFloat(self.games!.count))
+            }
+        }
+        
+    }
+    
+    
     
     func backBtnPushed() {
     hamburgerControl.removeSlideOut()

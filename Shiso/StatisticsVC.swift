@@ -38,7 +38,7 @@ var userStats = UserStats()
 
 override func viewDidLoad() {
         super.viewDidLoad()
-    
+    print("In stats view did load")
     guard userID != nil
         else {
         print("no user ID. can't get stats!")
@@ -53,6 +53,7 @@ override func viewDidLoad() {
  
     Fire.dataService.getStats(forUserID: userID!) {
         (stats, hs2min, hs5min)  in
+        
         print("MY STATS: \(stats)")
         self.numberOfGames.text = "Total games played: (\(stats.numberOfGames))"
         self.gamesWon.text = "Total # of Games Won: \(stats.numberOfWins)"
@@ -143,6 +144,7 @@ override func viewDidLoad() {
 }
     
     func setUpLabel(statLabel: UILabel, fontSize: CGFloat = 20, fontName: String, viewToAnchorBelow: UIView?) {
+        print("In stats set up label")
         statLabel.translatesAutoresizingMaskIntoConstraints = false
         statLabel.font = UIFont(name: fontName, size: fontSize)
         statLabel.textColor = .white

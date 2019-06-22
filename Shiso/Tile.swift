@@ -68,9 +68,9 @@ class Tile: SKSpriteNode {
         tileLabel.verticalAlignmentMode = .center
         
         if includeRandomTextValue {
-                 if Double(arc4random_uniform(100)) <=  40 {
+                 if Double(arc4random_uniform(100)) <= 20 {
                 
-                if Double(arc4random_uniform(100)) <=  50 {
+                if Double(arc4random_uniform(100)) <=  40 {
                 tileLabel.text = GameConstants.TileWildCardSymbol
                 self.name = GameConstants.TileWildcardTileName
                 tileType = TileType.wildcard

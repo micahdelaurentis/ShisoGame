@@ -299,6 +299,7 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
             FirebaseConstants.CurrentUserID = Auth.auth().currentUser?.uid
             let blackView = UIView(frame: self.view.frame)
             blackView.backgroundColor = .black
+           
             self.view.addSubview(blackView)
         
             self.present(StartNewGameVC(), animated: true, completion: nil)

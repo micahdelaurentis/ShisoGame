@@ -593,17 +593,25 @@ class Board {
     
 
     func tileIsLeftOrRightConnectedToTargetTile(tile: Tile, targetTiles: [Tile]) -> Bool {
-       
+       showTile(tile: tile, message: "Checking right/left connected in hug function")
         var leftTile: Tile?
         var rightTile: Tile?
         if isConnectedToValuedTilesLeft(tile: tile) {
             leftTile = getLeftConnectedValuedTiles(tile: tile).reversed()[1]
+            if let leftTile = leftTile {
+                showTile(tile: leftTile, message: "left Connected Tile")
+            }
         }
         if isConnectedToValuedTilesRight(tile: tile) {
             rightTile = getRightConnectedValuedTiles(tile: tile)[1]
+            
+            if let rightTile = rightTile {
+                showTile(tile: rightTile, message: "right Connected Tile")
+            }
         }
         
         if let left = leftTile {
+            
             if targetTiles.contains(left) {
                 return true
             }
@@ -621,27 +629,36 @@ class Board {
     
     
     func tileIsTopOrBottomConnectedToTargetTile(tile: Tile, targetTiles: [Tile]) -> Bool {
-        
+        showTile(tile: tile, message: "checking if top/bottom connected in hug function")
         var topTile: Tile?
         var bottomTile: Tile?
         if isConnectedToValuedTilesTop(tile: tile) {
             topTile = getTopConnectedValuedTiles(tile: tile).reversed()[1]
+            if let topTile = topTile {
+                showTile(tile: topTile, message: "top tile")
+            }
         }
         if isConnectedToValuedTilesBottom(tile: tile) {
             bottomTile = getBottomConnectedValuedTiles(tile: tile)[1]
+            if let bottomTile = bottomTile {
+                showTile(tile: bottomTile, message: "bottom tile")
+            }
         }
         
         if let top = topTile {
+            print("tile is connected to top tile")
             if targetTiles.contains(top) {
                 return true
             }
         }
         else if let bottom = bottomTile {
+            print("tile is connected to bottom tile")
             if targetTiles.contains(bottom) {
                 return true
             }
         }
         
+        print("target tiles doesn't contain top or bottom tile in hug function. returning false")
         return false
         
     }
@@ -715,11 +732,21 @@ class Board {
             }
         }
     
-     
-        
+      
+        showTiles(tiles: tiles, message: "tiles in min spanning row")
     
         return tiles
     }
+    func showTile(tile: Tile, message: String? = nil) {
+        let message  = message ?? ""
+        print("\(message) row, col = \(tile.row), \(tile.col) value: \(tile.tileLabel.text ?? "") ")
+    }
+    func showTiles(tiles: [Tile], message: String?) {
+        for tile in tiles {
+            showTile(tile: tile, message: message)
+        }
+    }
+    
     
     func getMinimallySpanningColTileBlockContainingTile(tile: Tile) -> [Tile] {
         var tiles = [Tile]()
@@ -764,9 +791,8 @@ class Board {
             
         }
         
-        for tile in tiles {
-            print("min spanning col tiles: \(tile.getTileValue()!) row: \(tile.row) col: \(tile.col)")
-        }
+        
+        showTiles(tiles: tiles, message: "min spanning col tiles")
         return tiles
     }
     
@@ -783,6 +809,7 @@ class Board {
 
     func getTilesInIntersectingBlocks( seedTiles: [Tile]?, targetTiles: [Tile])  {
         
+        print("In get tiles in intersectin blocks")
         guard targetTiles.count > 0 else {return }
         
         
@@ -793,18 +820,22 @@ class Board {
         
         if seedTiles == nil {
             let startTile = targetTiles[0]
+            print("start tile is at row,col: \(targetTiles[0].row), \(targetTiles[0].col)")
             
             if tileIsPartOfRowBlock(tile: startTile) {
+                print("start tile is part of row block")
                 startTiles = getMinimallySpanningRowTileBlockContainingTile(tile: startTile)
                 searchFunc = getMinimallySpanningColTileBlockContainingTile
-                hugFunc = tileIsTopOrBottomConnectedToTargetTile
+                //hugFunc = tileIsTopOrBottomConnectedToTargetTile
+                hugFunc = tileMinSpanColSetContainsTargetTile
             }
                 
             else {
+                print("start tile is part of col block")
                 startTiles = getMinimallySpanningColTileBlockContainingTile(tile: startTile)
                 searchFunc = getMinimallySpanningRowTileBlockContainingTile
-                hugFunc = tileIsLeftOrRightConnectedToTargetTile
-                
+                //hugFunc = tileIsLeftOrRightConnectedToTargetTile
+                 hugFunc = tileMinSpanRowSetContainsTargetTile
             }
             
         
@@ -844,29 +875,28 @@ class Board {
        
         
         for tile in startTiles {
+            print("looping thru start tiles, at tile: \(tile.getTileValue())")
             if targetTiles.contains(tile) && !alreadyCountedTargetTiles.contains(tile){
+                print("Target tiles contains \(tile.getTileValue())")
                 alreadyCountedTargetTiles.append(tile)
+                
                 if hugFunc(tile, targetTiles) {
                     
                     let tileSet =  searchFunc(tile)
-                        for newTile in tileSet where newTile != tile  {
-                            if targetTiles.contains(newTile) && !alreadyCountedTargetTiles.contains(newTile) {
-                                
-                                getTilesInIntersectingBlocks(seedTiles: tileSet, targetTiles: targetTiles)
-                                
-                                                }
+                    for newTile in tileSet where newTile != tile  {
+                        if targetTiles.contains(newTile) && !alreadyCountedTargetTiles.contains(newTile) {
+                            
+                            getTilesInIntersectingBlocks(seedTiles: tileSet, targetTiles: targetTiles)
                         }
+                    }
                 }
-               
                 
-                
+            }
+            else {
+                print("target tiles doesn't contain \(tile.getTileValue())")
             }
             
         }
-        
-        
-      
-        
         
     }
     
@@ -884,9 +914,12 @@ class Board {
     
    
     func checkIfLegalTilePath(targetTiles: [Tile]) -> Bool {
+        print("In board check if legal path")
         alreadyCountedTargetTiles.removeAll()
         intersectingBlocks.removeAll()
-        guard targetTiles.count > 0 else { return false }
+        guard targetTiles.count > 0 else {
+            print("no target tiles in check if legal tile path, returning false")
+            return false }
         
         if targetTiles.count == 1 {
             return true
@@ -899,6 +932,22 @@ class Board {
         
         
         }
+    
+    /* check if tile's minimum spanning column set contains a tile in target tiles other than itself */
+    func tileMinSpanColSetContainsTargetTile(tile: Tile, targetTiles: [Tile]) -> Bool {
+      
+        return getMinimallySpanningColTileBlockContainingTile(tile: tile).filter({ (e) -> Bool in
+            e != tile && targetTiles.contains(e)
+        }).count > 0
+       
+    }
+    func tileMinSpanRowSetContainsTargetTile(tile: Tile, targetTiles: [Tile]) -> Bool {
+        
+        return getMinimallySpanningRowTileBlockContainingTile(tile: tile).filter({ (e) -> Bool in
+            e != tile && targetTiles.contains(e)
+        }).count > 0
+        
+    }
     
     func convertToDict() -> [String:Any] {
         print("In Board.convertToDict...")

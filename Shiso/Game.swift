@@ -28,6 +28,10 @@ class Game {
     var singlePlayerMode: Bool
     var timeSelection: TimeSelection
     var selectedPlayerTiles =  [Tile]()
+    var lastPlayerToMove: Int  = 0
+    var lastScoreIncrement: Int = 0
+    var lastPlayerUsedAllTiles: Bool = false
+   
     
     init(currentPlayerID: String, player1: Player, player2: Player,
          board: Board, gameID: String, tilesLeft: Int,
@@ -35,7 +39,10 @@ class Game {
          singlePlayerMode: Bool = false,
          timeSelection: TimeSelection = .untimed,
          currentTurnPassed: Bool = true,
-         selectedPlayerTiles: [Tile] = [Tile]()
+         selectedPlayerTiles: [Tile] = [Tile](),
+         lastPlayerToMove: Int = 0,
+         lastScoreIncrement: Int = 0,
+         lastPlayerUsedAllTiles:Bool = false
         
         )
  
@@ -53,7 +60,11 @@ class Game {
         self.timeSelection = timeSelection
         self.currentTurnPassed = currentTurnPassed
         self.selectedPlayerTiles = selectedPlayerTiles
-
+        self.lastPlayerToMove = lastPlayerToMove
+        self.lastScoreIncrement = lastScoreIncrement
+       self.lastPlayerUsedAllTiles = lastPlayerUsedAllTiles
+        
+        
     }
     init() {
         currentPlayerID = ""
@@ -61,7 +72,7 @@ class Game {
         player2 = Player()
         board = Board()
         gameID = ""
-        tilesLeft = 1
+        tilesLeft = 40
         timeSelection = .untimed
         gameOver = false
         lastTurnPassed =  false
@@ -69,6 +80,12 @@ class Game {
         singlePlayerMode = false
         currentTurnPassed = true
         selectedPlayerTiles = [Tile]()
+        lastPlayerToMove = 0
+        lastScoreIncrement = 0
+        lastPlayerUsedAllTiles = false 
+       
+        player1.tileRack.setUpPlayerTileRack(player: 1)
+        player2.tileRack.setUpPlayerTileRack(player: 2)
     }
   
 }

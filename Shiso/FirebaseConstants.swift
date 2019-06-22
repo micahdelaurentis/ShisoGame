@@ -56,7 +56,10 @@ struct FirebaseConstants {
     static let GameLastUpdated = "lastUpdated"
     static let GameCurrentTurnPassed = "CurrentTurnPassed"
     static let GameSelectedPlayerTiles = "SelectedPlayerTiles"
-    
+    static let GameLastPlaysToAnimate = "LastPlaysToAnimate"
+    static let GameLastScoreIncrement = "LastScoreIncrement"
+    static let GameLastPlayerToMove = "LastPlayerToMove"
+    static let GameLastPlayerUsedAllTiles = "LastPlayerUsedAllTiles"
     static let LastTurnPassed = "lastTurnPassed"
     static let TileValue = "TileValue"
     static let TileRackPosition = "TileRackPosition"

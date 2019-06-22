@@ -19,6 +19,11 @@ class GameViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
     
+//        let blackView = UIView(frame: self.view.frame)
+//        blackView.backgroundColor = .black
+//        
+//        self.view.addSubview(blackView)
+        print("In game vc view did load....")
       perform(#selector(setUpHamburger), with: nil, afterDelay: 0.01)
         
        
@@ -36,6 +41,7 @@ class GameViewController: UIViewController {
     }
     
     func presentDisplayVC() {
+        print("In present display vc")
         hamburgerControl.removeSlideOut()
         let vc = GameDisplayTableVC()
         vc.gameVC = self 

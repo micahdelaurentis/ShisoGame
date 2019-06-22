@@ -19,8 +19,10 @@ class TileRack {
         return true
     }
  
+    var tileRack = SKSpriteNode()
     
-    let tileRack: SKSpriteNode = {
+    
+  /*  var tileRack: SKSpriteNode = {
         
         let tileRack = SKSpriteNode()
         tileRack.name = "Tile Rack"
@@ -34,13 +36,28 @@ class TileRack {
         
     return tileRack
     }()
-    
+ 
+ */
+    func createTileRack() {
+        tileRack.removeAllChildren()
+        tileRack.name = "Tile Rack"
+        tileRack.size.width = 7*GameConstants.TileSize.width + 8*5 //1 + num tiles = 7 times the separator width = 10
+        tileRack.size.height = GameConstants.TileSize.height + 2*5 //separator width above and below
+        
+        tileRack.zPosition = 2
+        tileRack.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        tileRack.color = UIColor.black
+    }
     func setUpPlayerTileRack(player: Int, createAllNewTiles: Bool =  false)  {
-  
+        
+        createTileRack()
         if !createAllNewTiles {
-  
+            print("do not create all new tiles. tile rack already has stuff in it? child count--> \(tileRack.children.count)")
+       
+        
             for i in 0 ..< 7 {
                 if let tile = playerTiles[i] {
+                    
                     tileRack.addChild(tile)
                     //tile.position = tile.startingPosition
                    
@@ -118,9 +135,9 @@ class TileRack {
         for i in 0..<7 {
 
             if !(playerTiles[i]?.row == -1 && playerTiles[i]?.col == -1)  {
-                print("player tile is on the board because row and col not = -1. tile val: \(playerTiles[i]?.getTileTextRepresentation()) row: \(playerTiles[i]?.row) \(playerTiles[i]?.col)")
+              //  print("player tile is on the board because row and col not = -1. tile val: \(playerTiles[i]?.getTileTextRepresentation()) row: \(playerTiles[i]?.row) \(playerTiles[i]?.col)")
                 if let tile = playerTiles[i] {
-                    print("tile doesn't have row -1 and is going to be removed from rack:...")
+                   // print("tile doesn't have row -1 and is going to be removed from rack:...")
                     tile.showTileValues()
                     tileRack.removeChildren(in: [tile])
                 }
@@ -132,22 +149,22 @@ class TileRack {
                     newTile.initializeTile(tileValueText: nil , includeRandomTextValue: true, player: player)
 
                     playerTiles[i] = newTile
-                    print("create new tile for player: val \(newTile.getTileTextRepresentation()) at location \(i)")
+                  //  print("create new tile for player: val \(newTile.getTileTextRepresentation()) at location \(i)")
                   
                     
                     tileRack.addChild(newTile)
                     newTile.setPositionInTileRack()
                     
                     numTiles += 1
-                    print("after created tile...num Tiles created: \(numTiles)")
+                  //  print("after created tile...num Tiles created: \(numTiles)")
                     nTilesLeft -= 1
-                    print("after created tile...num tiles Left: \(nTilesLeft)")
+                  //  print("after created tile...num tiles Left: \(nTilesLeft)")
                     
                 }
                 
             }
             else {
-                     print("player tile is NOT on the board because row and col IS -1. So won't be replaced.tile val: \(playerTiles[i]?.getTileTextRepresentation()) row: \(playerTiles[i]?.row) \(playerTiles[i]?.col)")
+                   //  print("player tile is NOT on the board because row and col IS -1. So won't be replaced.tile val: \(playerTiles[i]?.getTileTextRepresentation()) row: \(playerTiles[i]?.row) \(playerTiles[i]?.col)")
             }
 
         }

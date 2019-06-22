@@ -209,15 +209,28 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func backBtnPressed() {
         print("Back btn pressed in start new game VC")
+        print("Presenting vc: \(presentingViewController) presentedVc: \(presentedViewController)")
         if let mainVC =  UIApplication.shared.keyWindow?.rootViewController as? GameViewController {
+            print("can let root vc be game vc")
+            
            dismiss(animated: true, completion: nil)
             if let mainV = mainVC.view as? SKView {
                 mainV.presentScene(nil)
             }
-               mainVC.presentDisplayVC()
+            if presentingViewController is LoginVC {
+                print("YES< LOGIN PRESENTING!!")
+            presentingViewController?.dismiss(animated: true){
+             mainVC.presentDisplayVC()
+            }
+            }
+            else {
+                print("LOGIN VC NOT PRESENTING")
+                 mainVC.presentDisplayVC()
+            }
+         
             
         }
-       
+        
         
     }
     

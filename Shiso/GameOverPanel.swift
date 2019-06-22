@@ -153,19 +153,23 @@ func setUpGameOverPanel(game: Game) {
                 }
                  */
                 self.removeFromParent()
-                
+                 Fire.dataService.updateStatsAndRemoveGame(game: game)
             }
             
            else if nodes(at: loc).contains(rematchLabel){
                     handleRematch()
                     self.removeFromParent()
+                    Fire.dataService.updateStatsAndRemoveGame(game: game)
             }
             
             else if nodes(at: loc).contains(playAgainLabel){
                self.removeFromParent()
                 if let mainVC = UIApplication.shared.keyWindow?.rootViewController as? GameViewController {
+                    print("got mainvc in play again label pushed")
                     if let mainV = mainVC.view as? SKView {
+                        print("can let main vc be skview in play again label pushed")
                         if let gScene = GameplayScene(fileNamed: "GameplayScene") {
+                            print("got gameplayscene object in play again label pushed")
                             game.player1.score = 0
                             game.player1.tileRack = TileRack()
                             game.board = Board()
