@@ -11,6 +11,9 @@
 		CF063F2A213ADA3900558A85 /* StatisticsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF063F29213ADA3900558A85 /* StatisticsVC.swift */; };
 		CF063F2C213ADE4600558A85 /* UserStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF063F2B213ADE4600558A85 /* UserStats.swift */; };
 		CF064CA81F9CD5F40075E72C /* Fire.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3776BE1F64281E00BCC246 /* Fire.swift */; };
+		CF075170235362C70007CF47 /* ErrorMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF07516F235362C70007CF47 /* ErrorMessageView.swift */; };
+		CF07517223648B550007CF47 /* SettingsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF07517123648B550007CF47 /* SettingsVC.swift */; };
+		CF075174236DF54E0007CF47 /* bomb.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CF075173236DF54E0007CF47 /* bomb.mp3 */; };
 		CF161BCB223420A7003AE2D3 /* ValidMoveSound.wav in Resources */ = {isa = PBXBuildFile; fileRef = CF161BCA223420A7003AE2D3 /* ValidMoveSound.wav */; };
 		CF161BCD22342678003AE2D3 /* IllegalPlay.wav in Resources */ = {isa = PBXBuildFile; fileRef = CF161BCC22342677003AE2D3 /* IllegalPlay.wav */; };
 		CF161BCF2235546C003AE2D3 /* EraserSound1.wav in Resources */ = {isa = PBXBuildFile; fileRef = CF161BCE2235546C003AE2D3 /* EraserSound1.wav */; };
@@ -33,6 +36,7 @@
 		CF99405D1FF8115000943861 /* InvitesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF99405C1FF8115000943861 /* InvitesController.swift */; };
 		CF99405F1FF990AB00943861 /* InviteCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF99405E1FF990AB00943861 /* InviteCell.swift */; };
 		CFA7F40120DE87FF001D367E /* GameOverPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA7F40020DE87FF001D367E /* GameOverPanel.swift */; };
+		CFABEE5523119E98001BEE73 /* BoxLoc.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFABEE5423119E98001BEE73 /* BoxLoc.swift */; };
 		CFD06C53201E522D00788963 /* GameDisplayCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFD06C52201E522C00788963 /* GameDisplayCell.swift */; };
 		CFD4E8C020016B6F00C8F25B /* GameDisplayTableVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFD4E8BF20016B6F00C8F25B /* GameDisplayTableVC.swift */; };
 		CFE350CB1F6DC3210009AAFB /* FirebaseConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE350CA1F6DC3210009AAFB /* FirebaseConstants.swift */; };
@@ -47,9 +51,12 @@
 		CFE93BC41EDC5CBB004F81FE /* ShisoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE93BC31EDC5CBB004F81FE /* ShisoUITests.swift */; };
 		CFE93BD21EDC5CED004F81FE /* GameplayScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = CFE93BD11EDC5CEC004F81FE /* GameplayScene.sks */; };
 		CFE93BD61EDC5D74004F81FE /* GameplayScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE93BD51EDC5D74004F81FE /* GameplayScene.swift */; };
+		CFEABE2522BE7CE20043D338 /* success1.wav in Resources */ = {isa = PBXBuildFile; fileRef = CFEABE2422BE7CE20043D338 /* success1.wav */; };
+		CFEABE2722BED2900043D338 /* Play.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFEABE2622BED2900043D338 /* Play.swift */; };
 		CFF4056F1F4F113E00764E56 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CFF4056E1F4F113E00764E56 /* GoogleService-Info.plist */; };
 		CFF405741F59A34D00764E56 /* LoginScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = CFF405731F59A34D00764E56 /* LoginScene.sks */; };
 		CFF405761F59A36A00764E56 /* LoginScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFF405751F59A36A00764E56 /* LoginScene.swift */; };
+		CFF5BB9C23173AF9003BB5AD /* BoxBonus.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CFF5BB9B23173AF9003BB5AD /* BoxBonus.mp3 */; };
 		F8BD3CC135E7E8C0BD5623E4 /* Pods_Shiso.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CCC3D42085D0E6E576FF3757 /* Pods_Shiso.framework */; };
 		F9666B0FC195DEC33EDF7DA1 /* Pods_ShisoTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F0F90D5D745921CB2716437B /* Pods_ShisoTests.framework */; };
 /* End PBXBuildFile section */
@@ -81,6 +88,9 @@
 		CCC3D42085D0E6E576FF3757 /* Pods_Shiso.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Shiso.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF063F29213ADA3900558A85 /* StatisticsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsVC.swift; sourceTree = "<group>"; };
 		CF063F2B213ADE4600558A85 /* UserStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStats.swift; sourceTree = "<group>"; };
+		CF07516F235362C70007CF47 /* ErrorMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageView.swift; sourceTree = "<group>"; };
+		CF07517123648B550007CF47 /* SettingsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVC.swift; sourceTree = "<group>"; };
+		CF075173236DF54E0007CF47 /* bomb.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = bomb.mp3; path = ../../../Downloads/bomb.mp3; sourceTree = "<group>"; };
 		CF161BCA223420A7003AE2D3 /* ValidMoveSound.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ValidMoveSound.wav; sourceTree = "<group>"; };
 		CF161BCC22342677003AE2D3 /* IllegalPlay.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = IllegalPlay.wav; path = ../../../Downloads/IllegalPlay.wav; sourceTree = "<group>"; };
 		CF161BCE2235546C003AE2D3 /* EraserSound1.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = EraserSound1.wav; path = ../../../Downloads/EraserSound1.wav; sourceTree = "<group>"; };
@@ -104,6 +114,7 @@
 		CF99405C1FF8115000943861 /* InvitesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitesController.swift; sourceTree = "<group>"; };
 		CF99405E1FF990AB00943861 /* InviteCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteCell.swift; sourceTree = "<group>"; };
 		CFA7F40020DE87FF001D367E /* GameOverPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverPanel.swift; sourceTree = "<group>"; };
+		CFABEE5423119E98001BEE73 /* BoxLoc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxLoc.swift; sourceTree = "<group>"; };
 		CFD06C52201E522C00788963 /* GameDisplayCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameDisplayCell.swift; sourceTree = "<group>"; };
 		CFD4E8BF20016B6F00C8F25B /* GameDisplayTableVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDisplayTableVC.swift; sourceTree = "<group>"; };
 		CFE350CA1F6DC3210009AAFB /* FirebaseConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirebaseConstants.swift; sourceTree = "<group>"; };
@@ -124,9 +135,12 @@
 		CFE93BC51EDC5CBB004F81FE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CFE93BD11EDC5CEC004F81FE /* GameplayScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameplayScene.sks; sourceTree = "<group>"; };
 		CFE93BD51EDC5D74004F81FE /* GameplayScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameplayScene.swift; sourceTree = "<group>"; };
+		CFEABE2422BE7CE20043D338 /* success1.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = success1.wav; path = ../../../Downloads/success1.wav; sourceTree = "<group>"; };
+		CFEABE2622BED2900043D338 /* Play.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Play.swift; sourceTree = "<group>"; };
 		CFF4056E1F4F113E00764E56 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		CFF405731F59A34D00764E56 /* LoginScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = LoginScene.sks; sourceTree = "<group>"; };
 		CFF405751F59A36A00764E56 /* LoginScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginScene.swift; sourceTree = "<group>"; };
+		CFF5BB9B23173AF9003BB5AD /* BoxBonus.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = BoxBonus.mp3; path = ../../../Downloads/BoxBonus.mp3; sourceTree = "<group>"; };
 		DAE889B57F11E2978951AE18 /* Pods-ShisoTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShisoTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ShisoTests/Pods-ShisoTests.debug.xcconfig"; sourceTree = "<group>"; };
 		F0F90D5D745921CB2716437B /* Pods_ShisoTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShisoTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -193,6 +207,8 @@
 				CF9940581FE5D19100943861 /* Invite.swift */,
 				CF3776C21F65CE4400BCC246 /* Game.swift */,
 				CF3776C41F65D07500BCC246 /* Player.swift */,
+				CFEABE2622BED2900043D338 /* Play.swift */,
+				CFABEE5423119E98001BEE73 /* BoxLoc.swift */,
 			);
 			name = "model classes";
 			sourceTree = "<group>";
@@ -201,6 +217,7 @@
 			isa = PBXGroup;
 			children = (
 				CFA7F40020DE87FF001D367E /* GameOverPanel.swift */,
+				CF07516F235362C70007CF47 /* ErrorMessageView.swift */,
 				CF2DEF5C2083CD5D007B0D7C /* SpriteBtn.swift */,
 				CFD06C52201E522C00788963 /* GameDisplayCell.swift */,
 				CF99405E1FF990AB00943861 /* InviteCell.swift */,
@@ -262,10 +279,8 @@
 				CF3776BE1F64281E00BCC246 /* Fire.swift */,
 				CFE350CC1F891E1B0009AAFB /* GameConstants.swift */,
 				CFE350CA1F6DC3210009AAFB /* FirebaseConstants.swift */,
-				CFE93B9D1EDC5CBB004F81FE /* AppDelegate.swift */,
 				CF3776C61F65D28F00BCC246 /* model classes */,
 				CFF405721F59940800764E56 /* ViewControllers */,
-				CFF0FDA71EDCC99B00908DC9 /* Game Classes */,
 				CFE93BD31EDC5CFE004F81FE /* Scene Classes */,
 			);
 			path = Shiso;
@@ -300,8 +315,12 @@
 		CFE93BD41EDC5D16004F81FE /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				CF075173236DF54E0007CF47 /* bomb.mp3 */,
+				CFE93B9D1EDC5CBB004F81FE /* AppDelegate.swift */,
+				CFF5BB9B23173AF9003BB5AD /* BoxBonus.mp3 */,
 				CF161BCE2235546C003AE2D3 /* EraserSound1.wav */,
 				CF161BCC22342677003AE2D3 /* IllegalPlay.wav */,
+				CFEABE2422BE7CE20043D338 /* success1.wav */,
 				CF161BCA223420A7003AE2D3 /* ValidMoveSound.wav */,
 				CF33637421BD779C003A2AC2 /* clickSound.wav */,
 				CFF4056E1F4F113E00764E56 /* GoogleService-Info.plist */,
@@ -320,7 +339,6 @@
 			children = (
 				CF55B8F21EEADEE80024126E /* TileRack.swift */,
 				CF55B8EC1EDCD0340024126E /* Board.swift */,
-				CF55B8EE1EE2E8B30024126E /* Tile.swift */,
 			);
 			name = "Game Classes";
 			sourceTree = "<group>";
@@ -329,11 +347,14 @@
 			isa = PBXGroup;
 			children = (
 				CF063F29213ADA3900558A85 /* StatisticsVC.swift */,
+				CF07517123648B550007CF47 /* SettingsVC.swift */,
 				CF99405C1FF8115000943861 /* InvitesController.swift */,
 				CF7F6A3A2041DF3C001A0C36 /* LoginVC.swift */,
 				CFE93BA51EDC5CBB004F81FE /* GameViewController.swift */,
-				CFD4E8BF20016B6F00C8F25B /* GameDisplayTableVC.swift */,
 				CF73D6D7203B32AF007DF74B /* StartNewGameVC.swift */,
+				CF55B8EE1EE2E8B30024126E /* Tile.swift */,
+				CFD4E8BF20016B6F00C8F25B /* GameDisplayTableVC.swift */,
+				CFF0FDA71EDCC99B00908DC9 /* Game Classes */,
 			);
 			name = ViewControllers;
 			sourceTree = "<group>";
@@ -410,7 +431,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0830;
-				LastUpgradeCheck = 1000;
+				LastUpgradeCheck = 1020;
 				ORGANIZATIONNAME = "Micah DeLaurentis";
 				TargetAttributes = {
 					CFE93B991EDC5CBB004F81FE = {
@@ -437,7 +458,7 @@
 			};
 			buildConfigurationList = CFE93B951EDC5CBB004F81FE /* Build configuration list for PBXProject "Shiso" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
@@ -466,12 +487,15 @@
 				CFE93BAB1EDC5CBB004F81FE /* Assets.xcassets in Resources */,
 				CF99405B1FF688F600943861 /* Shiso_MainMenuScene.sks in Resources */,
 				CFE93BAE1EDC5CBB004F81FE /* LaunchScreen.storyboard in Resources */,
+				CFF5BB9C23173AF9003BB5AD /* BoxBonus.mp3 in Resources */,
 				CF33637521BD779C003A2AC2 /* clickSound.wav in Resources */,
 				CFE93BD21EDC5CED004F81FE /* GameplayScene.sks in Resources */,
 				CF161BCF2235546C003AE2D3 /* EraserSound1.wav in Resources */,
 				CFE93BA21EDC5CBB004F81FE /* Actions.sks in Resources */,
+				CF075174236DF54E0007CF47 /* bomb.mp3 in Resources */,
 				CF161BCD22342678003AE2D3 /* IllegalPlay.wav in Resources */,
 				CFF4056F1F4F113E00764E56 /* GoogleService-Info.plist in Resources */,
+				CFEABE2522BE7CE20043D338 /* success1.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -628,23 +652,23 @@
 			);
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-Shiso/Pods-Shiso-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/Bolts/Bolts.framework",
 				"${BUILT_PRODUCTS_DIR}/FBSDKCoreKit/FBSDKCoreKit.framework",
 				"${BUILT_PRODUCTS_DIR}/FBSDKLoginKit/FBSDKLoginKit.framework",
 				"${BUILT_PRODUCTS_DIR}/FBSDKShareKit/FBSDKShareKit.framework",
 				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
-				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
+				"${BUILT_PRODUCTS_DIR}/PromisesObjC/FBLPromises.framework",
 				"${BUILT_PRODUCTS_DIR}/leveldb-library/leveldb.framework",
 				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Bolts.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKCoreKit.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKLoginKit.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKShareKit.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBLPromises.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/leveldb.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
 			);
@@ -662,9 +686,11 @@
 			files = (
 				CF063F2C213ADE4600558A85 /* UserStats.swift in Sources */,
 				CF3776C51F65D07500BCC246 /* Player.swift in Sources */,
+				CFABEE5523119E98001BEE73 /* BoxLoc.swift in Sources */,
 				CFE93BA61EDC5CBB004F81FE /* GameViewController.swift in Sources */,
 				CF7F6A3B2041DF3C001A0C36 /* LoginVC.swift in Sources */,
 				CFD06C53201E522D00788963 /* GameDisplayCell.swift in Sources */,
+				CFEABE2722BED2900043D338 /* Play.swift in Sources */,
 				CFF405761F59A36A00764E56 /* LoginScene.swift in Sources */,
 				CF064CA81F9CD5F40075E72C /* Fire.swift in Sources */,
 				CF5B0D6D1FC07478006C3A8C /* WildCardPickerView.swift in Sources */,
@@ -681,11 +707,13 @@
 				CFE93BD61EDC5D74004F81FE /* GameplayScene.swift in Sources */,
 				CF99405F1FF990AB00943861 /* InviteCell.swift in Sources */,
 				CF9940591FE5D19100943861 /* Invite.swift in Sources */,
+				CF075170235362C70007CF47 /* ErrorMessageView.swift in Sources */,
 				CF3776C31F65CE4400BCC246 /* Game.swift in Sources */,
 				CFE350CB1F6DC3210009AAFB /* FirebaseConstants.swift in Sources */,
 				CFE93B9E1EDC5CBB004F81FE /* AppDelegate.swift in Sources */,
 				CF2DEF5D2083CD5D007B0D7C /* SpriteBtn.swift in Sources */,
 				CF589C31205D52B900EF5193 /* Hamburger.swift in Sources */,
+				CF07517223648B550007CF47 /* SettingsVC.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -858,12 +886,14 @@
 			baseConfigurationReference = 46C328C0DCD0F7A444A8A965 /* Pods-Shiso.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CURRENT_PROJECT_VERSION = 12.6;
 				DEVELOPMENT_TEAM = 82A8WXUS85;
 				INFOPLIST_FILE = Shiso/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 3.6;
 				PRODUCT_BUNDLE_IDENTIFIER = MicahD.Shiso;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -872,12 +902,14 @@
 			baseConfigurationReference = 62D66C8FC3E02F0CA3C18218 /* Pods-Shiso.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CURRENT_PROJECT_VERSION = 12.6;
 				DEVELOPMENT_TEAM = 82A8WXUS85;
 				INFOPLIST_FILE = Shiso/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 3.6;
 				PRODUCT_BUNDLE_IDENTIFIER = MicahD.Shiso;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
@@ -891,7 +923,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = MicahD.ShisoTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Shiso.app/Shiso";
 			};
 			name = Debug;
@@ -906,7 +938,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = MicahD.ShisoTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Shiso.app/Shiso";
 			};
 			name = Release;
@@ -920,7 +952,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = MicahD.ShisoUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 				TEST_TARGET_NAME = Shiso;
 			};
 			name = Debug;
@@ -934,7 +966,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = MicahD.ShisoUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 				TEST_TARGET_NAME = Shiso;
 			};
 			name = Release;

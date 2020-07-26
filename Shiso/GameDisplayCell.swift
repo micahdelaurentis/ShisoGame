@@ -24,8 +24,9 @@ import UIKit
 class GameDisplayCell: UITableViewCell {
     
     var gameView = UIView()
+  
     
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         gameView.frame = CGRect(x: 2 , y: 2, width: 30, height: 30)

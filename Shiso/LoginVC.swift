@@ -11,8 +11,16 @@ import UIKit
 import FBSDKLoginKit
 import FirebaseAuth
 import Firebase
-
-class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  {
+extension UITextField {
+    func disableAutoFill() {
+        if #available(iOS 12, *) {
+            textContentType = .oneTimeCode
+        } else {
+            textContentType = .init(rawValue: "")
+        }
+    }
+}
+class LoginVC: UIViewController,UITextFieldDelegate , LoginButtonDelegate  {
  
     var newUserBtn: UIButton!
     var registerMessageLbl: UILabel!
@@ -22,7 +30,7 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
     var passwordField: UITextField!
     var emailField: UITextField!
     var nameField: UITextField!
-    var loginButton = FBSDKLoginButton()
+    var loginButton = FBLoginButton()
    
   
     override func viewDidLoad() {
@@ -70,12 +78,14 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         view.addSubview(registerMessageLbl)
         registerMessageLbl.text = "Register below!"
         registerMessageLbl.translatesAutoresizingMaskIntoConstraints = false 
-        registerMessageLbl.centerXAnchor.constraint(equalTo: newUserBtn.centerXAnchor).isActive = true
-        registerMessageLbl.topAnchor.constraint(equalTo: newUserBtn.bottomAnchor).isActive = true
+           registerMessageLbl.centerXAnchor.constraint(equalTo: newUserBtn.centerXAnchor).isActive = true
+        registerMessageLbl.topAnchor.constraint(equalTo: newUserBtn.topAnchor).isActive = true
         registerMessageLbl.widthAnchor.constraint(equalToConstant: view.frame.size.width/3).isActive = true 
         registerMessageLbl.heightAnchor.constraint(equalTo: newUserBtn.heightAnchor).isActive = true
+  
         registerMessageLbl.isHidden = true
-     
+ 
+        
         
         
         reverseBtn = UIButton()
@@ -108,7 +118,7 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         registerButton.titleLabel?.font = UIFont(name:"AppleSDGothicNeo-Regular", size: 30)
         registerButton.frame.origin = loginBtn.frame.origin
         registerButton.frame.size = CGSize(width: passwordField.frame.size.width, height: passwordField.frame.size.height)
-        registerButton.backgroundColor = .blue
+        registerButton.backgroundColor = UIColor(red: 252/255, green:119/255, blue: 67/255, alpha: 1.0)
         registerButton.layer.cornerRadius = 4
         registerButton.layer.masksToBounds = true
         registerButton.titleLabel?.textColor = .white
@@ -119,37 +129,40 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         view.addSubview(registerButton)
         
         
-        loginButton = FBSDKLoginButton(frame: CGRect(x: registerButton.frame.origin.x , y: registerButton.frame.maxY + 30,
+        loginButton = FBLoginButton(frame: CGRect(x: registerButton.frame.origin.x , y: registerButton.frame.maxY + 30,
                                                      width: registerButton.frame.size.width, height: registerButton.frame.size.height))
-        loginButton.readPermissions = ["public_profile", "email"]
+        loginButton.permissions = ["public_profile", "email"]
         loginButton.delegate  = self
         view.addSubview(loginButton)
     }
     
-    func newUserBtnTapped() {
+    @objc func newUserBtnTapped() {
         loginBtn.isHidden = true
         registerButton.isHidden = false
         nameField.isHidden = false
+       
         reverseBtn.isHidden = false
         registerMessageLbl.isHidden = false
+        newUserBtn.isHidden = true
     }
     
-    func reverseBtnTapped() {
+    @objc func reverseBtnTapped() {
         loginBtn.isHidden = false
         registerButton.isHidden = true
         nameField.isHidden = true
         registerButton.isHidden = true
         reverseBtn.isHidden = true
         registerMessageLbl.isHidden = true
+        newUserBtn.isHidden = false
     }
  
-    func loginButton(_ loginButton: FBSDKLoginButton!, didCompleteWith result: FBSDKLoginManagerLoginResult!, error: Error!) {
+    func loginButton(_ loginButton: FBLoginButton!, didCompleteWith result: LoginManagerLoginResult!, error: Error!) {
         if error != nil {
             print("Error logging in with facebook: \(error.localizedDescription)")
             return
         }
         
-        let accessToken = FBSDKAccessToken.current()
+        let accessToken = AccessToken.current
         guard let accessTokenString = accessToken?.tokenString else { return }
         
         let credentials = FacebookAuthProvider.credential(withAccessToken: accessTokenString)
@@ -163,22 +176,22 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
             
             guard user != nil else {return}
             
-            FirebaseConstants.UsersNode.child((user!.uid)).observeSingleEvent(of: .value, with: { (snapshot) in
+            FirebaseConstants.UsersNode.child((user!.user.uid)).observeSingleEvent(of: .value, with: { (snapshot) in
                 if snapshot.exists() {
                     print("Already exists!!---\(snapshot)")
                     return
                 }
                 else {
                     print("No user in database yet!!!!!!")
-                    FirebaseConstants.UsersNode.child((user!.uid)).updateChildValues([FirebaseConstants.UserName : user!.displayName ?? "",
-                     FirebaseConstants.UserEmail:  user!.email ?? "",                                                               FirebaseConstants.UserID: user!.uid])
+                    FirebaseConstants.UsersNode.child((user!.user.uid)).updateChildValues([FirebaseConstants.UserName : user!.user.displayName ?? "",
+                                                                                           FirebaseConstants.UserEmail:  user!.user.email ?? "",                                                               FirebaseConstants.UserID: user!.user.uid])
                 }
             })
             
         }
     }
     
-    func loginButtonDidLogOut(_ loginButton: FBSDKLoginButton!) {
+    func loginButtonDidLogOut(_ loginButton: FBLoginButton!) {
         print("Did log out")
     }
     
@@ -208,7 +221,7 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         return true
     }
 
-    func loginBtnPressed() {
+    @objc func loginBtnPressed() {
         Fire.dataService.loginUser(email: emailField.text!, password: passwordField.text!, errorHandler: self) {
            
             guard let uid = Auth.auth().currentUser?.uid else {
@@ -273,7 +286,7 @@ class LoginVC: UIViewController,UITextFieldDelegate , FBSDKLoginButtonDelegate  
         }
     }
 
-    func registerButtonPressed() {
+    @objc func registerButtonPressed() {
    
         print("In register button pressed function")
         guard emailField.text != nil else {

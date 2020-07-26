@@ -16,12 +16,15 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     var contacts = [String]()
     var mainVC: UIViewController?
     let contactCellID = "contactCellID"
+   
     var backBtn: UIButton = {
         let bb = UIButton()
-        bb.frame = CGRect(origin: CGPoint(x: 10, y: 30), size: CGSize(width: 70, height: 30))
+        bb.frame = CGRect(origin: CGPoint(x: 10, y: 30), size: CGSize(width: 50, height: 50))
         bb.backgroundColor =  .white
         bb.layer.cornerRadius = 3
-        bb.setTitle("🔙", for: .normal)
+        
+        bb.setImage(UIImage(named: "homeBtnImage"), for: .normal)
+        
         
         return bb
     }()
@@ -44,11 +47,13 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     override func viewDidLoad() {
         super.viewDidLoad()
        
+       
         print("IN STARTNEWGAMEVC VIEW DID LOAD.")
         
         mainVC = UIApplication.shared.keyWindow?.rootViewController
        // print("main VC in new games vc: \(mainVC)")
-        tableView = UITableView(frame: CGRect(x: view.frame.midX - 150, y: view.frame.midY + 90, width: 300, height: 100), style: UITableViewStyle.plain)
+       tableView = UITableView(frame: CGRect(x: view.frame.midX - 150, y: view.frame.midY + 90, width: 300, height: 100), style: UITableView.Style.plain)
+     
         tableView.delegate  = self
         tableView.dataSource = self
         
@@ -67,7 +72,7 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         findOpponentBtn.backgroundColor =  UIColor(red: 85/255, green: 158/255, blue: 131/255, alpha: 1.0)
         view.addSubview(findOpponentBtn)
         findOpponentBtn.translatesAutoresizingMaskIntoConstraints = false
-        findOpponentBtn.topAnchor.constraint(equalTo: backBtn.bottomAnchor, constant: 50).isActive = true
+        findOpponentBtn.topAnchor.constraint(equalTo: backBtn.bottomAnchor, constant: 20).isActive = true
         findOpponentBtn.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive = true
         findOpponentBtn.widthAnchor.constraint(equalTo: tableView.widthAnchor).isActive = true
         findOpponentBtn.heightAnchor.constraint(equalToConstant: 60).isActive = true
@@ -85,7 +90,7 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         singlePlayerModeBtn.translatesAutoresizingMaskIntoConstraints = false
       
         view.addSubview(singlePlayerModeBtn)
-        singlePlayerModeBtn.topAnchor.constraint(equalTo: findOpponentBtn.bottomAnchor, constant: 50).isActive = true
+        singlePlayerModeBtn.topAnchor.constraint(equalTo: findOpponentBtn.bottomAnchor, constant: 30).isActive = true
         singlePlayerModeBtn.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive = true
         singlePlayerModeBtn.widthAnchor.constraint(equalTo: findOpponentBtn.widthAnchor).isActive = true
         singlePlayerModeBtn.heightAnchor.constraint(equalTo: findOpponentBtn.heightAnchor).isActive = true
@@ -121,43 +126,48 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         
         exitOutOfSinglePlayerModeBtn = UIButton()
-     
+     /*
         exitOutOfSinglePlayerModeBtn.setImage(UIImage(named: "goBackIconBlue"), for: .normal)
         exitOutOfSinglePlayerModeBtn.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(exitOutOfSinglePlayerModeBtn)
-        exitOutOfSinglePlayerModeBtn.leftAnchor.constraint(equalTo: findOpponentBtn.leftAnchor).isActive = true
+        exitOutOfSinglePlayerModeBtn.rightAnchor.constraint(equalTo: findOpponentBtn.leftAnchor).isActive = true
         exitOutOfSinglePlayerModeBtn.topAnchor.constraint(equalTo: findOpponentBtn.bottomAnchor, constant: 40).isActive = true
         exitOutOfSinglePlayerModeBtn.widthAnchor.constraint(equalToConstant: 20).isActive = true
         exitOutOfSinglePlayerModeBtn.heightAnchor.constraint(equalToConstant: 20).isActive = true
         exitOutOfSinglePlayerModeBtn.isHidden = true
         exitOutOfSinglePlayerModeBtn.addTarget(self, action: #selector(exitOutOfSinglePlayerModeBtnPressed), for: .touchUpInside)
         
-      
+      */
         userNameToChallenge = UITextField()
      
         view.addSubview(userNameToChallenge)
     
-        userNameToChallenge.attributedPlaceholder = NSAttributedString(string: "Enter username to challenge....", attributes: [NSForegroundColorAttributeName: UIColor.darkGray])
+        userNameToChallenge.attributedPlaceholder = NSAttributedString(string: "Enter username to challenge... ", attributes: [NSAttributedString.Key.foregroundColor: UIColor.darkGray])
         userNameToChallenge.layer.cornerRadius = 5
         userNameToChallenge.backgroundColor = .white
+        let leftPaddingView = UIView(frame: CGRect(x: 0, y: 0, width: 15, height: singlePlayerModeBtn.frame.size.height))
+        
         userNameToChallenge.translatesAutoresizingMaskIntoConstraints = false
-        userNameToChallenge.topAnchor.constraint(equalTo: singlePlayerModeBtn.bottomAnchor, constant: 20).isActive = true
+        userNameToChallenge.topAnchor.constraint(equalTo: singlePlayerModeBtn.bottomAnchor, constant: 30).isActive = true
         userNameToChallenge.centerXAnchor.constraint(equalTo: singlePlayerModeBtn.centerXAnchor).isActive = true
         userNameToChallenge.widthAnchor.constraint(equalTo: singlePlayerModeBtn.widthAnchor, constant: 0).isActive = true
         userNameToChallenge.heightAnchor.constraint(equalTo: singlePlayerModeBtn.heightAnchor, constant: 0).isActive = true
-        userNameToChallenge.addTarget(self, action: #selector(textEditingChanged), for: UIControlEvents.editingChanged)
+        userNameToChallenge.addTarget(self, action: #selector(textEditingChanged), for: UIControl.Event.editingChanged)
         userNameToChallenge.autocorrectionType = UITextAutocorrectionType.no
         userNameToChallenge.autocapitalizationType = UITextAutocapitalizationType.none
+        userNameToChallenge.leftView = leftPaddingView
+        userNameToChallenge.leftViewMode = UITextField.ViewMode.always
+        
         
         submitUserNameChallengeBtn = UIButton()
-        submitUserNameChallengeBtn.setTitle("Submit Challenge!", for: .normal)
-      
-        submitUserNameChallengeBtn.setTitleColor(.black, for: .normal)
-      
+        submitUserNameChallengeBtn.setTitle("Submit Challenge", for: .normal)
+        submitUserNameChallengeBtn.titleLabel?.font = UIFont(name: "AvenirNext-Bold", size: 20)
+        submitUserNameChallengeBtn.setTitleColor(UIColor(red: 50/255, green: 115/255, blue: 50/255, alpha: 1.0), for: .normal)
+        submitUserNameChallengeBtn.backgroundColor = .lightGray
         submitUserNameChallengeBtn.isHidden = true
         
-        submitUserNameChallengeBtn.layer.cornerRadius = 3
-        submitUserNameChallengeBtn.backgroundColor = .white
+        submitUserNameChallengeBtn.layer.cornerRadius = 4
+       // submitUserNameChallengeBtn.backgroundColor = .white
         submitUserNameChallengeBtn.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(submitUserNameChallengeBtn)
@@ -165,7 +175,7 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         submitUserNameChallengeBtn.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive = true
         submitUserNameChallengeBtn.addTarget(self, action: #selector(submitUserNameChallengeBtnPressed), for: .touchUpInside)
         submitUserNameChallengeBtn.titleLabel?.adjustsFontSizeToFitWidth = true
-        submitUserNameChallengeBtn.titleEdgeInsets = UIEdgeInsetsMake(5, 2, 2, 5)
+        submitUserNameChallengeBtn.titleEdgeInsets = UIEdgeInsets(top: 5, left: 2, bottom: 2, right: 5)
         
         playAFriendlbl = UILabel()
         playAFriendlbl.text = "Play a friend:"
@@ -175,7 +185,9 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         view.addSubview(playAFriendlbl)
         playAFriendlbl.isHidden = true
         playAFriendlbl.translatesAutoresizingMaskIntoConstraints = false
-        playAFriendlbl.bottomAnchor.constraint(equalTo: tableView.topAnchor).isActive  = true
+        //playAFriendlbl.bottomAnchor.constraint(equalTo: tableView.topAnchor).isActive  = true
+        playAFriendlbl.topAnchor.constraint(equalTo: submitUserNameChallengeBtn.bottomAnchor,constant:  5).isActive  = true
+            
         playAFriendlbl.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive  = true
         
 
@@ -196,7 +208,7 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         tableView.backgroundColor = .white
     }
-    func submitUserNameChallengeBtnPressed() {
+    @objc func submitUserNameChallengeBtnPressed() {
         guard userNameToChallenge.text != "" else {
             print("NO USER NAME!! returning")
             return
@@ -207,7 +219,7 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     
-    func backBtnPressed() {
+    @objc func backBtnPressed() {
         print("Back btn pressed in start new game VC")
         print("Presenting vc: \(presentingViewController) presentedVc: \(presentedViewController)")
         if let mainVC =  UIApplication.shared.keyWindow?.rootViewController as? GameViewController {
@@ -234,7 +246,7 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         
     }
     
-    func textEditingChanged(textField: UITextField) {
+    @objc func textEditingChanged(textField: UITextField) {
         if textField.text != "" {
            submitUserNameChallengeBtn.isHidden = false
         }
@@ -245,17 +257,17 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     
 
     
-    func findOpponentBtnPressed() {
+    @objc func findOpponentBtnPressed() {
     
         Fire.dataService.createOpenInvite()
         let confirmationAction = UIAlertController(title: "The search is on!", message: "Once we find you an opponent your game will appear in your games menu. Check back soon!", preferredStyle: .alert)
-        let ok = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
+        let ok = UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil)
         confirmationAction.addAction(ok)
         self.present(confirmationAction, animated: true, completion: nil)
   
     }
     
-    func singlePlayerModeBtnPressed(){
+    @objc func singlePlayerModeBtnPressed(){
          timeBtn_2Min.isHidden = false
         timeBtn_5Min.isHidden = false
        // timeBtn_10Min.isHidden = false
@@ -263,7 +275,7 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         singlePlayerModeBtn.isHidden = true
         exitOutOfSinglePlayerModeBtn.isHidden = false
     }
-    func exitOutOfSinglePlayerModeBtnPressed(){
+    @objc func exitOutOfSinglePlayerModeBtnPressed(){
         timeBtn_2Min.isHidden = true
         timeBtn_5Min.isHidden = true
      //   timeBtn_10Min.isHidden = true
@@ -271,10 +283,10 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
         exitOutOfSinglePlayerModeBtn.isHidden = true
         singlePlayerModeBtn.isHidden = false
     }
-    func timeBtn_2min_Pressed() {
+    @objc func timeBtn_2min_Pressed() {
        timeBtn_Pressed(timeSelection: .twoMinute)
     }
-    func timeBtn_5min_Pressed() {
+    @objc func timeBtn_5min_Pressed() {
         timeBtn_Pressed(timeSelection: .fiveMinute)
     }
     func timeBtn_10min_Pressed() {
@@ -336,7 +348,7 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let contactCell = UITableViewCell(style: UITableViewCellStyle.default, reuseIdentifier: contactCellID)
+        let contactCell = UITableViewCell(style: UITableViewCell.CellStyle.default, reuseIdentifier: contactCellID)
      
             let contact = contacts[indexPath.row]
             contactCell.textLabel?.text = contact
@@ -358,8 +370,8 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
     func challengeUser(contactName: String) {
         let msg = "Send \(contactName) an Invitation?"
         
-        let alert = UIAlertController(title: "Challenge", message: msg, preferredStyle: UIAlertControllerStyle.alert)
-        alert.addAction(UIAlertAction(title: "Yes", style: UIAlertActionStyle.default, handler: {(action) in
+        let alert = UIAlertController(title: "Challenge", message: msg, preferredStyle: UIAlertController.Style.alert)
+        alert.addAction(UIAlertAction(title: "Yes", style: UIAlertAction.Style.default, handler: {(action) in
             
             Fire.dataService.postChallenge(opponentUserName: contactName, completion: {
                 (success)
@@ -367,25 +379,32 @@ class StartNewGameVC: UIViewController, UITableViewDelegate, UITableViewDataSour
                 in
                 
                 guard success else {
-                    let failureNotification = UIAlertController(title: "Oops!", message: "We can't find a user named '\(contactName)'. Please check your spelling and try again. Case matters!", preferredStyle: UIAlertControllerStyle.alert)
+                    let failureNotification = UIAlertController(title: "Oops!", message: "We can't find a user named '\(contactName)'. Please check your spelling and try again. Case matters!", preferredStyle: UIAlertController.Style.alert)
                     failureNotification.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                     self.present(failureNotification, animated: false, completion: nil)
                     return
                 }
                 let confirmationAction = UIAlertController(title: "Invitation successfully sent to \(contactName)!", message: nil, preferredStyle: .alert)
-                self.present(confirmationAction, animated: true, completion: {(action)
-                    in
+//                self.present(confirmationAction, animated: true, completion: {(action)
+//                    in
+//                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1, execute: {
+//                        confirmationAction.dismiss(animated: true, completion: nil)
+//                    })
+//
+//                    /* UIView.animate(withDuration: 3.0, delay: 0, options: UIViewAnimationOptions.curveEaseInOut, animations: {
+//                     confirmationAction.view.alpha = 0
+//                     confirmationAction.view.backgroundColor = .green
+//                     }, completion: {(done) in confirmationAction.dismiss(animated: true, completion: nil)})
+//                     */
+//
+//                })
+                
+                self.present(confirmationAction, animated: true, completion: {
                     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1, execute: {
                         confirmationAction.dismiss(animated: true, completion: nil)
                     })
-                    
-                    /* UIView.animate(withDuration: 3.0, delay: 0, options: UIViewAnimationOptions.curveEaseInOut, animations: {
-                     confirmationAction.view.alpha = 0
-                     confirmationAction.view.backgroundColor = .green
-                     }, completion: {(done) in confirmationAction.dismiss(animated: true, completion: nil)})
-                     */
-                    
                 })
+                
             })
         }))
         alert.addAction(UIAlertAction(title: "No", style: .default, handler: nil))

@@ -34,10 +34,13 @@ class WildCardPickerView: SKSpriteNode {
         
         let exitBox = SKLabelNode(text: "⌧")
         addChild(exitBox)
+        exitBox.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        exitBox.verticalAlignmentMode = SKLabelVerticalAlignmentMode.bottom
         exitBox.fontName = GameConstants.TileLabelFontName
-        exitBox.fontSize = 25
-        exitBox.position = CGPoint(x: -self.size.width/2 +  exitBox.frame.width/2 + separatorWidth, y: self.size.height/2 - exitBox.frame.height - separatorWidth)
-       
+        exitBox.fontSize = 40
+        exitBox.position = CGPoint(x: -self.size.width/2  + separatorWidth, y: self.frame.maxY - exitBox.frame.size.height - separatorWidth)
+        
+        
         exitBox.name = GameConstants.WildCardPickerExitBoxName
         var text = 0
         for i in 0 ... 4 {
@@ -72,7 +75,7 @@ class WildCardPickerView: SKSpriteNode {
         
         wildCardCheck.position.x = self.frame.maxX - wildCardCheck.frame.size.width/2 - 10
         
-        wildCardCheck.position.y = self.frame.minY //+ wildCardCheck.frame.size.height/2 + 5
+        wildCardCheck.position.y = self.frame.minY + 10//+ wildCardCheck.frame.size.height/2 + 5
        
         addChild(wildCardCheck)
         

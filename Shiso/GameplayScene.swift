@@ -19,6 +19,13 @@ class GameplayScene: SKScene {
             print("game set in GameplayScene! current player ID: \(game.currentPlayerID)")
         }
     }
+    
+    var scoreForLabel:Int = 0
+    var boxBonusViewedThisTurn: Bool = false
+    var boxesViewedThisTurn = [BoxLoc]()
+    var playsSeen = [String]()
+    var legalPlaysThisTurn  = [[Tile]]()
+    var badMathTiles = [Tile]()
     var lastTurnPassed = false //just flags once whether the last turn passed based on game.lastTurnPassed to not run animation on first loop
     var wildCardValueSet = false
     var bonusTilesUsed = [Tile]()
@@ -45,7 +52,12 @@ class GameplayScene: SKScene {
             }
         }
     }
-
+    
+    var tilesBombedThisTurn = [Tile]()
+    var bombedValuedTilesToRestore = [Tile]()
+    
+    
+    var justRemovedPlays = false
     var lastSelectedTilesInLightUpTiles = [Tile]()
     var bingo = 0
     var gameTimer: Timer?
@@ -66,8 +78,8 @@ class GameplayScene: SKScene {
     var nonDeleteSelectedPlayerTiles = [Tile]()
     var restartBtn = SKLabelNode(text: "restart")
     var saveBtn = SKSpriteNode(color: UIColor.black, size: CGSize(width: 50, height: 50))
+    var playSound = UserDefaults.standard.bool(forKey: GameConstants.soundsOnUserDefaultsBool)
     
-
     var playerPassedTurn: Bool = true
     
     let wildCardPickOptions = ["", "0", "1", "2", "3" ,"4" ,"5", "6","7","8","9", "10", "11","12","13","14","15","16",
@@ -85,7 +97,7 @@ class GameplayScene: SKScene {
         didSet {
            
            tilesLeft = max(0, tilesLeft) // won't create infinite loop
-            if !game.singlePlayerMode { tilesLeftLbl.text = "\(tilesLeft) tiles remaining (v.4)" }
+            if !game.singlePlayerMode { tilesLeftLbl.text = "\(tilesLeft) tiles remaining (v.5)" }
         }
     }
     var tilesLeftLbl = SKLabelNode()
@@ -104,6 +116,36 @@ class GameplayScene: SKScene {
     
     var canPlay: Bool = false
     var selectedPlayerTiles = [Tile]()
+    
+    var anySelectedTilesOnBoard = false {
+        didSet {
+            if anySelectedTilesOnBoard == true {
+                playBtn_NEW?.fillColor = GameConstants.PlayBtnColor
+                playBtn_NEW?.alpha = 1.0
+            }
+           else  {
+                playBtn_NEW?.fillColor = .red
+                playBtn_NEW?.alpha = 0.2
+            }
+        }
+    }
+  
+    
+    
+    var targetTileSelectedPlayerTiles: [Tile]{
+        var t = [Tile]()
+        for tile in selectedPlayerTiles {
+            if tile.row != -1 && tile.col != -1
+            {
+                let candidate = gameBoard.getTile(atRow: tile.row, andCol: tile.col)
+                t.append(candidate)
+                
+            }
+            
+        }
+        
+        return t
+    }
     var selectedPlayerTile: Tile?
     
     var deactivateGameNodes = false
@@ -136,8 +178,8 @@ class GameplayScene: SKScene {
             {
                 if exchangeCandidates.count > tilesLeft {
                     
-                    let alert = UIAlertController(title:"Not enough tiles left!", message: "The maximum number of tiles you can exchange this turn is: \(tilesLeft)", preferredStyle: UIAlertControllerStyle.alert)
-                    let ok = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
+                    let alert = UIAlertController(title:"Not enough tiles left!", message: "The maximum number of tiles you can exchange this turn is: \(tilesLeft)", preferredStyle: UIAlertController.Style.alert)
+                    let ok = UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil)
                     alert.addAction(ok)
                     if let mainVC = UIApplication.shared.keyWindow?.rootViewController {
                         mainVC.present(alert, animated: true, completion: nil)
@@ -187,7 +229,7 @@ class GameplayScene: SKScene {
     var endTurnBtn: SKShapeNode!
     var exchangeBtn: SKShapeNode!
     
-    var bingoLabel = SKLabelNode(text: "+\(GameConstants.BingoPoints)!!!")
+    var bingoLabel = SKLabelNode(text: "+\(GameConstants.BingoPoints)")
     
     var selectedGameBoardTiles = [Tile]() 
     var endOfGamePanel = SKSpriteNode()
@@ -201,6 +243,7 @@ class GameplayScene: SKScene {
     var backLblNode = SKLabelNode(text: "🔙")
   
     var eog = GameOverPanel()
+    var errorMessageView = ErrorMessageView()
     var lastTouchedWildCardTile: Tile?
 
     var initializeGameCount: Int!
@@ -216,7 +259,9 @@ class GameplayScene: SKScene {
        eog.position.x = self.frame.minX - eog.frame.size.width/2
        let slideInEOG = SKAction.move(to: CGPoint(x: 0, y: 0), duration: 1.0)
         addChild(eog)
-        eog.run(slideInEOG)
+        let wait = SKAction.wait(forDuration: 1.5)
+        let waitAndSlide = SKAction.sequence([wait, slideInEOG])
+        eog.run(waitAndSlide)
         
         guard self.scene?.children != nil else {
             return
@@ -226,6 +271,32 @@ class GameplayScene: SKScene {
 
         disableGame = true
         presentGameOverPanelComplete = true
+    }
+    
+    func presentErrorMessageView(){
+        
+        let w = 0.6*gameBoardDisplay.size.width
+        let h = 0.25*gameBoardDisplay.size.height
+        
+   
+       // errorMessageView = ErrorMessageView(rect: CGRect(x: -w/2, y: -h/2, width: w, height: h), cornerRadius: 15)
+        errorMessageView = ErrorMessageView(rect: CGRect(x: -w/2, y: gameBoardDisplay.position.y + gameBoardDisplay.size.height/2 , width: w, height: h), cornerRadius: 15)
+       errorMessageView.setUpErrorMessageView{
+            for tile in self.badMathTiles {
+                tile.tileLabel.fontColor = .white 
+            }
+           // self.handleRestoringTilesAfterIllegalMove()
+            self.recall()
+            self.nonDeleteSelectedPlayerTiles.removeAll()
+            self.removeSelectedPlayerTiles()
+            self.bonusTilesUsed.removeAll()
+            self.badMathTiles.removeAll()
+        }
+
+        
+        addChild(errorMessageView)
+        
+    
     }
     
     func initializeGame () {
@@ -399,31 +470,38 @@ class GameplayScene: SKScene {
     }
     
     
-    
+    var nTimesLoadedGame = 0
+    var nTimesRunWholeLoadGame = 0
     func setUpGame3(){
         
         
         print("in set up Game 3: current User ID: \(FirebaseConstants.CurrentUserID)")
         
         
-        self.scene?.removeChildren(in: [currentPlayerTileRackDisplay, gameBoardDisplay])
+       // self.scene?.removeChildren(in: [currentPlayerTileRackDisplay, gameBoardDisplay])
         
         
-        currentPlayerTileRackDisplay = SKSpriteNode()
-        gameBoardDisplay = SKSpriteNode()
+      //  currentPlayerTileRackDisplay = SKSpriteNode()
+       // gameBoardDisplay = SKSpriteNode()
         
         Fire.dataService.loadGameWithObserver(gameID: game.gameID){
             (game)
             
+            
             in
             
-         
-           
-    
-            print("In load game closure. last Turn passed: \(game.lastTurnPassed) game over: \(game.gameOver) current turn passed: \(game.currentTurnPassed)  end of turn:\(self.endOfTurn) switched Players: \(self.switchedPlayers) turnIsOver = \(self.turnIsOver) ignore game over:\(self.ignoreGameOver)")
+        
+            print("In load game closure. last Turn passed: \(game.lastTurnPassed) game over: \(game.gameOver) current turn passed: \(game.currentTurnPassed)  end of turn:\(self.endOfTurn) switched Players: \(self.switchedPlayers) turnIsOver = \(self.turnIsOver) ignore game over:\(self.ignoreGameOver). resigned player: \(game.resignedPlayerNum)")
+            
+            
             print("showing game data in loadgame closure. game id:\(game.gameID) player1: \(game.player1.userName) player2: \(game.player2.userName) current player ID: \(game.currentPlayerID) current User: \(FirebaseConstants.CurrentUserID)")
             
-        
+   
+            
+            guard !self.ignoreGameOver else {
+                print("in load game obs, ignore game over = true, returning")
+                return
+            }
             guard !self.endOfTurn else {
                 self.endOfTurn = false
                 self.switchedPlayers = false
@@ -449,31 +527,38 @@ class GameplayScene: SKScene {
             
             }
           
-         
-            print("removing current player tile rack display and gameboard...")
+            guard !(game.resignedPlayerNum != 0 && !self.setUpGame2CompletionShouldRun) else {
+                print("game over, resigned")
+                 self.presentGameOverPanel()
+                return
+            }
+            guard !self.justRemovedPlays else {
+                print("Just removed plays, not setting up load game")
+                if game.gameOver {
+                    if !self.presentGameOverPanelComplete {
+                        self.presentGameOverPanel()
+                    }
+                }
+                self.justRemovedPlays = false
+                return
+            }
+            
           
+   
             self.scene?.removeChildren(in: [self.currentPlayerTileRackDisplay, self.gameBoardDisplay])
             self.currentPlayerTileRackDisplay = SKSpriteNode()
             self.gameBoardDisplay = SKSpriteNode()
-            
-            
-            
+ 
             self.selectedPlayerTiles = game.selectedPlayerTiles
             
             
-            for tile in self.selectedPlayerTiles {
-                print("showing selected player tiles in load game with obs.")
-                print("tile val: \(tile.getTileTextRepresentation())")
-            }
-            
             self.nonDeleteSelectedPlayerTiles = game.selectedPlayerTiles.filter{$0.tileType != TileType.eraser}
             
-            
-            
+        
            
             
             self.game = game
-            
+         
             self.gameBoard = game.board
             self.gameBoardDisplay = self.gameBoard.setUpBoard()
             self.gameBoardDisplay.name = GameConstants.GameBoardDisplayName
@@ -514,8 +599,8 @@ class GameplayScene: SKScene {
                 self.currentPlayerTileRack = self.currentPlayer.tileRack
                 self.disableGame = false
               }
-            
-
+         
+           
             self.currentUserPlayerTileRackIsEmpty = self.currentUserPlayer!.tileRack.playerTiles.count == 0
             print("Current user player tile rack empty? --> \(self.currentUserPlayerTileRackIsEmpty)")
            
@@ -535,20 +620,30 @@ class GameplayScene: SKScene {
                 self.game.lastPlayerToMove = self.currentPlayerN
             }
             
-            
-            // SET UP SCORE LABELS
        
             
-        
-            if !self.shouldNotRunAnimation() && !self.presentGameOverPanelComplete && self.game.lastPlayerToMove == 1 && self.player1.score != 0 {
+            // SET UP SCORE LABELS
+            // SET UP SCORE LABELS
+            // SET UP SCORE LABELS
+            
+            let scoreIncrementFromLastPlays = self.getScoreIncrementFromLastPlays()
+            self.scoreForLabel = self.getPlayerToUseInLoadGameClosure().score - scoreIncrementFromLastPlays
+            print("Score increment from last plays: \(scoreIncrementFromLastPlays)")
+            print("score for label = \(self.scoreForLabel)")
+            if self.currentUserPlayer.plays.count > 0 && !self.shouldNotRunAnimation() && !self.presentGameOverPanelComplete && self.game.lastPlayerToMove == 1  {
+                print("last player to move was 1, adjusting player 1 score down by increment, so label will be: \(self.player1.score - scoreIncrementFromLastPlays) before adding increment.")
                 
                 
-                self.player1ScoreLbl.text =  "\(self.player1.userName!): \(self.player1.score - self.game.lastScoreIncrement)"
+                self.player1ScoreLbl.text =  "\(self.player1.userName!): \(max(0,self.player1.score - scoreIncrementFromLastPlays))"
                 self.player2ScoreLbl.text = "\(self.player2.userName!): \(self.player2.score)"
             }
         
-            else if !self.shouldNotRunAnimation()  &&  !self.presentGameOverPanelComplete && self.game.lastPlayerToMove == 2 && self.player2.score != 0  {
-                 self.player2ScoreLbl.text =  "\(self.player2.userName!): \(self.player2.score - self.game.lastScoreIncrement)"
+            else if self.currentUserPlayer.plays.count > 0 && !self.shouldNotRunAnimation()  &&  !self.presentGameOverPanelComplete && self.game.lastPlayerToMove == 2  {
+                
+                print("last player to move was 2, adjusting player 2 score down by increment, so label will be: \(self.player2.score - scoreIncrementFromLastPlays) before adding increment.")
+                
+                
+                 self.player2ScoreLbl.text =  "\(self.player2.userName!): \(max(0,self.player2.score - scoreIncrementFromLastPlays))"
                  self.player1ScoreLbl.text = "\(self.player1.userName!): \(self.player1.score)"
             }
             
@@ -596,8 +691,8 @@ class GameplayScene: SKScene {
             
             self.currentPlayerTileRackDisplay.position.y = -self.gameBoardDisplay.size.height/2 - self.currentPlayerTileRackDisplay.size.height/2 - 10
             
-            
-            
+           
+         
             
             self.addChild(self.currentPlayerTileRackDisplay)
             
@@ -607,61 +702,29 @@ class GameplayScene: SKScene {
             print("should not run light up played tiles: \(self.shouldNotRunAnimation())")
             
            
-       
-         
-                self.lightUpPlayedTiles1{
-/*
-            for tile in self.selectedPlayerTiles where tile.tileType == TileType.eraser {
-                self.gameBoard.getTile(atRow: tile.row, andCol: tile.col).color = GameConstants.TileBoardTileColor
-            }
- */
-            
-            
-                    
-            print("in light up layed tiles CLOSURE")
-                self.lastSelectedTilesInLightUpTiles = self.game.selectedPlayerTiles
-            
-                   // var color: UIColor
-                    //let playerToUse = self.getPlayerToUseInLoadGameClosure()
-                    //color = playerToUse.player1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
-                    
-                    //print("in light up played tiles closure. non delete selected tiles count: \(self.nonDeleteSelectedPlayerTiles.count)")
-                  /*  for tile in tiles {
-                        if tile.tileValue != nil {
-                            tile.color = color
-                        }
-                    }*/
-                    if self.bingo == 1 && !self.game.singlePlayerMode {
-                        self.showBingo()
-                       //self.bingo = 0
-                        
-                }
-                    
-                   
-                    
-                    if self.game.gameOver {
-                        print("Showing game over panel in light up played tiles closure")
-                        self.presentGameOverPanel()
-                        self.ignoreGameOver = true
+            //MARK: light up tiles in load game
+           
+           
+            self.lightUpPlaysInSequence(plays: self.currentUserPlayer.plays){
+             
+               self.justRemovedPlays = true
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2 ){
+                    Fire.dataService.removePlays(game: game, player: self.currentUserPlayer){
+                        print("remove plays done")
+    
                     }
                     
-                  /*  if self.switchedPlayers {
-                        print("in light up tiles closure. switched players true...if not game over, switching to false")
-                        if !self.game.gameOver {
-                           self.switchedPlayers = false
-                            print("game not over, so switched player set back to false")
-                            
-                        }
-                        else {
-                            self.presentGameOverPanel()
-                        }
-                    } */
-            
+                } 
+              
+            self.legalPlaysThisTurn.removeAll()
             self.removeSelectedPlayerTiles()
             self.removeNonDeleteSelectedPlayerTiles()
             
-            print("after light up tiles 1 closure, should be no selected tiles: count = \(self.selectedPlayerTiles.count)")
-                }
+             
+            }
+            
+       
             
             
           
@@ -672,7 +735,7 @@ class GameplayScene: SKScene {
             
             
         
-            //if it's the first time after didMoveToView, need to set up all the player's other view
+            //if it's the first time after didMoveToView, need to set up all the player's other views
             if self.setUpGame2CompletionShouldRun {
                 print("About to run setUpInitialView...")
                 self.setUpInitialView(view: self.view!)
@@ -694,6 +757,8 @@ class GameplayScene: SKScene {
             print("will not run animation. last turn passed and current turn passed")
             return true
         }
+        
+     
         guard game.selectedPlayerTiles.count > 0 && lastSelectedTilesInLightUpTiles.count > 0 else {
             print("game selected player tiles count is 0 or last selected tiles in light up is 0, returning")
             return false
@@ -728,6 +793,7 @@ class GameplayScene: SKScene {
             player1ScoreLbl.text = "Score: \(player1.score)"
         }
         else {
+            print("player score after used in show bingo is: \(player.score)")
             scoreLabel = player.player1 ? player1ScoreLbl : player2ScoreLbl
             
             scoreLabel.text = "\(player.userName!): \(player.score)"
@@ -735,6 +801,45 @@ class GameplayScene: SKScene {
         }
     }
     
+    func getScoreIncrementFromLastPlays() -> Int {
+    var scoreIncrementFromLastPlays = 0
+        
+    for play in currentUserPlayer.plays {
+        print("play = \(play.playID), points=\(play.points). adding \(play.points) to score increment which is before adding \(scoreIncrementFromLastPlays)" )
+    scoreIncrementFromLastPlays += play.points
+        print("after adding, it's \(scoreIncrementFromLastPlays)")
+    }
+        return scoreIncrementFromLastPlays + GameConstants.BoxBonus*getNBoxBonusesToShowThisTurn() + GameConstants.BingoPoints*(game.lastPlayerUsedAllTiles ? 1 : 0)
+        
+        }
+        
+    func getNBoxBonusesToShowThisTurn() -> Int{
+    
+    let newBoxes = self.game.boxLocs.filter{self.currentUserPlayer.player1 ? !$0.player1Viewed: !$0.player2Viewed}
+    
+        return newBoxes.filter{!$0.hasTheSameCenterAsAnyBox(inboxes: self.boxesViewedThisTurn)}.count
+    }
+    
+    func updateScoreLabel(player: Player, byIncrement: Int) {
+      print("in update score label...with increment \(byIncrement)")
+        var scoreLabel = SKLabelNode()
+        
+        
+        if game.singlePlayerMode {
+            player1ScoreLbl.text = "Score: \(player1.score)"
+        }
+        else {
+            scoreLabel = player.player1 ? player1ScoreLbl : player2ScoreLbl
+            
+            print("about to increment score label which is: \(self.scoreForLabel) by \(byIncrement) points")
+            print("before comparing to actual score score for label is \(scoreForLabel)")
+            scoreForLabel = min(scoreForLabel + byIncrement, player.score)
+            print("after comparing to actual score score for label is \(scoreForLabel)")
+            scoreLabel.text = "\(player.userName!): \(scoreForLabel)"
+            //self.scoreForLabel += byIncrement
+           
+        }
+    }
     func showCurrentTileRack() {
         print("Showing currentUserTileRack...") 
         currentPlayerTileRack.showTileRack()
@@ -744,7 +849,8 @@ class GameplayScene: SKScene {
      */
     
     self.playBtn_NEW = SKShapeNode(rect: CGRect(x: 0, y: 0, width: self.currentPlayerTileRackDisplay.size.width/3, height: 0.5*self.currentPlayerTileRackDisplay.size.height + 5), cornerRadius: 5)
-    self.playBtn_NEW.fillColor =  UIColor(red: 85/255, green: 158/255, blue: 131/255, alpha: 1.0)
+    self.playBtn_NEW.fillColor = .red
+    playBtn_NEW.alpha = 0.2
     let playBtnText = SKLabelNode(text: "Play+")
     playBtnText.fontColor = .white
     playBtnText.fontName = GameConstants.TileLabelFontName
@@ -805,6 +911,7 @@ class GameplayScene: SKScene {
     
     self.addChild(self.player2ScoreLbl)
     
+  
     
     
     self.endTurnBtn = SKShapeNode(rect: CGRect(x: 0, y:0, width: self.playBtn_NEW.frame.size.width, height: self.playBtn_NEW.frame.size.height - 3), cornerRadius: 5)
@@ -828,6 +935,7 @@ class GameplayScene: SKScene {
     self.exchangeBtn.position = CGPoint(x: self.recallTilesBtn.position.x, y: self.endTurnBtn.position.y)
     
     let exchangeBtnText = SKLabelNode(text: "Exchange")
+
     exchangeBtnText.fontColor = UIColor(red: 67/255, green: 84/255, blue: 167/255, alpha: 1.0)
     exchangeBtnText.fontName = GameConstants.TileLabelFontName
     exchangeBtnText.fontSize = 20
@@ -969,7 +1077,7 @@ class GameplayScene: SKScene {
             setUpGame()
         }
         else {
-        
+            
             if game.player1.tileRack.playerTiles.count == 0 {
                 print("player 1 tiles empty in did move to view. create tiles and save")
                 game.player1.tileRack.setUpPlayerTileRack(player: 1, createAllNewTiles: true)
@@ -992,7 +1100,7 @@ class GameplayScene: SKScene {
     
     let newHighScoreLbl = SKLabelNode(text: "NEW HIGH SCORE!")
 
-    func updateTimer(){
+    @objc func updateTimer(){
         guard disableGame == false else {return}
         timeLeft! -= 1
         
@@ -1048,21 +1156,38 @@ class GameplayScene: SKScene {
             Fire.dataService.saveGameData1(game: game,completion: nil)
         
         }
-        
-        else if (!endOfTurn && wildCardValueSet && !game.gameOver){
-            print("Not end of turn and wild card set!")
-            Fire.dataService.saveGameData1(game: game,completion: nil)
             
+        else if !game.gameOver && !endOfTurn && boxBonusViewedThisTurn{
+            print("Not end of turn and new box locs viewed, saving")
+            updateBoxLocs {
+                
+                 Fire.dataService.saveGameData1(game: self.game, savePlays: self.currentPlayer.plays.count > 0 , completion: nil)
+                
+            }
+            
+          
+            
+        }
+        
+       else if (!endOfTurn && !disableGame && wildCardValueSet && !game.gameOver){
+            print("Not end of turn. End of turn = \(endOfTurn) and wild card set, saving game data!")
+            Fire.dataService.saveGameData1(game: game,completion: nil)
             }
      
-        
+  
+            
         Fire.dataService.removeObserversFromGamesNode(game: game)
         }
+        
         
     }
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         
-        guard disableGame == false else {return}
+        guard disableGame == false else {
+            print("Game disabled, returning from touches moved")
+            return
+            
+        }
         
         
         for touch in touches {
@@ -1101,38 +1226,47 @@ class GameplayScene: SKScene {
         }
     }
     func recall() {
-        for tile in selectedPlayerTiles {
+        anySelectedTilesOnBoard = false
+        print("Selected player tiles count before revert bombs: \(selectedPlayerTiles.count)")
+        let bTiles = selectedPlayerTiles.filter({$0.tileType == .bomb})
+        for bTile in bTiles {
+            revertGameBoardAfterBombTileMoved(bombTile: bTile, inTouchesMoved: false)
+        }
+        print("selected player tiles count after revert bombs: \(selectedPlayerTiles.count)")
+        var boardTile = Tile()
+        for tile in selectedPlayerTiles.filter({$0.tileType != .bomb}) {
             print("in recall. tile = \(tile.getTileTextRepresentation()) about to set row to -1 etc")
             tile.isHidden = false
             tile.alpha = 1.0
          
             let goHome = SKAction.move(to: tile.startingPosition, duration: 0.3)
-            let boardTile = gameBoard.getTile(atRow: tile.row, andCol: tile.col)
-            
-            
+           boardTile = gameBoard.getTile(atRow: tile.row, andCol: tile.col)
+            print("board tile player: \(boardTile.player)")
+            boardTile.showTile(msg: "showing board tile in recall..")
             boardTile.inSelectedPlayerTiles = false
          
             tile.row = -1
             tile.col = -1
-            
-            
-            if let holdVal = boardTile.holdingValue, let holdCol = boardTile.holdingColor , let holdPlayer = boardTile.holdingPlayer{
+           
+          
+            if !tilePlaysOverBombedAreaThisTurn(tile: tile) , tilePlaysOverDeleteTileInSelectedPlayerTiles(tile: tile) || tile.tileType == .eraser, let holdVal = boardTile.getHoldingValueToRestore(), let holdPlayer = boardTile.getHoldingPlayerToRestore(){
+                print("tile doesn't play over bombed area in recall...")
                 boardTile.setTileValue(value: holdVal)
                 print("holding player is: \(holdPlayer)")
+                print("holding value is: \(holdVal)")
                 boardTile.color = holdPlayer == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
                 boardTile.player = holdPlayer
              /*   if boardTile.player == nil {
                     print("board tile player is nil....")
                     boardTile.player = holdCol == GameConstants.TilePlayer1TileColor ? 1 : 2
                 } */
+             
             }
             else {
+                print("Not restoring tile values in recall...board tile holding val: \(boardTile.getHoldingValueToRestore())")
                 boardTile.player = nil
-             
-              
                 boardTile.setTileValue(value: nil)
                 boardTile.color = GameConstants.TileBoardTileColor
-                
             }
             
             if tile.bonusTile {
@@ -1150,11 +1284,16 @@ class GameplayScene: SKScene {
                     break
                 }
             }
+            
+            print("after recall--> board tile player: \(boardTile.player)")
+
         }
+        boardTile.removeHoldingValuesAfterRestoring()
         selectedPlayerTiles.removeAll()
         bonusTilesUsed.removeAll()
         
     }
+    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
      /*
         guard currentUserIsCurrentPlayer else {
@@ -1283,9 +1422,11 @@ class GameplayScene: SKScene {
                         wildCardValueSet = true
                         
                         selectedPlayerTile?.tileLabel.fontColor = .yellow
-                        let expandTile = SKAction.scale(by: 2, duration: 0.2)
-                        let shrinkTile = SKAction.scale(by: 1/2, duration: 1.0)
+                        let expandTile = SKAction.scale(by: 2, duration: 0.4)
+                        let shrinkTile = SKAction.scale(by: 1/2, duration: 0.2)
                         let expandAndShrink = SKAction.sequence([expandTile, shrinkTile])
+                        
+                        
                         selectedPlayerTile?.run(expandAndShrink){
                             self.selectedPlayerTile?.tileLabel.fontColor = .white
                         }
@@ -1316,13 +1457,12 @@ class GameplayScene: SKScene {
                     
                 }
                 
-                
-        
+  
             for node in nodes(at: location) {
                 
                 if let touchedTile = node as? Tile, touchedTile.name == GameConstants.TileBoardTileName,
                     touchedTile.inSelectedPlayerTiles, deactivateGameNodes == false  {
-                    print("touching tile in selected tiles")
+                    print("touching tile in selected tiles of type: \(touchedTile.tileType)")
                   
                     
                     let row = touchedTile.row
@@ -1330,104 +1470,116 @@ class GameplayScene: SKScene {
                    
                     var eraserTileAtNode: Tile?
                     var selectedPlayerTilesAtNode = [Tile]()
-                    for tile in selectedPlayerTiles {
-                        if tile.row == row && tile.col == col {
-                            //selectedPlayerTile = tile
-                            selectedPlayerTilesAtNode.append(tile)
-                            
-                            //MARK: double tile size
-                     
-                            tile.size.height = tile.size.height*2
-                            tile.size.width = tile.size.width*2
-                            tile.alpha = 0.8
-                        }
-                    }
-                    
-                   
-                    
-                  
-                    
-                    if selectedPlayerTilesAtNode.count > 1 {
-                        for tile in selectedPlayerTilesAtNode {
-                            print("tile at node: \(tile.getTileTextRepresentation())")
-                            if tile.tileType == TileType.eraser {
-                                print("you have an eraser tile here of size: \(tile.size). normal size: \(GameConstants.TileSize)")
-                                
-                                tile.isHidden = false
-                                tile.alpha = 1.0
-                                tile.size.width = GameConstants.TileSize.width
-                                tile.size.height = GameConstants.TileSize.height
-                                print("after sale: you have an eraser tile here of size: \(tile.size). normal size: \(GameConstants.TileSize)")
-                                
-                                
-                                let returnHome = SKAction.move(to: tile.startingPosition, duration: 1.0)
-                                tile.run(returnHome)
-                                selectedPlayerTiles = selectedPlayerTiles.filter({$0 != tile})
-                                tilesUsedThisTurn = tilesUsedThisTurn.filter({$0 != tile})
-                                showSelectedTiles()
-                            }
-                            else {
-                                selectedPlayerTile = tile
-                                
-                            }
-                        }
-                        
-                    }
-                    else {
-                        selectedPlayerTile = selectedPlayerTilesAtNode[0]
-                    }
-                    
-                    selectedPlayerTilesAtNode.removeAll()
+                    var valuedTileDeletedThisPlay = valuedTileWasDeletedThisPlay(tile: touchedTile)
                  
-                   
-                    selectedPlayerTile?.isHidden = false
-                   // selectedPlayerTile?.alpha = 1.0
-                    
-                    
-                    if let holdVal = touchedTile.holdingValue, let holdPlayer = touchedTile.holdingPlayer, let holdCol = touchedTile.holdingColor {
-                        print("touched tile holding color: \(touchedTile.holdingColor)")
-                        print("holding val is \(touchedTile.holdingValue)")
-                        print("touched tile player: \(touchedTile.player)")
-                        touchedTile.setTileValue(value: holdVal)
-                        touchedTile.color = holdPlayer == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
-                        
-                        touchedTile.player = holdPlayer
-                        
-                        touchedTile.holdingValue = nil
-                        touchedTile.holdingColor = nil
-                        touchedTile.holdingPlayer = nil  
-                     
+                    if selectedPlayerTiles.filter({$0.tileType == .bomb && $0.row == touchedTile.row  && $0.col == touchedTile.col}).count > 0 {
+                        print("touches began: touching bomb tile")
+                        revertGameBoardAfterBombTileMoved(bombTile: touchedTile)
                     }
-                    else {
-                        
-                       touchedTile.player = nil
-                       touchedTile.setTileValue(value: nil)
                 
-                        let gameBoardTile = gameBoard.getTile(atRow: row, andCol: col)
-                        if let selectedPlayerTile = selectedPlayerTile {
-                        if selectedPlayerTile.bonusTile {
-                            print("gameBoard tile is bonus tile")
-                            gameBoardTile.tileLabel.text = "+2"
-                            gameBoardTile.tileLabel.fontColor = .gray
-                            selectedPlayerTile.bonusTile = false
-                            for (i,bonusTile) in bonusTilesUsed.enumerated() {
-                                if bonusTile == gameBoardTile {
-                                    print("Found bonus tile to remove")
-                                    bonusTilesUsed.remove(at: i)
-                                    break
+                    else {
+                        print("touches began, not touching bomb tile")
+                        for tile in selectedPlayerTiles {
+                            if tile.row == row && tile.col == col {
+                                //selectedPlayerTile = tile
+                                selectedPlayerTilesAtNode.append(tile)
+                                
+                                //MARK: double tile size
+                                
+                                tile.size.height = tile.size.height*2
+                                tile.size.width = tile.size.width*2
+                                tile.alpha = 0.8
+                            }
+                        }
+                        
+                        if selectedPlayerTilesAtNode.count > 1 {
+                            for tile in selectedPlayerTilesAtNode {
+                                print("tile at node: \(tile.getTileTextRepresentation())")
+                                if tile.tileType == TileType.eraser {
+                                    print("you have an eraser tile here, in touches began")
+                                    
+                                    tile.isHidden = false
+                                    tile.alpha = 1.0
+                                    tile.size.width = GameConstants.TileSize.width
+                                    tile.size.height = GameConstants.TileSize.height
+                                    
+                                    
+                                    
+                                    let returnHome = SKAction.move(to: tile.startingPosition, duration: 1.0)
+                                    tile.run(returnHome)
+                                    
+                                    
+                                    selectedPlayerTiles = selectedPlayerTiles.filter({$0 != tile})
+                                    tilesUsedThisTurn = tilesUsedThisTurn.filter({$0 != tile})
+                                    
+                                }
+                                else {
+                                    selectedPlayerTile = tile
+                                    
+                                    
                                 }
                             }
-                            }
                             
                         }
-                       touchedTile.color = GameConstants.TileDefaultColor
+                        else if selectedPlayerTilesAtNode.count > 0 {
+                            selectedPlayerTile = selectedPlayerTilesAtNode[0]
+                        }
+                        
+                        selectedPlayerTilesAtNode.removeAll()
+                        
+                        selectedPlayerTile?.isHidden = false
+                        // selectedPlayerTile?.alpha = 1.0
+                      
+                        
+                     
+                        
+                     
+                        if  valuedTileDeletedThisPlay, let holdVal = touchedTile.getHoldingValueToRestore(), let holdPlayer = touchedTile.getHoldingPlayerToRestore()
+                            
+                        {
+                            print("Tile was deleted this play...")
+                            print("holding value to restore: \(holdVal)")
+                            print("about to restore...")
+                            touchedTile.setTileValue(value: holdVal)
+                            touchedTile.color = holdPlayer == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
+                            
+                            touchedTile.player = holdPlayer
+                            
+                            touchedTile.removeHoldingValuesAfterRestoring()
+                           
+                        }
+                        else {
+                            
+                            touchedTile.player = nil
+                            touchedTile.setTileValue(value: nil)
+                            
+                            let gameBoardTile = gameBoard.getTile(atRow: row, andCol: col)
+                            if let selectedPlayerTile = selectedPlayerTile {
+                                if selectedPlayerTile.bonusTile {
+                                    print("gameBoard tile is bonus tile")
+                                    gameBoardTile.tileLabel.text = "+2"
+                                    gameBoardTile.tileLabel.fontColor = .gray
+                                    selectedPlayerTile.bonusTile = false
+                                    for (i,bonusTile) in bonusTilesUsed.enumerated() {
+                                        if bonusTile == gameBoardTile {
+                                            print("Found bonus tile to remove")
+                                            bonusTilesUsed.remove(at: i)
+                                            break
+                                        }
+                                    }
+                                }
+                                
+                            }
+                            touchedTile.color = GameConstants.TileDefaultColor
+                        }
+                        
+                        
+                        touchedTile.inSelectedPlayerTiles = false
+                        
+                        
                     }
-                
-                    
-                    touchedTile.inSelectedPlayerTiles = false
-                    
-                  
-                }
+                    }
+
             }
         
             if wildCardPicker.isHidden && nodes(at: location).contains(playBtn_NEW)  && deactivateGameNodes == false {
@@ -1530,8 +1682,8 @@ class GameplayScene: SKScene {
                     }
                     
                      guard tilesLeft != 0 else {
-                        let alert = UIAlertController(title:"No tiles left!", message: "Exchanges are not possible without any tiles left to exchange!", preferredStyle: UIAlertControllerStyle.alert)
-                        let ok = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
+                        let alert = UIAlertController(title:"No tiles left!", message: "Exchanges are not possible without any tiles left to exchange!", preferredStyle: UIAlertController.Style.alert)
+                        let ok = UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil)
                         alert.addAction(ok)
                         if let mainVC = UIApplication.shared.keyWindow?.rootViewController {
                             mainVC.present(alert, animated: true, completion: nil)
@@ -1540,14 +1692,34 @@ class GameplayScene: SKScene {
                     }
                     
                     guard game.currentTurnPassed else {
-                        let alert = UIAlertController(title:"Sorry...", message: "You can't exchange tiles if you've already played this turn!", preferredStyle: UIAlertControllerStyle.alert)
-                        let ok = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
+                        let alert = UIAlertController(title:"Sorry...", message: "You can't exchange tiles if you've already played this turn!", preferredStyle: UIAlertController.Style.alert)
+                        let ok = UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil)
                         alert.addAction(ok)
                         if let mainVC = UIApplication.shared.keyWindow?.rootViewController {
                             mainVC.present(alert, animated: true, completion: nil)
                         }
                         return
                     }
+                    
+                    guard game.numSequentialPlaysWithNoTilesUsed != 3 else {
+                        let alert = UIAlertController(title:"Sorry...", message: "You must use a tile this turn or else the game with end. Exchange not available!", preferredStyle: UIAlertController.Style.alert)
+                        let ok = UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil)
+                        alert.addAction(ok)
+                        if let mainVC = UIApplication.shared.keyWindow?.rootViewController {
+                            mainVC.present(alert, animated: true, completion: nil)
+                        }
+                        return
+                    }
+                    
+                    if game.numSequentialPlaysWithNoTilesUsed == 2 {
+                        let alert = UIAlertController(title:"Warning!", message: "If you exchange tiles and your opponent ends their turn without playing a tile the game will end!", preferredStyle: UIAlertController.Style.alert)
+                                             let ok = UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil)
+                                             alert.addAction(ok)
+                                             if let mainVC = UIApplication.shared.keyWindow?.rootViewController {
+                                                 mainVC.present(alert, animated: true, completion: nil)
+                                             }
+                    }
+                    
                     
                     exchangeMode = true
                     deactivateGameNodes = true
@@ -1634,7 +1806,7 @@ class GameplayScene: SKScene {
                     //MARK: expand on exchange
                     
                     print("EXCHANGE CONFIRMATION LABEL HIT!")
-                    let exchangeAlertOK = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler:
+                    let exchangeAlertOK = UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler:
                     { action in
                     
                         self.currentPlayerTileRack.swapOutExchangedTiles(tiles: self.exchangeCandidates, playerN: self.currentPlayerN)
@@ -1666,7 +1838,8 @@ class GameplayScene: SKScene {
                         }
                         
                         self.resetExchange()
-                        self.game.currentTurnPassed = false
+                        //NEW: changing exchange turn to equal a passed turn
+                        self.game.currentTurnPassed = true
                         
                         
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0){
@@ -1685,7 +1858,7 @@ class GameplayScene: SKScene {
                        self.exchangeCandidates.removeAll()
                     })
                     
-                    let alertCon = UIAlertController(title: nil, message: "Exchange tiles and lose your turn?", preferredStyle: UIAlertControllerStyle.alert)
+                    let alertCon = UIAlertController(title: nil, message: "Exchange tiles and lose your turn?", preferredStyle: UIAlertController.Style.alert)
                     alertCon.addAction(exchangeAlertOK)
                     alertCon.addAction(exchangeAlertCancel)
                     
@@ -1714,25 +1887,35 @@ class GameplayScene: SKScene {
                 //MARK: End Turn button hit
             if wildCardPicker.isHidden && nodes(at: location).contains(endTurnBtn) && deactivateGameNodes == false {
                 
-                
-                
-                
+                var msg: String
+                if game.numSequentialPlaysWithNoTilesUsed == 2 {
+                    msg = "Warning: If you end your turn and your opponent ends their turn without playing a tile the game will end! Do you still want to end your turn?"
+                }
+               else if game.numSequentialPlaysWithNoTilesUsed == 3 {
+                    msg = "Warning: ending your turn will mark 2 consecutive rounds of turns with no tiles played and end the game!. Do you still want to end your turn?"
+                }
+                else {
+                    msg = "End your turn?"
+                }
+              
                     
-                    let endTurnAlert = UIAlertController(title: nil, message: "End your turn?", preferredStyle: UIAlertControllerStyle.alert)
+                let endTurnAlert = UIAlertController(title: nil, message: msg, preferredStyle: UIAlertController.Style.alert)
                     let endTurnConfirm = UIAlertAction(title: "End Turn", style: .default, handler: { (okAction) in
                         
                       
                        
                         self.endOfTurn = true
+                        
                         if self.selectedPlayerTiles.count > 0 {
                             print("recalling selected player tiles after end of turn hit.")
                             self.gameBoard!.showTiles(tiles: self.selectedPlayerTiles, message: "selected tiles to remove before exiting game:")
                             self.recall()
                         }
+                        self.tilesBombedThisTurn.removeAll()
                         self.switchPlayers()
                         
                     })
-                    let cancel = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel, handler: nil)
+                let cancel = UIAlertAction(title: "Cancel", style: UIAlertAction.Style.cancel, handler: nil)
                     
                     endTurnAlert.addAction(endTurnConfirm)
                     endTurnAlert.addAction(cancel)
@@ -1741,13 +1924,6 @@ class GameplayScene: SKScene {
                         mainVC.present(endTurnAlert, animated: true, completion: nil)
                     }
                 
-                
-                
-              
-                    
-                    
-                    
-                    
                     
             else  {
                     print("You didn't push play!!!")
@@ -1773,8 +1949,10 @@ class GameplayScene: SKScene {
             let location = touch.location(in: self)
             
            
+           var selectedTileOnBoard = false
             
-            var selectedTileOnBoard = false
+            
+            
             if let selectedTile = selectedPlayerTile, nodes(at: location).contains(selectedTile), deactivateGameNodes == false {
                 
               
@@ -1789,11 +1967,14 @@ class GameplayScene: SKScene {
                 for node in nodes(at: location) {
                     if let targetTile = node as? Tile {
                 
-                        if targetTile.name == GameConstants.TileBoardTileName  && targetTile.tileIsEmpty && selectedTile.name != GameConstants.TileDeleteTileName {
+                        if targetTile.name == GameConstants.TileBoardTileName  && targetTile.tileIsEmpty && selectedTile.tileType != .eraser
+                        && selectedTile.tileType != .bomb {
                             print("selected tile is on board and about to set row/col as \(targetTile.row) and \(targetTile.col)")
                             /** play sound **/
                             
-                            run(SKAction.playSoundFileNamed("clickSound.wav", waitForCompletion: false))
+                        
+                            if playSound { run(SKAction.playSoundFileNamed("clickSound.wav", waitForCompletion: false))
+                            }
                            
                             selectedTileOnBoard = true
                             selectedTile.row = targetTile.row
@@ -1837,12 +2018,14 @@ class GameplayScene: SKScene {
                             
                             
                             
-                        else if targetTile.name == GameConstants.TileBoardTileName && targetTile.tileIsEmpty && selectedTile.name == GameConstants.TileDeleteTileName {
-                            //return to original position
+                        else if targetTile.name == GameConstants.TileBoardTileName && targetTile.tileIsEmpty &&
+                            selectedTile.tileType == .eraser {
+                            print("moving tile \(selectedTile.tileType) back to rack, empty position on board")
                             returnTileToRack(tile: selectedTile)
                         }
+                            
                         
-                        else if targetTile.name == GameConstants.TileBoardTileName && !targetTile.tileIsEmpty && selectedTile.name == GameConstants.TileDeleteTileName
+                        else if targetTile.name == GameConstants.TileBoardTileName && !targetTile.tileIsEmpty && selectedTile.tileType == .eraser
                             && !targetTile.inSelectedPlayerTiles /*&& !gameBoard!.startingTiles.contains(targetTile)*/
                             && !targetTile.tileInStartingTiles()
                         
@@ -1855,17 +2038,26 @@ class GameplayScene: SKScene {
                             disableGame = true
                             let fade = SKAction.fadeOut(withDuration: 0.5)
                             let playEraserSound1 = SKAction.playSoundFileNamed("EraserSound1.wav", waitForCompletion: false)
-                            let fadeWithSound = SKAction.group([fade,playEraserSound1])
+                            
+                            var fadeWithSound: SKAction
+                            if playSound {
+                                fadeWithSound = SKAction.group([fade,playEraserSound1])
+                            }
+                            else {
+                                fadeWithSound = fade
+                            }
                             selectedTile.run(fadeWithSound){
                                 self.disableGame = false
                             }
                             
+                            
                            //selectedTile.isHidden = true
-                            if let tileValue = targetTile.getTileValue() {
-                                targetTile.holdingValue = tileValue
-                                targetTile.holdingColor = targetTile.color
-                                targetTile.holdingPlayer = targetTile.player
-                                print("set target tile holding val to: \(targetTile.holdingValue), holdin PLAYER to \(targetTile.holdingPlayer) ,and holding color to: \(targetTile.holdingColor)")
+                            if targetTile.getTileValue() != nil {
+                                
+                            targetTile.setHoldingValues()
+                                
+                                
+                                print("set target tile holding val to: \(targetTile.holdingValue), holding PLAYER to \(targetTile.holdingPlayer) ,and holding color to: \(targetTile.holdingColor)")
                             }
                             targetTile.setTileValue(value: nil)
                             targetTile.color = GameConstants.TileBoardTileColor
@@ -1875,6 +2067,61 @@ class GameplayScene: SKScene {
                         
                                                        
                         }
+                        
+                        
+                        else if targetTile.name == GameConstants.TileBoardTileName &&
+                            selectedTile.tileType == .bomb {
+                           print("checking if bomb tile has anything to delete...")
+                            if !gameBoard.boxTilesHaveNonStarterValuedTiles(withCenterTile: targetTile)
+                              || bombAreaContainsAnySelectedPlayerTiles(bombTile: targetTile)
+                               /* || gameBoard.getTile(atRow: targetTile.row, andCol: targetTile.col).starterTile */
+                            {
+                                
+                                returnTileToRack(tile: selectedTile)
+                            }
+                            else {
+                                selectedTileOnBoard = true
+                                selectedTile.row = targetTile.row
+                                selectedTile.col  = targetTile.col
+                                disableGame = true
+                                let fade = SKAction.fadeOut(withDuration: 0.5)
+                                let changeToRed = SKAction.colorize(with: .red, colorBlendFactor: 0.0 , duration: 0.2)
+                                let playBombSound = SKAction.playSoundFileNamed("bomb.mp3", waitForCompletion: false)
+                                
+                                var fadeWithSound: SKAction
+                                if playSound {
+                                    fadeWithSound = SKAction.group([fade,playBombSound])
+                                }
+                                else {
+                                    fadeWithSound = fade
+                                }
+                                selectedTile.run(fadeWithSound){
+                                    self.disableGame = false
+                                   
+                                }
+                                
+                                targetTile.inSelectedPlayerTiles = true
+                                for t in gameBoard.getBoxofTiles(withCenterTile: targetTile) where !t.starterTile{
+                                    if t.getTileValue() != nil {
+                                     t.setHoldingValues()
+                                     bombedValuedTilesToRestore.append(t)
+                                    }
+                                    if !(t.tileLabel.text  == GameConstants.TileBonusTileText) {
+                                        t.setTileValue(value: nil)
+                                    }
+                                    t.color = GameConstants.TileBoardTileColor
+                                    t.player = 0
+                                    //t.inSelectedPlayerTiles = true
+                                    tilesBombedThisTurn.append(t)
+                                    
+                                }
+                                
+                          
+                            }
+                            
+                            
+                            
+                        }
                     }
                     
                 }
@@ -1882,19 +2129,16 @@ class GameplayScene: SKScene {
                 if !selectedTileOnBoard {
                     //showSelectedTiles()
                     returnTileToRack(tile: selectedTile)
+                    print("there are: \(selectedPlayerTiles.count) selected player tiles....")
+                    anySelectedTilesOnBoard = selectedPlayerTiles.count > 0
                 }
-                
-                
-                
+                else {
+                    anySelectedTilesOnBoard = true
+                }
+  
             }
             
         }
-    }
-    
-    func tilePlayedIsBonusTile(tile: Tile) -> Bool {
-        
-        
-        return true
     }
     
     
@@ -1917,6 +2161,61 @@ class GameplayScene: SKScene {
     }
     
 
+    
+        func bombAreaContainsAnySelectedPlayerTiles(bombTile: Tile) -> Bool {
+    
+            print("target tile select tiles count = \(targetTileSelectedPlayerTiles.count)")
+            
+         let selectedTilesBombed = gameBoard.getBoxofTiles(withCenterTile: bombTile).filter { targetTileSelectedPlayerTiles.contains($0)
+          
+            }
+            
+            print("Selected tiles bombed count = \(selectedTilesBombed.count)")
+            for tile in selectedTilesBombed {
+                print("selected tile bombed... row/col val = \(tile.row) \(tile.col) \(tile.getTileTextRepresentation())")
+            }
+            return selectedTilesBombed.count > 0
+
+        
+        }
+
+    func bombAreaContainsTile(bombTile: Tile, tile: Tile) -> Bool {
+        print("Checking if bomb area contains tile. bombTile row/col =  \(bombTile.row),\(bombTile.col) and tile row, col = \(tile.row), \(tile.col)")
+        return  tile.row <= bombTile.row + 1 && tile.row >= bombTile.row - 1
+        && tile.col <= bombTile.col + 1 && tile.col >= bombTile.col - 1
+    }
+    
+ 
+    func tilePlaysOverBombedAreaInSamePlay(tile: Tile) -> Bool {
+        guard selectedPlayerTiles.filter({$0.row == tile.row && $0.col == tile.col}).count > 0  else {
+            print("tile not in selected player tiles in tilePlaysOverBombedAreaInSamePlay")
+            return false
+        }
+        for bombTile in selectedPlayerTiles.filter({$0.tileType == .bomb}) {
+            print("Checking if bombtile \(bombTile) contains touched tile \(tile)")
+            if bombAreaContainsTile(bombTile: bombTile, tile: tile) {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    func tilePlaysOverBombedAreaThisTurn(tile: Tile) -> Bool {
+        return tilesBombedThisTurn.filter({ (t) -> Bool in
+            t.row == tile.row && t.col == tile.col
+        }).count > 0
+    }
+
+    func tilePlaysOverDeleteTileInSelectedPlayerTiles(tile: Tile) -> Bool {
+        guard tile.tileType != .eraser else {
+            return false
+        }
+        return selectedPlayerTiles.filter({ (t) -> Bool in
+            t.row == tile.row && t.col == tile.col && t.tileType == .eraser
+        }).count > 0
+    
+    }
     
     func returnTileToRack(tile: Tile) {
         tile.position = tile.startingPosition
@@ -1942,6 +2241,8 @@ class GameplayScene: SKScene {
          
             selectedPlayerTile = nil
         }
+        
+        
         
     }
     
@@ -2005,12 +2306,12 @@ class GameplayScene: SKScene {
     func showBingo() {
     
             print("in show bingo! bingoLabel position = \(bingoLabel.position)")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3)
         {
             self.bingoLabel.isHidden = false
             self.bingoLabel.zPosition = self.gameBoardDisplay.zPosition + 1000
             let moveBingoLabel: SKAction = SKAction.moveBy(x: 0, y: self.frame.height/2 - self.bingoLabel.frame.size.height, duration: 2.0)
-            let fade = SKAction.fadeOut(withDuration: 2.0)
+            let fade = SKAction.fadeOut(withDuration: 4.0)
             let moveAndFadeBingo = SKAction.group([moveBingoLabel, fade])
             self.bingoLabel.run(moveAndFadeBingo){
                 self.bingoLabel.position = CGPoint(x: 0, y: 0)
@@ -2055,23 +2356,53 @@ class GameplayScene: SKScene {
        completion?()
     }
     
+    func updateBoxLocs(completion: (()->())?){
+        for boxLoc in game.boxLocs {
+            print("checking if game has any box locs in updateBoxLocs...")
+            for bL in boxesViewedThisTurn {
+              print("in update box locs..there were box(es) viewed this turn, so accounting for that!")
+                if bL.boxID == boxLoc.boxID {
+                    boxLoc.newBox = false
+                    if currentUserPlayer.player1 {
+                        boxLoc.player1Viewed = true
+                    }
+                    else {
+                        boxLoc.player2Viewed = true
+                    }
+                    break
+                }
+            }
+        }
+        
+        game.showBoxLocs()
+        boxBonusViewedThisTurn = false
+        if completion != nil {
+            completion!()
+        }
+    }
     
     func switchPlayers() {
-        print("in switch players")
-        let gameOver = (game.lastTurnPassed && game.currentTurnPassed) || (currentPlayerTileRack.playerTiles.count == 0 && tilesLeft == 0)
+        
+        if game.currentTurnPassed {
+            game.numSequentialPlaysWithNoTilesUsed += 1
+        }
+        else {
+            game.numSequentialPlaysWithNoTilesUsed = 0
+        }
+        
+        print("in switch players, num turns with no tiles used: \(game.numSequentialPlaysWithNoTilesUsed)")
+        
+        let gameOver = /*(game.lastTurnPassed && game.currentTurnPassed && tilesLeft == 0) */
+            game.numSequentialPlaysWithNoTilesUsed == 4
+            || (currentPlayerTileRack.playerTiles.count == 0 && tilesLeft == 0)
         
         refillTileRack()
         
         switchedPlayers = true
-      
-        //showCurrentTileRack()
-        selectedPlayerTiles.removeAll()
-        
-        tilesUsedThisTurn.removeAll()
-        selectedPlayerTile = nil
+       
         
         playBtnPushed = false
-        if game.currentTurnPassed {
+        if /*game.currentTurnPassed */ game.selectedPlayerTiles.count ==  0 {
            game.lastScoreIncrement = 0
         }
         game.currentPlayerID = player1.userID == currentPlayer.userID ? player2.userID : player1.userID
@@ -2079,7 +2410,7 @@ class GameplayScene: SKScene {
         
         //game.selectedPlayerTiles.removeAll()
         
-        if gameOver {
+        if gameOver || game.gameOver {
             game.gameOver = true
             game.currentTurnPassed = true
             print("GAME OVER from switch players")
@@ -2091,7 +2422,7 @@ class GameplayScene: SKScene {
             
            // Fire.dataService.updateStatsAndRemoveGame(game: game)
             
-            Fire.dataService.saveGameData1(game: game, completion: nil)
+              Fire.dataService.saveGameData1(game: self.game, savePlays: currentPlayer.plays.count > 0 , completion: nil)
     }
      
         else {
@@ -2100,19 +2431,16 @@ class GameplayScene: SKScene {
             game.lastTurnPassed = game.currentTurnPassed
             game.currentTurnPassed = true
             game.lastUpdated =  Int(NSDate().timeIntervalSince1970)
-            print("about to disable game")
+            print("about to disable game in switch players, game over false.")
             disableGame = true
-            Fire.dataService.saveGameData1(game: self.game, completion: nil)
+            updateBoxLocs(completion: nil)
+            Fire.dataService.saveGameData1(game: self.game, savePlays: currentPlayer.plays.count > 0 , completion: nil)
         }
  
-       /*
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0){
-            print("about to save...current player (player \(self.currentPlayerN)) score: \(self.currentPlayer.score) player 1 score: \(self.player1.score) player2 score = \(self.player2.score)")
-            Fire.dataService.saveGameData(game: self.game, completion: nil)
-        }
-        */
-      
- 
+        selectedPlayerTiles.removeAll()
+        
+        tilesUsedThisTurn.removeAll()
+        selectedPlayerTile = nil
     }
     
     struct TileData {
@@ -2148,17 +2476,14 @@ class GameplayScene: SKScene {
   
         print("IN PLAY 1: n selected tiles = \(selectedPlayerTiles.count)")
         
-       
         guard selectedPlayerTiles.count > 0 else {
             print("NO TILES SELECTED IN PLAY1. RETURNING")
             return
         }
         let copySelectedPlayerTiles  = selectedPlayerTiles
         
-        
-        
-        
-        for tile in selectedPlayerTiles where tile.tileType != TileType.eraser {
+    
+        for tile in selectedPlayerTiles where tile.tileType != .eraser && tile.tileType != .bomb {
             nonDeleteSelectedPlayerTiles.append(tile)
             print("In play1: selected tile that is not eraser--value= \(tile.getTileTextRepresentation()) row/col: \(tile.row), \(tile.col)")
         }
@@ -2174,7 +2499,9 @@ class GameplayScene: SKScene {
 
         if legalMove {
           
-           game.currentTurnPassed = false 
+           game.currentTurnPassed = false
+            game.numSequentialPlaysWithNoTilesUsed = 0
+           bombedValuedTilesToRestore.removeAll()
             
             for tile in selectedPlayerTiles {
                 
@@ -2184,136 +2511,191 @@ class GameplayScene: SKScene {
                 
                 
                 gameBoardTile.inSelectedPlayerTiles = false
-                
-                if tile.tileType == TileType.eraser {
-                    gameBoardTile.color = .white
-                    gameBoardTile.holdingValue = nil
+                anySelectedTilesOnBoard = false
+                if  !gameBoardTile.starterTile && (tile.tileType == TileType.eraser || tile.tileType == .bomb) {
+                    
+                    print("changing tile to white after bomb: row=\(gameBoardTile.row), col=\(gameBoardTile.col)")
+                        gameBoardTile.color = .white
+                          tile.holdingValue = gameBoardTile.holdingValue
+                    tile.holdingPlayer = gameBoardTile.holdingPlayer
+                   
                 }
                  
                 
             }
             game.selectedPlayerTiles = selectedPlayerTiles
-            
-            playsThisTurn.append(selectedPlayerTiles)
-            
+           
+          
+          
+           
          //   showSelectedTiles()
             
             currentPlayerTileRack.removeTilesFromRack(tiles: selectedPlayerTiles)
         
             if !game.singlePlayerMode {
                 calculateScore()
-               game.lastPlayerToMove = currentPlayerN
-               
+                var boxCount = 0
+                var newBoxLocs = [BoxLoc]()
+                let boxes =  gameBoard.getBoxLocsForTiles(tiles: nonDeleteSelectedPlayerTiles)
+                if boxes.count > 0 {
+                    print("Boxes found this turn: \(boxes.count)")
+                    for box in boxes {
+                        if game.boxLocIsNew(bL: box){
+                            print("Got a new box at row:\(box.row), col:\(box.col)")
+                            boxCount += 1
+                            game.boxLocs.append(box)
+                            newBoxLocs.append(box)
+                            
+                            currentPlayer.score += GameConstants.BoxBonus
+                            game.lastScoreIncrement += GameConstants.BoxBonus
+                            print("After new box bonus in play1() and having added box bonus to score, score is now: \(currentPlayer.score)")
+                           
+                        }
+                        else {
+                            print("already have a box at row:\(box.row), col:\(box.col). not adding")
+                        }
+                    }
+                }
+              
+               currentPlayer.plays.removeAll()
+                for (n,tile) in selectedPlayerTiles.enumerated() {
+                    tile.tileOrderInPlay = n
+                }
+                let pts = game.lastScoreIncrement - boxCount*GameConstants.BoxBonus
+                print("points for turn with \(boxCount) boxes: \(pts)")
+                currentPlayer.plays.append(Play(playTiles: selectedPlayerTiles, points: pts, boxLocs: newBoxLocs))
+                
+                game.lastPlayerToMove = currentPlayerN
+             
                 if currentPlayer.tileRack.playerTiles.count == 0 && game.currentTurnPassed == false {
                     print("in play1: player used all tiles...switching players")
                     print("in play1, before switching players, incremented score. player score is now: \(currentPlayer.score)")
                     game.lastPlayerUsedAllTiles = true
                     wildCardValueSet = false
-                    game.lastScoreIncrement += 10
-                    currentPlayer.score += 10
+                    game.lastScoreIncrement += GameConstants.BingoPoints
+                    currentPlayer.score += GameConstants.BingoPoints
                     switchPlayers()
                 }
                 else {
                     game.lastPlayerUsedAllTiles = false
-                    Fire.dataService.saveGameData1(game: game,completion: nil)
+                    Fire.dataService.saveGameData1(game: game,savePlays: true, completion: nil)
                 }
             }
             
-
-            
-       
-            
-            
-            
-            // showCurrentTileRack()
             if game.singlePlayerMode {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     self.replaceTiles(tilesToReplace: copySelectedPlayerTiles)
                 }
+                for tile in selectedPlayerTiles {
+                    let gb =  gameBoard.getTile(atRow: tile.row, andCol: tile.col)
+                    gb.removeHoldingValuesAfterRestoring()
+                }
+                legalPlaysThisTurn.removeAll()
             }
             
             removeSelectedPlayerTiles()
         }
             
         else {
+            print(" NOT A LEGAL MOVE !!!!!")
+            anySelectedTilesOnBoard = false
+            legalPlaysThisTurn.removeAll()
             
-            run(SKAction.playSoundFileNamed("IllegalPlay.wav", waitForCompletion: false))
+            if playSound {run(SKAction.playSoundFileNamed("IllegalPlay.wav", waitForCompletion: false))}
             
-            for tile in selectedPlayerTiles {
-                
-                //var deleteTileHere = false
-                tile.isHidden = false
-                tile.alpha = 1.0
-                let row = tile.row
-                let col = tile.col
-                
-                
-                if tile.isTileOnBoard() {
+            if badMathTiles.count > 0 {
+            
+                print("badmathtiles count = \(badMathTiles.count)")
+                for tile in badMathTiles {
                     
-                    print("tile on board after illegal move: \(tile.getTileTextRepresentation()) row: \(tile.row) col:\(tile.col) starting position: \(tile.startingPosition)")
-                    
-                    let gameBoardTile = gameBoard?.getTile(atRow: row, andCol: col)
-                    
-    
-                    if let holdVal = gameBoardTile!.holdingValue, let holdPlayer = gameBoardTile!.holdingPlayer /*,let holdCol = gameBoardTile!.holdingColor */{
-                        
-                        gameBoardTile!.setTileValue(value: holdVal)
-                        gameBoardTile!.player = holdPlayer
-                        if  gameBoardTile!.player == 1 {
-                            print("tile is back to player 1 so setting player 1 color")
-                            gameBoardTile!.color = GameConstants.TilePlayer1TileColor
-                            
-                        }
-                        else if gameBoardTile!.player == 2 {
-                            print("tile is back to player 2 so setting player 2 color")
-                            gameBoardTile!.color = GameConstants.TilePlayer2TileColor
-                            
-                        }
-                        else {
-                            print("tile is neithe 1 nor 2 so setting it to green")
-                            gameBoardTile!.color = .green
-                        }
-        
-                     /*
-                        gameBoardTile!.color = gameBoardTile!.player == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
-                        */
-                        print("after illegal move set value back to: \(gameBoardTile!.getTileTextRepresentation()), set tile color back to \(gameBoardTile!.color) and player back to playerN: \(gameBoardTile!.player)")
-                      /*  gameBoardTile!.holdingValue = nil
-                        gameBoardTile!.holdingColor = nil
-                        gameBoardTile!.holdingPlayer = nil
-                      */
-                        
-                    }
-                        
-                    else {
-                        print("after illegal move, game board tile has no holding value, player, or color...setting to nil")
-                        gameBoardTile!.setTileValue(value: nil)
-                        print("tile bonus tile: \(tile.bonusTile)")
-                        if tile.bonusTile {
-                            gameBoardTile!.tileLabel.text = "+2"
-                            gameBoardTile!.tileLabel.fontColor = .gray
-                            tile.bonusTile = false
-                        }
-                        gameBoardTile!.player = 0
-                        gameBoardTile!.color = GameConstants.TileDefaultColor
-                    }
-                    
-                    
-                    
-                    gameBoardTile!.inSelectedPlayerTiles = false
+                    print("tile value in bad tiles: \(tile.tileValue) row:\(tile.row), col:\(tile.col) tile type:\(tile.name)")
+                    tile.tileLabel.fontColor = .red
+                   
                 }
+    
+             
+             presentErrorMessageView()
+                
             }
-            
-            
-            resetSelectedPlayerTiles()
-            
+            else {
+             // handleRestoringTilesAfterIllegalMove()
+                recall()
+                        nonDeleteSelectedPlayerTiles.removeAll()
+                       removeSelectedPlayerTiles()
+                        bonusTilesUsed.removeAll()
+            }
+
         }
-        
-        nonDeleteSelectedPlayerTiles.removeAll()
-       removeSelectedPlayerTiles()
-        bonusTilesUsed.removeAll()
-        
+
     }
+    
+    func handleRestoringTilesAfterIllegalMove(){
+        
+        for tile in selectedPlayerTiles {
+            
+            //var deleteTileHere = false
+            tile.isHidden = false
+            tile.alpha = 1.0
+            let row = tile.row
+            let col = tile.col
+            
+            
+            if tile.isTileOnBoard() {
+                
+                print("tile on board after illegal move: \(tile.getTileTextRepresentation()) row: \(tile.row) col:\(tile.col) starting position: \(tile.startingPosition)")
+                
+                let gameBoardTile = gameBoard?.getTile(atRow: row, andCol: col)
+                
+                
+                if !tilePlaysOverBombedAreaThisTurn(tile: tile), let holdVal = gameBoardTile!.holdingValue, let holdPlayer = gameBoardTile!.holdingPlayer /*,let holdCol = gameBoardTile!.holdingColor */{
+                    
+                    gameBoardTile!.setTileValue(value: holdVal)
+                    gameBoardTile!.player = holdPlayer
+                    if  gameBoardTile!.player == 1 {
+                        print("tile is back to player 1 so setting player 1 color")
+                        gameBoardTile!.color = GameConstants.TilePlayer1TileColor
+                        
+                    }
+                    else if gameBoardTile!.player == 2 {
+                        print("tile is back to player 2 so setting player 2 color")
+                        gameBoardTile!.color = GameConstants.TilePlayer2TileColor
+                        
+                    }
+                  
+                    
+                    /*
+                     gameBoardTile!.color = gameBoardTile!.player == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
+                     */
+                    print("after illegal move set value back to: \(gameBoardTile!.getTileTextRepresentation()), set tile color back to \(gameBoardTile!.color) and player back to playerN: \(gameBoardTile!.player)")
+                    /*  gameBoardTile!.holdingValue = nil
+                     gameBoardTile!.holdingColor = nil
+                     gameBoardTile!.holdingPlayer = nil
+                     */
+                    
+                }
+                    
+                else {
+                    print("after illegal move, game board tile has no holding value, player, or color...setting to nil")
+                    gameBoardTile!.setTileValue(value: nil)
+                    print("tile bonus tile: \(tile.bonusTile)")
+                    if tile.bonusTile {
+                        gameBoardTile!.tileLabel.text = "+2"
+                        gameBoardTile!.tileLabel.fontColor = .gray
+                        tile.bonusTile = false
+                    }
+                    gameBoardTile!.player = 0
+                    gameBoardTile!.color = GameConstants.TileDefaultColor
+                }
+                
+                
+                
+                gameBoardTile!.inSelectedPlayerTiles = false
+            }
+        }
+        resetSelectedPlayerTiles()
+    }
+    
+    
     fileprivate func extractedFunc() {
         lightUpPlayedTiles {
             (tiles) in
@@ -2333,7 +2715,7 @@ class GameplayScene: SKScene {
     func play() {
         print("tiles Left: \(tilesLeft)")
         let copySelectedPlayerTiles  = selectedPlayerTiles
-        for tile in selectedPlayerTiles where tile.tileType != TileType.eraser {
+        for tile in selectedPlayerTiles where tile.tileType != TileType.eraser && tile.tileType != .bomb{
             nonDeleteSelectedPlayerTiles.append(tile)
         }
         
@@ -2352,12 +2734,7 @@ class GameplayScene: SKScene {
                 let col = tile.col
                 let gameBoardTile = gameBoard!.getTile(atRow: row, andCol: col)
                 gameBoardTile.inSelectedPlayerTiles = false
-                
-                if tile.tileType == TileType.eraser {
-                   gameBoardTile.color = .white
-                    gameBoardTile.holdingValue = nil
-                }
-                
+   
             }
             
        
@@ -2368,70 +2745,61 @@ class GameplayScene: SKScene {
                 for tile in tiles {
                     tile.color = currentPlayerN == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
                 }
-                
-                if self.tilesUsedThisTurn.count == 7 && !self.game.singlePlayerMode {
-                    // self.showBingo()
-                }
-              
+            
             }
             
-         
-            
-           // showCurrentTileRack()
-            if game.singlePlayerMode {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     self.replaceTiles(tilesToReplace: copySelectedPlayerTiles)
                 }
-            }
+              
+              legalPlaysThisTurn.removeAll()
+            
             
             self.selectedPlayerTiles.removeAll()
         }
         
         else {
-            
-           for tile in selectedPlayerTiles {
                 
-                //var deleteTileHere = false
-                tile.isHidden = false
-                tile.alpha = 1.0
-                let row = tile.row
-                let col = tile.col
+                anySelectedTilesOnBoard = false
                 
+                if playSound {run(SKAction.playSoundFileNamed("IllegalPlay.wav", waitForCompletion: false))}
                 
-                if tile.isTileOnBoard() {
-                    
-                    
-                    
-                    let gameBoardTile = gameBoard?.getTile(atRow: row, andCol: col)
-                    
-                    gameBoardTile?.player = 0
-                    
-                    if let holdVal = gameBoardTile!.holdingValue, let holdCol = gameBoardTile!.holdingColor {
-         
-                        gameBoardTile!.setTileValue(value: holdVal)
-                        gameBoardTile!.color = holdCol
+                if badMathTiles.count > 0 {
+                
+                    print("badmathtiles count = \(badMathTiles.count)")
+                    for tile in badMathTiles {
+                        
+                        print("tile value in bad tiles: \(tile.tileValue) row:\(tile.row), col:\(tile.col) tile type:\(tile.name)")
+                        tile.tileLabel.fontColor = .red
+                       
                     }
-                    
-                    else {
-                        gameBoardTile!.setTileValue(value: nil)
-                        if bonusTilesUsed.contains(gameBoardTile!) {
-                            gameBoardTile!.tileLabel.text = "+2"
-                            gameBoardTile!.tileLabel.fontColor = .gray
-                        }
-                        gameBoardTile!.color = GameConstants.TileDefaultColor
-                    }
-     
-                    
-                    
-                    gameBoardTile!.inSelectedPlayerTiles = false
-                }
-            }
-            
-           
-            resetSelectedPlayerTiles()
-           
-        }
         
+                 
+                 presentErrorMessageView()
+                    
+                }
+                else {
+                 // handleRestoringTilesAfterIllegalMove()
+                    recall()
+                            nonDeleteSelectedPlayerTiles.removeAll()
+                           removeSelectedPlayerTiles()
+                            bonusTilesUsed.removeAll()
+                }
+
+            }
+        for tile in copySelectedPlayerTiles {
+            if tile.tileType == .bomb || tile.tileType == .eraser {
+                let gbT = gameBoard.getTile(atRow: tile.row, andCol: tile.col)
+                   gbT.removeHoldingValuesAfterRestoring()
+                   if tile.tileType == .bomb {
+                   for bt in gameBoard.getBoxofTiles(withCenterTile: tile){
+                                   bt.removeHoldingValuesAfterRestoring()
+                     }
+                    }
+        }
+                }
+               
         
          nonDeleteSelectedPlayerTiles.removeAll()
          bonusTilesUsed.removeAll()
@@ -2490,10 +2858,9 @@ class GameplayScene: SKScene {
         let expandTile = SKAction.scale(by: 1.2, duration: 0.1)
         let changeToYellow = SKAction.colorize(with: .yellow, colorBlendFactor: 0.0 , duration: 0.1)
         let changeBack = SKAction.colorize(with: color, colorBlendFactor: 0.0, duration: 0.1)
-        let playValidMove =  SKAction.playSoundFileNamed("ValidMoveSound.wav", waitForCompletion: false)
+        let playValidMove =  SKAction.playSoundFileNamed("success1.wav", waitForCompletion: false)
         let changeVolume = SKAction.changeVolume(to: 2, duration: 0.0)
         let changeToYellowAndPlaySound = SKAction.group([changeToYellow, playValidMove,changeVolume])
-        let playValidMoveQuiet = SKAction.group([playValidMove, changeVolume])
         let shrinkTile = SKAction.scale(by: 1/1.2, duration: 0.6)
         let wait = SKAction.wait(forDuration: 0.1)
         let seq = SKAction.sequence([ wait, shrinkTile, changeBack])
@@ -2545,7 +2912,85 @@ class GameplayScene: SKScene {
         completion(gameBoardTiles)
     }
 
+    func lightUpBoxTiles(tiles: [Tile], colorToUseInLightUp: UIColor = .yellow, pointsToShow: Int,completion: (()->())?){
+        
+       
+        print("in light up box tiles...about to convert non delete selected tiles to board tiles")
+        
+        
+        let expandTile = SKAction.scale(by: 1.2, duration: 0.1)
+        let changeToColor = SKAction.colorize(with: colorToUseInLightUp, colorBlendFactor: 0.0 , duration: 0.3)
+       
+        let playBoxBonus =  SKAction.playSoundFileNamed("BoxBonus.mp3", waitForCompletion: false)
+        
+        var changeToColorAndPlaySound: SKAction
+        if playSound {
+            changeToColorAndPlaySound = SKAction.group([changeToColor, playBoxBonus])
+            
+        }
+        else {
+            changeToColorAndPlaySound = changeToColor
+        }
+        
+        
+         let shrinkTile = SKAction.scale(by: 1/1.2, duration: 0.6)
+        let wait = SKAction.wait(forDuration: 0.3)
+        //  let changeToYellowAndPlaySound = SKAction.group([changeToYellow,playValidMove])
     
+       
+        for  (i,tile) in tiles.enumerated() {
+            var color: UIColor
+           
+            if tile.player == 1 {
+                color =  GameConstants.TilePlayer1TileColor
+            }
+            else if tile.player == 2 {
+                color =  GameConstants.TilePlayer2TileColor
+            }
+            
+            else if tile.tileValue != nil {
+                color = .lightGray
+            }
+            
+            else {
+                color = .white
+            }
+            
+            let changeBack = SKAction.colorize(with: color, colorBlendFactor: 0.0, duration: 1.5)
+            let seq = SKAction.sequence([ wait, shrinkTile, changeBack])
+            tile.run(expandTile)
+            tile.zPosition = 4
+            
+    
+            tile.run(changeToColorAndPlaySound){
+                //self.playValidMoveAudioNode.run(playValidMoveQuiet)
+                
+                tile.run(seq){
+                    
+                    tile.zPosition = 2
+                    
+                    if i == tiles.count - 1 {
+                     //   var loc = tiles[i].position
+                        
+                        
+                       // loc.x = min(self.gameBoardDisplay.frame.maxX - 15, loc.x)
+                        
+                        // self.showPoints(atLocation: loc, points: points)
+                      
+                        self.showPoints(atLocation: CGPoint(x: 0, y: 0), points: pointsToShow, color:  .green)
+                        
+                        self.selectedPlayerTiles.removeAll()
+                    }
+                }
+            }
+            
+            
+        }
+        if completion != nil {
+        completion!()
+        }
+    }
+
     func lightUpPlayedTiles1(completion: (() -> ())?) {
         
         guard !shouldNotRunAnimation() else{
@@ -2567,7 +3012,7 @@ class GameplayScene: SKScene {
         let expandTile = SKAction.scale(by: 1.2, duration: 0.2)
         let changeToYellow = SKAction.colorize(with: .yellow, colorBlendFactor: 0.0 , duration: 0.1)
         let changeBack = SKAction.colorize(with: color, colorBlendFactor: 0.0, duration: 0.1)
-        let playValidMove =  SKAction.playSoundFileNamed("ValidMoveSound.wav", waitForCompletion: false)
+        let playValidMove =  SKAction.playSoundFileNamed("success1.wav", waitForCompletion: false)
         
         let shrinkTile = SKAction.scale(by: 1/1.2, duration: 1.0)
         let wait = SKAction.wait(forDuration: 0.5)
@@ -2604,7 +3049,7 @@ class GameplayScene: SKScene {
             print("going past eraser bit in light up tiles. means we didn't just find eraser tile....")
             gameBoardTile.run(expandTile)
             gameBoardTile.zPosition = 4
-            
+        
             if gameBoardTileIsBonusTile(tile: gameBoardTile){
                 //currentPlayer.score += 2
                 nBonusTilesUsed += 1
@@ -2643,6 +3088,1090 @@ class GameplayScene: SKScene {
         }
     }
 
+    func lightUpPlays(plays: [Play], completion: (() -> ())?){
+        
+        print("in light up plays for \(String(describing: self.currentUserPlayer.userName)) with \(plays.count) plays.")
+        
+     
+      
+        guard plays.count > 0 else {
+           
+            print("No plays, returning from light up plays")
+            return
+        }
+    
+        
+       
+        var color: SKColor = SKColor()
+        color = getPlayerToUseInLoadGameClosure().player1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
+        
+    
+        // let gameBoardTiles = convertSelectedPlayerTilesIntoBoardTiles()
+        // do eraser tiles first in sort, so that the rest of closure below runs
+        
+        
+        let expandTile = SKAction.scale(by: 1.2, duration: 0.2)
+        let changeToYellow = SKAction.colorize(with: .yellow, colorBlendFactor: 0.0 , duration: 0.1)
+        let changeBack = SKAction.colorize(with: color, colorBlendFactor: 0.0, duration: 0.1)
+        let playValidMove = SKAction.playSoundFileNamed("success1.wav", waitForCompletion: false)
+        
+        let shrinkTile = SKAction.scale(by: 1/1.2, duration: 1.0)
+        let wait = SKAction.wait(forDuration: 0.5)
+        
+        let seq = SKAction.sequence([ wait, shrinkTile, changeBack])
+        var changeToYellowAndPlaySound: SKAction
+        if playSound {
+            changeToYellowAndPlaySound = SKAction.group([changeToYellow,playValidMove])
+            
+        }
+        else {
+            changeToYellowAndPlaySound = changeToYellow
+        }
+        
+        let fadeToWhite = SKAction.colorize(with: GameConstants.TileBoardTileColor, colorBlendFactor: 0.0, duration: 0.3)
+        
+        
+        var nBonusTilesUsed: Int = 0
+        
+        
+        for play in plays.filter({!self.playsSeen.contains($0.playID)})  {
+          
+            
+            
+           
+          
+            var orderedTiles = orderTilesWithEraserTilesFirst(tiles: play.playTiles)
+            for  (i,tile) in orderedTiles.enumerated() {
+                
+                
+                let gameBoardTile = self.game.board.getTile(atRow: tile.row, andCol: tile.col)
+                if tile.tileType == .eraser  {
+                    print("eraser tile found, moving on. light up tiles 1")
+                    
+                    if game.lastPlayerToMove != (currentUserPlayer.player1 == true ? 1 : 2) {
+                        
+                        gameBoardTile.run(fadeToWhite)
+                        if playSound  {
+                            gameBoardTile.run(SKAction.playSoundFileNamed("EraserSound1.wav", waitForCompletion: false))
+                        }
+                        
+                    }
+                    continue
+                }
+                
+                
+                print("going past eraser bit in light up tiles. means we didn't just find eraser tile....")
+                gameBoardTile.run(expandTile)
+                gameBoardTile.zPosition = 4
+                
+                if gameBoardTileIsBonusTile(tile: gameBoardTile){
+                    //currentPlayer.score += 2
+                    nBonusTilesUsed += 1
+                    showPoints(atLocation: gameBoardTile.position, points: 2, color: .gray)
+                }
+                
+                gameBoardTile.run (changeToYellowAndPlaySound){
+                    //                self.playValidMoveAudioNode.run(playValidMoveQuiet, completion: {
+                    //                    print("VALID MOVE QUIET WAS PLAYED")
+                    //                })
+                    gameBoardTile.run(seq){
+                        
+                        gameBoardTile.zPosition = 2
+                        
+                        if i == orderedTiles.count - 1 {
+                           
+                            var loc = gameBoardTile.position
+                            loc.x = min(self.gameBoardDisplay.frame.maxX - 15, loc.x)
+                            // self.showPoints(atLocation: loc, points: points)
+                            
+                            let points = play.points
+                            
+                            print("points to show is \(points)")
+                            self.showPoints(atLocation: loc, points: points, color:  color)
+                            
+                            
+                            
+                        }
+                    }
+                }
+                
+                
+            }
+          
+            playsSeen.append(play.playID)
+            
+            
+         
+        }
+        if game.lastPlayerUsedAllTiles {
+            print("after showing plays in light up plays, BINGO, so going to showBingo()")
+            self.showBingo()
+        }
+        
+    self.currentUserPlayer.plays.removeAll()
+ 
+        if  completion != nil {
+            completion!()
+        }
+    }
+   
+   
+    
+    func tileErasesTileInOtherPlay(tile: Tile, plays: [Play]) -> Bool {
+        guard tile.tileType == .eraser || tile.tileType == .bomb else {
+            return false
+        }
+        for play in plays {
+            for playTile in play.playTiles {
+                if playTile != tile && playTile.tileType != .eraser && playTile.tileType != .bomb && tile.row == playTile.row && tile.col == playTile.col {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    
+    func runBoxBonusAnimation(play: Play){
+        print("in runBoxBonusAnimation")
+        if play.boxLocs.count > 0 {
+            print("play \(play.playID) has boxes")
+                                        print("play \(play.playID) has box loc! current user is player \(self.currentUserPlayer.playerN) player 1 viewed: \(play.boxLocs[0].player1Viewed) player 2 viewed: \(play.boxLocs[0].player2Viewed)")
+                                        let newBoxLocs = self.game.boxLocs.filter{self.currentUserPlayer.player1 ? !$0.player1Viewed : !$0.player2Viewed}
+                                            
+            print("new box locs after filtered to unviewed has \(newBoxLocs.count). about to set boxBonusViewedThisTurn to true")
+                                        
+                                    
+                                        self.boxBonusViewedThisTurn = true
+                                   
+                                        for newBox in newBoxLocs where !self.boxesViewedThisTurn.contains(where: {$0.boxID == newBox.boxID}) && play.boxLocs.filter({$0.row == newBox.row && $0.col == newBox.col}).count == 1  {
+        
+                        
+                           self.lightUpBoxTiles(tiles:self.getTilesInBox(withCenterLoc: newBox), colorToUseInLightUp: .green, pointsToShow: GameConstants.BoxBonus){
+                               self.boxesViewedThisTurn.append(newBox)
+                           
+                           }
+                       }
+                                    }
+    }
+    
+    func lightUpPlaysInSequence(plays: [Play], completion: (() -> ())?){
+        
+       
+        print("in light up plays in seq for \(String(describing: self.currentUserPlayer.userName)) with \(plays.count) plays.")
+        
+        
+        
+        guard plays.filter({!self.playsSeen.contains($0.playID)}).count > 0 else {
+            
+            print("No plays to see, returning from light up plays")
+            return
+        }
+        
+        if currentUserIsCurrentPlayer {
+            disableGame = true
+        }
+        
+        
+        
+        var color: SKColor = SKColor()
+        color = getPlayerToUseInLoadGameClosure().player1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
+        //the color associated with the last player to move
+        
+        
+        
+        // let gameBoardTiles = convertSelectedPlayerTilesIntoBoardTiles()
+        // do eraser tiles first in sort, so that the rest of closure below runs
+        
+        
+        
+        let expandTile = SKAction.scale(by: 1.2, duration: 0.2)
+        let changeToYellow = SKAction.colorize(with: .yellow, colorBlendFactor: 0.0 , duration: 0.1)
+        let changeToRed = SKAction.colorize(with: .red, colorBlendFactor: 0.0 , duration: 0.2)
+        let changeBack = SKAction.colorize(with: color, colorBlendFactor: 0.0, duration: 0.1)
+        let playValidMove =  SKAction.playSoundFileNamed("success1.wav", waitForCompletion: false)
+        
+        let shrinkTile = SKAction.scale(by: 1/1.2, duration: 0.1)
+        let wait = SKAction.wait(forDuration: 0.5)
+        
+       // let seq = SKAction.sequence([ wait, shrinkTile, changeBack])
+        var changeToYellowAndPlaySound: SKAction
+        if playSound {
+            changeToYellowAndPlaySound = SKAction.group([expandTile, changeToYellow,playValidMove])
+            
+        }
+        else {
+             changeToYellowAndPlaySound = SKAction.group([expandTile, changeToYellow])
+        }
+        let fadeToWhite = SKAction.colorize(with: GameConstants.TileBoardTileColor, colorBlendFactor: 0.0, duration: 0.1)
+        
+       
+        let lightUpTileSeq = SKAction.sequence([changeToYellowAndPlaySound, wait, shrinkTile ])
+        
+        var nBonusTilesUsed: Int = 0
+        
+        var allPlayTileActions = [SKAction]()
+        allPlayTileActions.removeAll()
+        
+        let playsSortedByDate = plays.sorted { (play1, play2) -> Bool in
+            play1.playCreatedDate < play2.playCreatedDate
+        }
+        if game.lastPlayerToMove != (currentUserPlayer.player1 == true ? 1 : 2) {
+            revertBoardToStateBeforePlays(plays: plays, board: gameBoard)
+        }
+   
+        //loop through plays in the order they were created, only viewing the ones not seen
+        for play in playsSortedByDate.filter({!self.playsSeen.contains($0.playID)})  {
+        
+                      
+            
+            print("play created date: \(play.playCreatedDate)")
+            var playTileActions = [SKAction]()
+            var tileAction = SKAction()
+           // var orderedTiles = orderTilesWithEraserTilesFirst(tiles: play.playTiles)
+            
+       
+            
+            let playTilesSorted = play.playTiles.sorted { (t1, t2) -> Bool in
+                t1.tileOrderInPlay! < t2.tileOrderInPlay!
+            }
+            
+            for  (i,tile) in playTilesSorted.enumerated()  {
+               
+                tile.showTile(msg: "showing tile in playtilesSorted...")
+                
+                let gameBoardTile = self.gameBoard.getTile(atRow: tile.row, andCol: tile.col)
+                   let currentGameBoardTileValue = gameBoardTile.tileValue
+                   let currentGameBoardTilePlayer = gameBoardTile.player
+               
+                //IF PLAYED TILE IS ERASER...
+                
+                if tile.tileType == .eraser {
+                    print("eraser tile found, light up plays in sequence")
+                
+                   if game.lastPlayerToMove != (currentUserPlayer.player1 == true ? 1 : 2) {
+//
+//
+//                    if let holdVal = tile.holdingValue, let holdingPlayer = tile.holdingPlayer {
+//                        print("in light plays, eraser tile,setting gameboard tile to have holding val: \(holdVal) and color: \(holdingPlayer == 1 ? "blue" : "green" ) and original tile value is \(currentGameBoardTileValue)")
+//
+//
+//                        gameBoardTile.tileLabel.text = "\(holdVal)"
+//
+//                       if !tileErasesTileInOtherPlay(tile: tile, plays: plays){
+//
+//                        gameBoardTile.color = holdingPlayer == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
+//                        }
+//                        else {
+//                            gameBoardTile.color = GameConstants.TileBoardTileColor
+//                        }
+//
+//
+//                    }
+//                    else {
+//                    print("can't get hold val for eraser tile in light up plays")
+//                    }
+                    
+                    
+                    //tile action will be to show the erasing of the tile
+                     tileAction = SKAction.run {
+                        var eraserBit:SKAction
+                        if self.playSound {
+                            print("SOUND IS ON IN CLOSURE OF PLAY TILES IN SEQ")
+                            eraserBit = SKAction.group([fadeToWhite,SKAction.playSoundFileNamed("EraserSound1.wav", waitForCompletion: false) ])
+                            
+                        }
+                        else {
+                            eraserBit = fadeToWhite
+                        }
+                    gameBoardTile.run(eraserBit){
+                            print("setting tile to final value after erasing, which is currentGameBoardValue: \(currentGameBoardTileValue)")
+                        //gameBoardTile.setTileValue(value: currentGameBoardTileValue)
+                        
+                        var overwritten = false
+                        var overwrittenTileLblText = ""
+                        for pT in playTilesSorted where pT.tileType != .eraser && pT.tileType != .bomb {
+                            if pT.row == tile.row && pT.col == tile.col {
+                                overwritten = true
+                                overwrittenTileLblText = pT.tileLabel.text!
+                                print("tile was overwritten by \(pT.tileLabel) at row, col: \(pT.row),\(pT.col)")
+                                break
+                            }
+                        }
+                         gameBoardTile.tileLabel.text = overwritten ? "\(overwrittenTileLblText)"
+                            : ""
+                     
+                        gameBoardTile.resetHoldingValues()
+                         
+                        }
+   
+                        
+                        if i == play.playTiles.count - 1 && play.points > 0 {
+                            print("about to show points because we're on the last tile in the play")
+                            var loc = gameBoardTile.position
+                            loc.x = min(self.gameBoardDisplay.frame.maxX - 15, loc.x)
+                            // self.showPoints(atLocation: loc, points: points)
+                            
+                            let points = play.points
+                            
+                            self.showPoints(atLocation: loc, points: points, color:  color)
+                         
+                           
+                            
+                        } else if i == play.playTiles.count - 1 {
+                            print("Not showing points because play.points = \(play.points)")
+                        }
+                        self.runBoxBonusAnimation(play: play)
+                                              
+                        }
+                   
+                       
+                  
+                        
+                   }
+                
+                   else {
+                       
+                        tileAction  = SKAction.run{
+                            if i == play.playTiles.count - 1 && play.points > 0 {
+                                print("about to show points, on last tile in play")
+                                var loc = gameBoardTile.position
+                                
+                                
+                                
+                                // loc.x = min(self.gameBoardDisplay.frame.maxX - 15, loc.x)
+                                if gameBoardTile.col == GameConstants.BoardNumCols {
+                                    loc.x = gameBoardTile.position.x - gameBoardTile.size.width
+                                }
+                                else if gameBoardTile.col == 0 {
+                                    loc.x = gameBoardTile.position.x + gameBoardTile.size.width
+                                }
+                               
+                                let bonusPoints = play.getPointsFromBonusTiles()
+                                let points = play.points - bonusPoints
+                                
+                                self.showPoints(atLocation: loc, points: points, color:  color)
+                                if bonusPoints > 0 {
+                                    var loc1 = CGPoint()
+                                    
+                                    if loc.x - 100 < self.gameBoardDisplay.frame.minX {
+                                        loc1.x = loc.x + 100
+                                    }
+                                    else {
+                                        loc1.x = loc.x - 100
+                                    }
+                                    loc1.y = loc.y
+                                    
+                                    self.showPoints(atLocation: loc1, points: bonusPoints, color: .gray)
+                                }
+                                
+                                
+                            }
+                            
+                           
+                        }
+                 self.runBoxBonusAnimation(play: play)
+                    }
+                   
+                   
+                    playTileActions.append(tileAction)
+                   // continue
+                }
+                else if tile.tileType == .bomb {
+                    print("bomb tile found, light up plays in sequence and index \(i) in plays")
+                    //HANDLE BOMB ANIMATION FOR PLAYER THAT DID NOT MAKE THE PLAY
+                    if game.lastPlayerToMove != (currentUserPlayer.player1 == true ? 1 : 2) {
+           
+                        tileAction = SKAction.run {
+                            var bombBit:SKAction
+                            if self.playSound {
+                                print("SOUND IS ON IN CLOSURE OF PLAY TILES IN SEQ..")
+                                bombBit = SKAction.group([changeToRed, fadeToWhite,SKAction.playSoundFileNamed("bomb.mp3", waitForCompletion: false) ])
+                                
+                            }
+                            else {
+                                bombBit = SKAction.group([changeToRed, fadeToWhite])
+                            }
+                            for (gNum,gTile) in self.gameBoard.getBoxofTiles(withCenterTile: tile).enumerated() where !gTile.starterTile {
+                                
+                                print("running bomb animation in lightUpPlaysInSequence for tile at row: \(gTile.row), col:\(gTile.col)")
+                                    gTile.run(bombBit){
+                                 
+                                        
+                                       var overwritten = false
+                                        
+                                        for t in playTilesSorted  where t.tileType != .bomb && t.tileType != .eraser {
+                                            if t.row == gTile.row && t.col == gTile.col {
+                                                print("tile at row, col \(t.row),\(t.col) w val \(t.tileValue) overwrites bombed area from bomb at \(tile.row)\(tile.col)" )
+                                                overwritten = true
+                                                break
+                                            }
+                                        }
+//
+//
+                                        if !overwritten {
+                                        print("bombed tile at row,col \(gTile.row),\(gTile.col) is NOT overwritten by other tile in play")
+                                            if !(gTile.tileLabel.text == GameConstants.TileBonusTileText) {
+                                                gTile.tileLabel.text = ""
+                                            }
+                                         gTile.color = GameConstants.TileBoardTileColor
+                                        }
+                                        else {
+                                            print("tile at  row,col \(gTile.row),\(gTile.col) WAS bombed and later overwritten with value \(gTile.getTileTextRepresentation())")
+                                        }
+                                  
+                                }
+                                
+                              
+                                gTile.resetHoldingValues()
+                            }
+                            
+                            
+                            if i == play.playTiles.count - 1 && play.points > 0 {
+                                print("about to show points because we're on the last tile in the play")
+                                var loc = gameBoardTile.position
+                                loc.x = min(self.gameBoardDisplay.frame.maxX - 15, loc.x)
+                                // self.showPoints(atLocation: loc, points: points)
+                                
+                                let points = play.points
+                                
+                                self.showPoints(atLocation: loc, points: points, color:  color)
+                                
+                                
+                                
+                                
+                            } else if i == play.playTiles.count - 1 {
+                                print("Not showing points because play.points = \(play.points)")
+                            }
+                           self.runBoxBonusAnimation(play: play)
+                        }
+                        
+                        
+                        
+                        
+                        
+                    }
+                        
+                    else {
+                        
+                        tileAction  = SKAction.run{
+                            if i == play.playTiles.count - 1 && play.points > 0 {
+                                print("about to show points, on last tile in play")
+                                var loc = gameBoardTile.position
+                                
+                                
+                                
+                                // loc.x = min(self.gameBoardDisplay.frame.maxX - 15, loc.x)
+                                if gameBoardTile.col == GameConstants.BoardNumCols {
+                                    loc.x = gameBoardTile.position.x - gameBoardTile.size.width
+                                }
+                                else if gameBoardTile.col == 0 {
+                                    loc.x = gameBoardTile.position.x + gameBoardTile.size.width
+                                }
+                                
+                                let bonusPoints = play.getPointsFromBonusTiles()
+                                let points = play.points - bonusPoints
+                                
+                                self.showPoints(atLocation: loc, points: points, color:  color)
+                                if bonusPoints > 0 {
+                                    var loc1 = CGPoint()
+                                    /*
+                                    if loc.x - 100 < self.gameBoardDisplay.frame.minX {
+                                        loc1.x = loc.x + 100
+                                    }
+                                    else {
+                                        loc1.x = loc.x - 100
+                                    }
+                                    loc1.y = loc.y
+                                    */
+                                    loc1.x = loc.x
+                                    loc1.y = loc.y - 400
+                                    self.showPoints(atLocation: loc1, points: bonusPoints, color: .gray)
+                                }
+                                
+                                
+                            }
+                            self.runBoxBonusAnimation(play: play)
+                        }
+                        
+                    }
+                    
+                   
+                    
+                    playTileActions.append(tileAction)
+                    // continue
+                }
+                
+                else {
+                print("going past bomb/eraser bit in light up tiles. means we didn't just find eraser tile....")
+//                gameBoardTile.run(expandTile)
+//                gameBoardTile.zPosition = 4
+//
+            
+                if game.lastPlayerToMove != (currentUserPlayer.player1 == true ? 1 : 2) {
+                   // gameBoardTile.tileLabel.color = GameConstants.TileBoardTileColor
+                  
+            
+                   // gameBoardTile.color = GameConstants.TileBoardTileColor
+                   
+                    
+                    // gameBoardTile.setTileValue(value: tile.tileValue)
+                //   gameBoardTile.tileLabel.text = "\(tile.tileValue!)"
+                //    gameBoardTile.tileLabel.isHidden = true
+                    
+                }
+                tileAction = SKAction.run{
+                  //   gameBoardTile.tileLabel.isHidden = false
+                   
+                   gameBoardTile.tileLabel.text = "\(tile.tileValue!)"
+                    print("setting tile to have tile value: \(tile.tileValue)")
+                        gameBoardTile.run(lightUpTileSeq){
+                            
+                            var colorizeColor: UIColor
+                            switch tile.player {
+                            case 1 : colorizeColor = GameConstants.TilePlayer1TileColor
+                            case 2: colorizeColor = GameConstants.TilePlayer2TileColor
+                            default: colorizeColor = GameConstants.TileBoardTileColor
+                            }
+                            gameBoardTile.run(SKAction.colorize(with: colorizeColor, colorBlendFactor: 1.0, duration: 0.3))
+                         
+                            
+                           
+                            
+                            if i == play.playTiles.count - 1 {
+                                print("about to show points, on last tile in play")
+                                var loc = gameBoardTile.position
+                                
+                                
+                                
+                               // loc.x = min(self.gameBoardDisplay.frame.maxX - 15, loc.x)
+                                if gameBoardTile.col == GameConstants.BoardNumCols {
+                                    loc.x = gameBoardTile.position.x - gameBoardTile.size.width
+                                }
+                                else if gameBoardTile.col == 0 {
+                                    loc.x = gameBoardTile.position.x + gameBoardTile.size.width
+                                }
+                                // self.showPoints(atLocation: loc, points: points)
+                                
+                                
+//
+//                                let newBoxLocs = self.game.boxLocs.filter{self.currentUserPlayer.player1 ? !$0.player1Viewed: !$0.player2Viewed}
+//
+//                                if newBoxLocs.count > 0 {
+//                                let BLS =  self.gameBoard.getBoxLocsForTiles(tiles: play.playTiles)
+//                                var excludeBoxes = [BoxLoc]()
+//                                var nBoxes = 0
+//                                for bL in BLS {
+//                                    if bL.hasTheSameCenterAsAnyBox(inboxes: newBoxLocs)
+//                                        && !bL.hasTheSameCenterAsAnyBox(inboxes: self.boxesViewedThisTurn)
+//                                    && !bL.hasTheSameCenterAsAnyBox(inboxes: excludeBoxes){
+//                                        nBoxes += 1
+//                                        excludeBoxes.append(bL)
+//                                    }
+//
+//                                }
+//                                    points = play.points - 15*nBoxes
+//                                }
+//                                else {
+//                                     points = play.points
+//                                }
+
+              /* try light up box tiles after play */
+                                
+                                if play.boxLocs.count > 0 {
+                                    print("play \(play.playID) has box loc! current user is player \(self.currentUserPlayer.playerN) player 1 viewed: \(play.boxLocs[0].player1Viewed) player 2 viewed: \(play.boxLocs[0].player2Viewed)")
+                                    let newBoxLocs = self.game.boxLocs.filter{self.currentUserPlayer.player1 ? !$0.player1Viewed : !$0.player2Viewed}
+                                        
+                                    print("new box locs after filtered to unviewed has \(newBoxLocs.count)")
+                                    
+                                    self.boxBonusViewedThisTurn = true
+                               
+                                    for newBox in newBoxLocs where !self.boxesViewedThisTurn.contains(where: {$0.boxID == newBox.boxID}) && play.boxLocs.filter({$0.row == newBox.row && $0.col == newBox.col}).count == 1  {
+    
+                    
+                       self.lightUpBoxTiles(tiles:self.getTilesInBox(withCenterLoc: newBox), colorToUseInLightUp: .green, pointsToShow: GameConstants.BoxBonus){
+                           self.boxesViewedThisTurn.append(newBox)
+                       
+                       }
+                   }
+                                }
+                                
+   
+                            let bonusPoints = play.getPointsFromBonusTiles()
+                            let points = play.points - bonusPoints
+                              
+                                self.showPoints(atLocation: loc, points: points, color:  color)
+                                if bonusPoints > 0 {
+                                    var loc1 = CGPoint()
+                                    
+                                    if loc.x - 100 < self.gameBoardDisplay.frame.minX {
+                                        loc1.x = loc.x + 100
+                                    }
+                                    else {
+                                        loc1.x = loc.x - 100
+                                    }
+                                    loc1.y = loc.y
+                                    
+                                    self.showPoints(atLocation: loc1, points: bonusPoints, color: .gray)
+                                }
+                                
+                                
+                            }
+                            
+                            
+                       }
+                    
+                    
+//                    if self.gameBoardTileIsBonusTile(tile: gameBoardTile){
+//                        //currentPlayer.score += 2
+//                        print("lightuptileseq closure, bonus tile!")
+//                        nBonusTilesUsed += 1
+//                        self.showPoints(atLocation: gameBoardTile.position, points: 2, color: .gray)
+//
+//
+//                    }
+                    
+                }
+                
+                print("appending tile action for NON-eraser tile...")
+                playTileActions.append(tileAction)
+                
+            }
+            }
+            print("after ordered tiles loop, appending all play tiled actions and appending to play seen")
+            allPlayTileActions.append(SKAction.sequence([SKAction.group(playTileActions), SKAction.wait(forDuration: 2.0)]) )
+            playsSeen.append(play.playID)
+            
+       
+            
+        }
+    
+        
+        //allPlayTileActions.removeAll()
+    
+        self.run(SKAction.sequence(allPlayTileActions)){
+        
+            if self.game.lastPlayerUsedAllTiles {
+                print("after showing plays in light up plays, BINGO, so going to showBingo()")
+                self.showBingo()
+            }
+            /*
+            let newBoxLocs = self.game.boxLocs.filter{self.currentUserPlayer.player1 ? !$0.player1Viewed : !$0.player2Viewed }
+            if newBoxLocs.count > 0 {
+                self.boxBonusViewedThisTurn = true
+              
+                for newBox in newBoxLocs where !self.boxesViewedThisTurn.contains(where: {$0.boxID == newBox.boxID}) {
+                    self.lightUpBoxTiles(tiles:self.getTilesInBox(withCenterLoc: newBox), colorToUseInLightUp: .green, pointsToShow: GameConstants.BoxBonus){
+                        self.boxesViewedThisTurn.append(newBox)
+                    
+                    }
+                }
+            
+            } */
+            
+            
+        
+            if self.currentUserIsCurrentPlayer {
+                self.disableGame = false
+            }
+            
+            self.currentUserPlayer.plays.removeAll()
+            
+            if  completion != nil {
+                
+                completion!()
+            }
+        }
+      
+//        self.currentUserPlayer.plays.removeAll()
+//
+//        if  completion != nil {
+//
+//            completion!()
+//        }
+    }
+    
+    
+    func lightUpPlaysInSequence1(plays: [Play], completion: (() -> ())?){
+        
+     
+        guard plays.filter({!self.playsSeen.contains($0.playID)}).count > 0 else {
+            
+            print("No plays to see, returning from light up plays")
+            return
+        }
+        
+        if currentUserIsCurrentPlayer {
+            disableGame = true
+        }
+        
+        
+        
+        var color: SKColor = SKColor()
+        color = getPlayerToUseInLoadGameClosure().player1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
+        //the color associated with the last player to move
+        
+        
+        
+        // let gameBoardTiles = convertSelectedPlayerTilesIntoBoardTiles()
+        // do eraser tiles first in sort, so that the rest of closure below runs
+        
+        
+        let expandTile = SKAction.scale(by: 1.2, duration: 0.2)
+        let changeToYellow = SKAction.colorize(with: .yellow, colorBlendFactor: 0.0 , duration: 0.1)
+        let changeBack = SKAction.colorize(with: color, colorBlendFactor: 0.0, duration: 0.1)
+        let playValidMove =  SKAction.playSoundFileNamed("success1.wav", waitForCompletion: false)
+        
+        let shrinkTile = SKAction.scale(by: 1/1.2, duration: 0.1)
+        let wait = SKAction.wait(forDuration: 0.5)
+        
+        // let seq = SKAction.sequence([ wait, shrinkTile, changeBack])
+        var changeToYellowAndPlaySound: SKAction
+        if playSound {
+            changeToYellowAndPlaySound = SKAction.group([expandTile, changeToYellow,playValidMove])
+            
+        }
+        else {
+            changeToYellowAndPlaySound = SKAction.group([expandTile, changeToYellow])
+        }
+        let changeToRed = SKAction.colorize(with: .red, colorBlendFactor: 0.0, duration: 0.3)
+        let fadeToWhite = SKAction.colorize(with: GameConstants.TileBoardTileColor, colorBlendFactor: 0.0, duration: 0.3)
+        
+        let lightUpTileSeq = SKAction.sequence([changeToYellowAndPlaySound, wait, shrinkTile ])
+        
+        var nBonusTilesUsed: Int = 0
+        
+        var allPlayTileActions = [SKAction]()
+        allPlayTileActions.removeAll()
+        
+        let playsSortedByDate = plays.sorted { (play1, play2) -> Bool in
+            play1.playCreatedDate < play2.playCreatedDate
+        }
+        if game.lastPlayerToMove != (currentUserPlayer.player1 == true ? 1 : 2) {
+            revertBoardToStateBeforePlays(plays: plays, board: gameBoard)
+        }
+        
+        //loop through plays in the order they were created, only viewing the ones not seen
+        for play in playsSortedByDate.filter({!self.playsSeen.contains($0.playID)})  {
+            
+            print("play created date: \(play.playCreatedDate)")
+            var playTileActions = [SKAction]()
+            var tileAction = SKAction()
+            // var orderedTiles = orderTilesWithEraserTilesFirst(tiles: play.playTiles)
+            
+            
+            
+            let playTilesSorted = play.playTiles.sorted { (t1, t2) -> Bool in
+                t1.tileOrderInPlay! < t2.tileOrderInPlay!
+            }
+            
+            for  (i,tile) in playTilesSorted.enumerated()  {
+                
+                tile.showTile(msg: "showing tile in playtilesSorted...")
+                
+                let gameBoardTile = self.gameBoard.getTile(atRow: tile.row, andCol: tile.col)
+                let currentGameBoardTileValue = gameBoardTile.tileValue
+                let currentGameBoardTilePlayer = gameBoardTile.player
+                
+                //IF PLAYED TILE IS ERASER...
+                
+                if tile.tileType == .eraser {
+                    print("eraser tile found, light up plays in sequence")
+                    if game.lastPlayerToMove != (currentUserPlayer.player1 == true ? 1 : 2) {
+                    
+                        //tile action will be to show the erasing of the tile
+                        tileAction = SKAction.run {
+                            var eraserBit:SKAction
+                            
+                            if self.playSound {
+                                 eraserBit = SKAction.group([fadeToWhite,SKAction.playSoundFileNamed("EraserSound1.wav", waitForCompletion: false) ])
+                                
+                            }
+                            else {
+                                eraserBit = fadeToWhite
+                            }
+                            gameBoardTile.run(eraserBit){
+                            
+                                gameBoardTile.resetHoldingValues()
+                                gameBoardTile.tileLabel.text = ""
+                            }
+                            
+                            if i == play.playTiles.count - 1 && play.points > 0 {
+                                print("about to show points because we're on the last tile in the play")
+                                var loc = gameBoardTile.position
+                                loc.x = min(self.gameBoardDisplay.frame.maxX - 15, loc.x)
+                                // self.showPoints(atLocation: loc, points: points)
+                                
+                                let points = play.points
+                                
+                                self.showPoints(atLocation: loc, points: points, color:  color)
+      
+                            }
+                            
+                        }
+                        
+                    }
+                        
+                    else {
+                        
+                        tileAction  = SKAction.run{
+                            if i == play.playTiles.count - 1 && play.points > 0 {
+                                print("about to show points, on last tile in play")
+                                var loc = gameBoardTile.position
+                                
+                                
+                                
+                                // loc.x = min(self.gameBoardDisplay.frame.maxX - 15, loc.x)
+                                if gameBoardTile.col == GameConstants.BoardNumCols {
+                                    loc.x = gameBoardTile.position.x - gameBoardTile.size.width
+                                }
+                                else if gameBoardTile.col == 0 {
+                                    loc.x = gameBoardTile.position.x + gameBoardTile.size.width
+                                }
+                                
+                                let bonusPoints = play.getPointsFromBonusTiles()
+                                let points = play.points - bonusPoints
+                                
+                                self.showPoints(atLocation: loc, points: points, color:  color)
+                                if bonusPoints > 0 {
+                                    var loc1 = CGPoint()
+                                    
+                                    if loc.x - 100 < self.gameBoardDisplay.frame.minX {
+                                        loc1.x = loc.x + 100
+                                    }
+                                    else {
+                                        loc1.x = loc.x - 100
+                                    }
+                                    loc1.y = loc.y
+                                    
+                                    self.showPoints(atLocation: loc1, points: bonusPoints, color: .gray)
+                                }
+                                
+                                
+                            }
+                        }
+                        
+                    }
+    
+                    playTileActions.append(tileAction)
+                    // continue
+                }
+                else if tile.tileType == .bomb {
+                    print("bomb tile found, light up plays in sequence and index \(i) in plays")
+                    //HANDLE BOMB ANIMATION FOR PLAYER THAT DID NOT MAKE THE PLAY
+                    if game.lastPlayerToMove != (currentUserPlayer.player1 == true ? 1 : 2) {
+                        
+                        tileAction = SKAction.run {
+                            var bombBit:SKAction
+                            if self.playSound {
+                                print("SOUND IS ON IN CLOSURE OF PLAY TILES IN SEQ")
+                                bombBit = SKAction.group([fadeToWhite,SKAction.playSoundFileNamed("bomb.mp3", waitForCompletion: false) ])
+                                
+                            }
+                            else {
+                                bombBit = fadeToWhite
+                            }
+                            for (gNum,gTile) in self.gameBoard.getBoxofTiles(withCenterTile: tile).enumerated() where !gTile.starterTile {
+                                if gNum == 0 {
+                                    gTile.run(bombBit)
+                                    
+                                }
+                                else {
+                                    gTile.run(fadeToWhite)
+                                }
+                                gTile.resetHoldingValues()
+                                 gTile.tileLabel.text = ""
+                            }
+                            
+                            
+                            if i == play.playTiles.count - 1 && play.points > 0 {
+                              
+                                var loc = gameBoardTile.position
+                                loc.x = min(self.gameBoardDisplay.frame.maxX - 15, loc.x)
+                                // self.showPoints(atLocation: loc, points: points)
+                                
+                                let points = play.points
+                                
+                                self.showPoints(atLocation: loc, points: points, color:  color)
+                                
+                                
+                            }
+                        }
+                        
+                    }
+                        
+                    else {
+                        
+                        tileAction  = SKAction.run{
+                            if i == play.playTiles.count - 1 && play.points > 0 {
+                                print("about to show points, on last tile in play")
+                                var loc = gameBoardTile.position
+                                
+                                
+                                
+                                // loc.x = min(self.gameBoardDisplay.frame.maxX - 15, loc.x)
+                                if gameBoardTile.col == GameConstants.BoardNumCols {
+                                    loc.x = gameBoardTile.position.x - gameBoardTile.size.width
+                                }
+                                else if gameBoardTile.col == 0 {
+                                    loc.x = gameBoardTile.position.x + gameBoardTile.size.width
+                                }
+                                
+                                let bonusPoints = play.getPointsFromBonusTiles()
+                                let points = play.points - bonusPoints
+                                
+                                self.showPoints(atLocation: loc, points: points, color:  color)
+                                if bonusPoints > 0 {
+                                    var loc1 = CGPoint()
+                                    
+                                    if loc.x - 100 < self.gameBoardDisplay.frame.minX {
+                                        loc1.x = loc.x + 100
+                                    }
+                                    else {
+                                        loc1.x = loc.x - 100
+                                    }
+                                    loc1.y = loc.y
+                                    
+                                    self.showPoints(atLocation: loc1, points: bonusPoints, color: .gray)
+                                }
+                                
+                                
+                            }
+                        }
+                        
+                    }
+                    
+                    playTileActions.append(tileAction)
+                    // continue
+                }
+                    
+                else {
+                
+                
+                    tileAction = SKAction.run{
+                        
+                        gameBoardTile.tileLabel.text = "\(tile.tileValue!)"
+                      
+                        gameBoardTile.run(lightUpTileSeq){
+                            
+                            var colorizeColor: UIColor
+                            switch tile.player {
+                            case 1 : colorizeColor = GameConstants.TilePlayer1TileColor
+                            case 2: colorizeColor = GameConstants.TilePlayer2TileColor
+                            default: colorizeColor = GameConstants.TileBoardTileColor
+                            }
+                            gameBoardTile.run(SKAction.colorize(with: colorizeColor, colorBlendFactor: 1.0, duration: 0.3))
+                            
+                
+                            if i == play.playTiles.count - 1 {
+                                var loc = gameBoardTile.position
+                               
+                                if gameBoardTile.col == GameConstants.BoardNumCols {
+                                    loc.x = gameBoardTile.position.x - gameBoardTile.size.width
+                                }
+                                else if gameBoardTile.col == 0 {
+                                    loc.x = gameBoardTile.position.x + gameBoardTile.size.width
+                                }
+                                
+                                let bonusPoints = play.getPointsFromBonusTiles()
+                                let points = play.points - bonusPoints
+                                
+                                self.showPoints(atLocation: loc, points: points, color:  color)
+                                if bonusPoints > 0 {
+                                    var loc1 = CGPoint()
+                                    
+                                    if loc.x - 100 < self.gameBoardDisplay.frame.minX {
+                                        loc1.x = loc.x + 100
+                                    }
+                                    else {
+                                        loc1.x = loc.x - 100
+                                    }
+                                    loc1.y = loc.y
+                                    
+                                    self.showPoints(atLocation: loc1, points: bonusPoints, color: .gray)
+                                }
+                                
+                                
+                            }
+                            
+                            
+                        }
+                     
+                    }
+                    playTileActions.append(tileAction)
+                    
+                }
+            }
+             allPlayTileActions.append(SKAction.sequence([SKAction.group(playTileActions), SKAction.wait(forDuration: 2.5)]) )
+            playsSeen.append(play.playID)
+            
+            
+        }
+        
+        
+        //allPlayTileActions.removeAll()
+        
+        self.run(SKAction.sequence(allPlayTileActions)){
+            
+            
+            if self.game.lastPlayerUsedAllTiles {
+                print("after showing plays in light up plays, BINGO, so going to showBingo()")
+                self.showBingo()
+            }
+            
+            let newBoxLocs = self.game.boxLocs.filter{self.currentUserPlayer.player1 ? !$0.player1Viewed : !$0.player2Viewed }
+            if newBoxLocs.count > 0 {
+                self.boxBonusViewedThisTurn = true
+                
+                for newBox in newBoxLocs where !self.boxesViewedThisTurn.contains(where: {$0.boxID == newBox.boxID}) {
+                    self.lightUpBoxTiles(tiles:self.getTilesInBox(withCenterLoc: newBox), colorToUseInLightUp: .green, pointsToShow: GameConstants.BoxBonus){
+                        self.boxesViewedThisTurn.append(newBox)
+                        
+                    }
+                }
+                
+            }
+            
+            if self.currentUserIsCurrentPlayer {
+                self.disableGame = false
+            }
+            
+            self.currentUserPlayer.plays.removeAll()
+            
+            if  completion != nil {
+                
+                completion!()
+            }
+        }
+        
+        //        self.currentUserPlayer.plays.removeAll()
+        //
+        //        if  completion != nil {
+        //
+        //            completion!()
+        //        }
+    }
+    
+    
+    func getTilesInBox(withCenterLoc centerBoxLoc: BoxLoc) -> [Tile]{
+    
+        var boxTiles = [Tile]()
+        
+        for r in centerBoxLoc.row - 1 ... centerBoxLoc.row + 1 {
+            for c in centerBoxLoc.col - 1 ... centerBoxLoc.col + 1 {
+                boxTiles.append(gameBoard!.getTile(atRow: r, andCol: c))
+            }
+        }
+        
+        
+        return boxTiles
+        
+    }
+    
+
+    func lightUpTilesInBoxBonus(tiles: [Tile]){
+        
+    }
     
     func lightUpTilesInSequence(atIndex index: Int) {
        
@@ -2672,7 +4201,7 @@ class GameplayScene: SKScene {
            // showSelectedTiles()
             for tile in selectedPlayerTiles {
                 print("in convertnonDelete... tile value is \(tile.getTileValue()) at row \(tile.row) and col \(tile.col)")
-                if tile.tileType != TileType.eraser {
+                if tile.tileType != TileType.eraser && tile.tileType != .bomb {
                     print("Tile val: \(tile.getTileValue()) row: \(tile.row) col: \(tile.col)")
                     if let gameBoard = gameBoard {
                 gameBoardTiles.append(gameBoard.getTile(atRow: tile.row, andCol: tile.col))
@@ -2761,16 +4290,40 @@ class GameplayScene: SKScene {
         return selectedTilesOrdered
     }
     
-    func showPoints(atLocation location: CGPoint,points: Int, color: UIColor?) {
-  
-      print("about to show \(points) in show points")
-        let pointDisplay = SKLabelNode(text: "+ \(points)!")
+    
+    func orderTilesWithEraserTilesFirst(tiles: [Tile]) -> [Tile] {
+        
+        var tilesOrdered = [Tile]()
+        let eraserTiles = tiles.filter{$0.tileType == .eraser}
+        
+        
+        for tile in eraserTiles {
+            
+            tilesOrdered.append(tile)
+            
+        }
+        
+        // showSelectedTiles()
+        
+        
+        for tile in tiles where tile.tileType != .eraser {
+            tilesOrdered.append(tile)
+        }
+       
+        return tilesOrdered
+    }
+    
+    
+    func showPoints(atLocation location: CGPoint,points: Int, message: String = "", color: UIColor?) {
+        
+        
+        let pointDisplay = SKLabelNode(text: "\(message) + \(points)!")
       
         pointDisplay.fontName = "AvenirNext-Bold"
         pointDisplay.fontSize = 50
         
         if let displayColor = color {
-            pointDisplay.fontColor = color
+            pointDisplay.fontColor = displayColor
         }
         else {
             pointDisplay.fontColor = currentPlayerN == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
@@ -2788,17 +4341,31 @@ class GameplayScene: SKScene {
         pointDisplay.run(movePointDisplay)
         pointDisplay.run(fadePointDisplay){
         pointDisplay.removeFromParent()
-            print("in showPoints(): current player score is: \(self.currentPlayer.score)")
+        
+        print("in showPoints(): current player score is: \(self.currentPlayer.score), showing \(points) points")
            
-            self.updateScoreLabel(player: self.getPlayerToUseInLoadGameClosure() )
+         //   self.updateScoreLabel(player: self.getPlayerToUseInLoadGameClosure() )
             
+            self.updateScoreLabel(player: self.getPlayerToUseInLoadGameClosure(), byIncrement: points)
         }
     }
     
+  
     
     func checkIfLegalMove() -> Bool  {
+     
+        
+        
         if !checkIfLegalTilePath() {
-            print("Not a legal tile path!!")
+            
+            
+            let alert = UIAlertController(title:"Illegal tile path", message: "You can build off any tile in a row or column that a tile placed during the current play is touching", preferredStyle: UIAlertController.Style.alert)
+            let ok = UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil)
+            alert.addAction(ok)
+            if let mainVC = UIApplication.shared.keyWindow?.rootViewController {
+                mainVC.present(alert, animated: true, completion: nil)
+            }
+            
             return false
         }/*
         i think legal tile path takes care of this
@@ -2816,10 +4383,26 @@ class GameplayScene: SKScene {
         
         if !tilesConnectedToBoardTileWithValue() {
             print("player tiles not connected to board tiles with value!!")
+            
+            
+            let alert = UIAlertController(title:"Oops!", message: "You must connect to at least one tile not played during the current play!", preferredStyle: UIAlertController.Style.alert)
+            let ok = UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil)
+            alert.addAction(ok)
+            if let mainVC = UIApplication.shared.keyWindow?.rootViewController {
+                mainVC.present(alert, animated: true, completion: nil)
+            }
+            
             return false
         }
         
         if !selectedTilesOnlyConnectedToThree() {
+            
+//            let alert = UIAlertController(title:"Illegal play", message: "You can only build in a row or column that has at least 2 other tiles in it!", preferredStyle: UIAlertController.Style.alert)
+//            let ok = UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil)
+//            alert.addAction(ok)
+//            if let mainVC = UIApplication.shared.keyWindow?.rootViewController {
+//                mainVC.present(alert, animated: true, completion: nil)
+//            }
             return false
         }
         
@@ -2849,9 +4432,11 @@ class GameplayScene: SKScene {
         for tile in tTiles {
             let connectedTiles = gameBoard.getBottomTopConnectedValuedTiles(tile: tile) + gameBoard.getRightLeftConnectedValueTiles(tile: tile)
             for connectedTile in connectedTiles {
-                if connectedTile.player != currentPlayerN {
+                seedTiles.append(connectedTile)
+               /* if connectedTile.player != currentPlayerN {
                     seedTiles.append(connectedTile)
                 }
+                 */
             }
         }
         return seedTiles
@@ -3019,8 +4604,8 @@ class GameplayScene: SKScene {
      
       gameBoard!.showTiles(tiles: nonDeleteSelectedPlayerTiles, message: "non Delete selected Player tiles in tile connected to board tile:")
        gameBoard!.showTiles(tiles: selectedPlayerTiles, message: "Selected Player tiles in tile connected to board tile:")
-        
-        if nonDeleteSelectedPlayerTiles.count  == 0 && selectedPlayerTiles.count > 0 {
+        print("nonDeleteSelectedPlayerTiles count = \(nonDeleteSelectedPlayerTiles.count)")
+       if nonDeleteSelectedPlayerTiles.count  == 0 && selectedPlayerTiles.count > 0 {
         //    print("in tiles connected to board tiles with values---non delete selected tiles count = 0 and selected player tiles > 0, returning true")
             return true
         }
@@ -3050,6 +4635,7 @@ class GameplayScene: SKScene {
         for tile in selectedPlayerTiles {
             
             tile.position = tile.startingPosition
+            tile.size = GameConstants.TileSize
             tile.row = -1
             tile.col = -1
             tile.inSelectedPlayerTiles = false
@@ -3066,7 +4652,7 @@ class GameplayScene: SKScene {
     }
     
     func refillTileRack(){
-
+ 
         print("in refill tile rack. tiles left: \(tilesLeft)")
        /*
         for tile in tilesUsedThisTurn {
@@ -3075,7 +4661,7 @@ class GameplayScene: SKScene {
 
         }
  */
-        currentPlayerTileRack.removeAndReplaceTileFromRack1(player: currentPlayerN, tilesLeft: tilesLeft){
+        currentPlayerTileRack.removeAndReplaceTileFromRack1(player: currentPlayerN, tilesLeft: tilesLeft, game: game){
             (nTilesUsed)
             in
             print("in closure for remove/replace. nTilesUsed: \(nTilesUsed)")
@@ -3091,7 +4677,6 @@ class GameplayScene: SKScene {
     }
     
     
-    
     func tileIsOnlyConnectedToThree(tile: Tile) -> Bool {
       
         
@@ -3099,7 +4684,7 @@ class GameplayScene: SKScene {
         let col = tile.col
         let boardTile = gameBoard!.getTile(atRow: row, andCol: col)
         
-        if gameBoard!.isConnectedToValuedTilesBottom(tile: boardTile) {
+        if gameBoard!.isConnectedToValuedTilesBottom(tile: boardTile){
             
             
             if gameBoard!.isConnectedToValuedTilesBottomTop(tile: tile) {
@@ -3205,7 +4790,8 @@ class GameplayScene: SKScene {
     }
     
     func selectedTilesOnlyConnectedToThree() -> Bool {
-        for tile in selectedPlayerTiles where /*tile.name != "DELETE"*/ tile.tileType != TileType.eraser {
+        for tile in selectedPlayerTiles where /*tile.name != "DELETE"*/ tile.tileType != TileType.eraser
+        && tile.tileType != .bomb{
             
             
             if !tileIsOnlyConnectedToThree(tile: tile) {
@@ -3272,14 +4858,62 @@ class GameplayScene: SKScene {
         let n2 = Float(int2)
         let n3 = Float(int3)
         
-        return n1 == n2*n3 ||
+        if n1 == n2*n3 ||
             n1 == n2/n3    ||
             n1 == n2 + n3  ||
             n1 == n2 - n3  ||
             n3 == n2*n1    ||
             n3 == n2/n1    ||
             n3 == n2 + n1  ||
-            n3 == n2 - n1
+            n3 == n2 - n1 {
+        
+            print("about to check if we already counted  \(int1) at (\(threeTiles[0].row), \(threeTiles[0].col)) \(int2) at (\(threeTiles[1].row), \(threeTiles[1].col)) and \(int3) at (\(threeTiles[2].row), \(threeTiles[2].col))")
+         /*   for playSet in legalPlaysThisTurn {
+                var match = 0
+                for tile in playSet {
+                    for tile3 in threeTiles{
+                       
+                        if tile.row == tile3.row && tile.col == tile3.col && tile.tileValue == tile3.tileValue {
+                            match += 1
+                            break
+                        }
+                    }
+                
+                }
+             
+                if match == 3 {
+                     print("Already have 3 tiles, not adding:  \(int1) \(int2) \(int3)")
+                    return true
+                    
+                    
+                }
+                
+            
+            
+            
+            }
+            */
+            for playSet in legalPlaysThisTurn {
+                print("comparing three tiles to \(playSet[0].tileValue) at (\(playSet[0].row),\(playSet[0].col)), \(playSet[1].tileValue) at (\(playSet[1].row),\(playSet[1].col)), \(playSet[2].tileValue) at (\(playSet[2].row),\(playSet[2].col))")
+                if threeTiles[0].hasSamePositionAndValuesAsTile(inTileArray: playSet)
+                    && threeTiles[1].hasSamePositionAndValuesAsTile(inTileArray: playSet)
+                    &&  threeTiles[2].hasSamePositionAndValuesAsTile(inTileArray: playSet){
+                print("not adding 3 tiles \(int1),\(int2),\(int3)...as these were already counted")
+                return true
+                }
+            }
+            print("adding 3 tiles to legal plays this turn:  \(int1) \(int2) \(int3)")
+           print("legal plays this turn has \(legalPlaysThisTurn.count) plays in it")
+            legalPlaysThisTurn.append(threeTiles)
+            return true
+        }
+        
+        for tile in threeTiles {
+            badMathTiles.append(gameBoard!.getTile(atRow: tile.row, andCol: tile.col))
+        }
+       
+        
+        return false
         
     }
     enum playTileError: Error {
@@ -3298,12 +4932,13 @@ class GameplayScene: SKScene {
         var nBonusTilesUsed: Int = 0
         for t  in nonDeleteSelectedPlayerTiles {
             if gameBoardTileIsBonusTile(tile: t) {
+                print("in calc score: bonus tiles used += 1!")
                 nBonusTilesUsed += 1
             }
         }
-        let points =  nonDeleteSelectedPlayerTiles.count * nonDeleteSelectedPlayerTiles.count + 2*nBonusTilesUsed
-        print("In calc score. \(nBonusTilesUsed) bonus tiles were played. and \(nonDeleteSelectedPlayerTiles.count) non delete tiles used")
-        
+        let points = nonDeleteSelectedPlayerTiles.count*legalPlaysThisTurn.count + 2*nBonusTilesUsed
+        print("In calc score. Number of Legal Equations = \(legalPlaysThisTurn.count)")
+        print("In calc score--number of tiles used: \(nonDeleteSelectedPlayerTiles.count)")
     
         
        currentPlayer.score += points
@@ -3316,6 +4951,215 @@ class GameplayScene: SKScene {
     }
     
 
+    func revertBoardToStateBeforePlays(plays: [Play], board: Board) {
+        var mem = [Tile]()
+        for play in plays.sorted(by: { (p1, p2) -> Bool in
+            p1.playCreatedDate < p2.playCreatedDate
+        }) {
+            
+            for pTile in play.playTiles.sorted(by: { (t1, t2) -> Bool in
+                t1.tileOrderInPlay! < t2.tileOrderInPlay!
+            }) {
+                pTile.showTile(msg: "showing tiles in play order in revert...")
+                
+                
+                if mem.filter({ (t) -> Bool in
+                    t.row == pTile.row && t.col == pTile.col
+                }).count == 0 || pTile.tileType == .bomb {
+                    pTile.showTile(msg: "adding to mem because no tile encountered yet")
+                    mem.append(pTile)
+     
+                   let bTile = board.getTile(atRow: pTile.row, andCol: pTile.col)
+                    if let holdVal = pTile.holdingValue, let holdPlayer = pTile.holdingPlayer {
+                        pTile.showTile(msg: "pTile not bomb, but has holding value, so restoring in revert.")
+                        bTile.tileLabel.text = "\(holdVal)"
+                        bTile.color = holdPlayer == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
+                    }
+                    else if !bTile.starterTile {
+                        if bTile.tileLabel.text != GameConstants.TileBonusTileText {
+                           bTile.tileLabel.text = ""
+                        }
+                        bTile.color = GameConstants.TileBoardTileColor
+                    }
+                    
+                    
+                    if pTile.tileType == .bomb {
+                        for bombTile in board.getBoxofTiles(withCenterTile: pTile) where !bombTile.starterTile{
+                            if mem.filter({ (memT) -> Bool in
+                                memT.row == bombTile.row && memT.col == bombTile.col
+                            }).count == 0 {
+                                mem.append(bombTile)
+                                let bombBTile = board.getTile(atRow: bombTile.row, andCol: bombTile.col)
+                                if let holdVal = bombTile.holdingValue, let holdPlayer = bombTile.holdingPlayer {
+                                    print("checking bombed tiles in revert: row/col \(bombTile.row), \(bombTile.col) has holding value: \(holdVal)")
+                                    bombBTile.tileLabel.text = "\(holdVal)"
+                                    bombBTile.color = holdPlayer == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
+                                }
+                                else {
+                                       print("checking bombed tiles in revert: row/col \(bombTile.row), \(bombTile.col) does NOT have holding value. tile text = \(bombTile.tileLabel.text)")
+                                    if bombTile.tileLabel.text != GameConstants.TileBonusTileText {
+                                        bombTile.tileLabel.text = ""
+                                        print("Setting bomb tile text to nil, not bonus text")
+                                    }
+                                    bombBTile.color = GameConstants.TileBoardTileColor
+                                }
+                                
+                            }
+                        }
+                    }
+                    
+            
+                    
+                }
+                else {
+                    pTile.showTile(msg: "not adding to mem...,already have a tile at this place.")
+                }
+            }
+        }
+        
+        gameBoard.showBoard(msg: "After reverting board")
+        
+        
+    }
+    
+    func revertBoxFromBomb(bombTile: Tile) {
+        print("reverting box from bomb!")
+        for bTile in gameBoard.getBoxofTiles(withCenterTile: bombTile) where !bTile.starterTile {
+            if let holdVal = bTile.holdingValue, let holdPlayer = bTile.holdingPlayer {
+                bTile.setTileValue(value: holdVal)
+                
+                bTile.color = holdPlayer == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
+                bTile.player = holdPlayer
+                bTile.holdingValue = nil
+                bTile.holdingPlayer = nil
+                
+            }
+            else {
+                bTile.setTileValue(value: nil)
+                bTile.color  = GameConstants.TileBoardTileColor
+            }
+        }
+            
+            
+    }
+    func revertGameBoardAfterBombTileMoved(bombTile: Tile, inTouchesMoved: Bool = true ){
+    
+        print("REVERTING AFTER BOMB TILE")
+//        let returnHome = SKAction.move(to: tile.startingPosition, duration: 1.0)
+//        tile.run(returnHome)
+        for bTile in gameBoard.getBoxofTiles(withCenterTile: bombTile)  {
+            
+            
+            if bTile.tileIndexInValuedBombedTilesToRestore(bombedTilesToRestore: bombedValuedTilesToRestore) > -1 {
+                print("tile at row, col: \(bTile.row),\(bTile.col) is a valued bombed tile to restore.")
+            if let holdVal = bTile.getHoldingValueToRestore(),
+                let holdPlayer = bTile.getHoldingPlayerToRestore(){
+              
+                bTile.setTileValue(value: holdVal)
+                
+                bTile.color = holdPlayer == 1 ? GameConstants.TilePlayer1TileColor : GameConstants.TilePlayer2TileColor
+                bTile.player = holdPlayer
+                bTile.removeHoldingValuesAfterRestoring()
+                }
+               
+                bombedValuedTilesToRestore.remove(at: bTile.tileIndexInValuedBombedTilesToRestore(bombedTilesToRestore: bombedValuedTilesToRestore))
+            }
+            else if !bTile.starterTile{
+                bTile.setTileValue(value: nil)
+                bTile.color  = GameConstants.TileBoardTileColor
+                bTile.player = nil
+            }
+            
+            if bTile.inSelectedPlayerTiles {
+                print("bTile in selected player tiles is row,col: \(bTile.row) \(bTile.col) value: \(bTile.getTileTextRepresentation())")
+                let selectedTiles = selectedPlayerTiles.filter(){$0.row == bTile.row && $0.col == bTile.col}
+                for sT in selectedTiles {
+                    print("showing sT in selected player tiles that play over bombed area: \(sT.row) \(sT.col) value: \(sT.getTileTextRepresentation()), assoc. board tile holding player: \(bTile.holdingPlayer ?? -99), hold val: \(bTile.holdingValue ?? -99), board tile player: \(bTile.player)")
+                    
+                }
+                
+                if selectedTiles.count > 0 {
+                    for sTile in selectedTiles {
+                        print("sTile corresp. to bTile is row,col: \(sTile.row) \(sTile.col) value: \(sTile.getTileTextRepresentation())")
+                     
+                        sTile.isHidden = false
+                       
+                        if sTile.tileType == .bomb && inTouchesMoved {
+                        sTile.size.width = 2*GameConstants.TileSize.width
+                        sTile.size.height = 2*GameConstants.TileSize.height
+                        sTile.alpha = 0.8
+                        selectedPlayerTile = sTile
+                            
+                        }
+                        else {
+                            sTile.size.width = GameConstants.TileSize.width
+                            sTile.size.height = GameConstants.TileSize.height
+                            sTile.alpha = 1.0
+                            sTile.inSelectedPlayerTiles = false
+                         
+                            let returnHome = SKAction.move(to: sTile.startingPosition, duration: 1.0)
+                            sTile.run(returnHome)
+                            selectedPlayerTiles = selectedPlayerTiles.filter({$0 != sTile})
+                            tilesUsedThisTurn = tilesUsedThisTurn.filter({$0 != sTile})
+                        }
+                        sTile.row = -1
+                        sTile.col = -1
+                        
+                    }
+                    
+                }
+               bTile.inSelectedPlayerTiles = false
+               
+            }
+            
+        }
+        
+        
+    }
+    
+    func valuedTileWasDeletedOrBombedThisPlay(tile: Tile) -> Bool {
+        return tile.tileIndexInValuedBombedTilesToRestore(bombedTilesToRestore: bombedValuedTilesToRestore) > -1
+            || selectedPlayerTiles.filter({ (t) -> Bool in
+                t.tileType == .eraser && t.row == tile.row && t.col == tile.col
+            }).count > 0
+    
+    }
+    
+    func valuedTileWasBombedThisPlay(tile: Tile) -> Bool {
+        return tile.tileIndexInValuedBombedTilesToRestore(bombedTilesToRestore: bombedValuedTilesToRestore) > -1
+
+    }
+
+    func valuedTileWasDeletedThisPlay(tile: Tile) -> Bool {
+          return selectedPlayerTiles.filter({ (t) -> Bool in
+              t.tileType == .eraser && t.row == tile.row && t.col == tile.col
+          }).count > 0
+
+      }
+
+    
+  
+    func tileIsPlayedOverByOtherTileInPlay(tile: Tile, bombTile: Tile, play: Play) -> Bool {
+        
+        guard bombTile.tileType == .bomb && play.playTiles.contains(bombTile) else {
+            print("bombtile is not a bomb tile or play doesn't contain it")
+            return false
+        }
+        guard  (bombTile.row - 1) <= tile.row && tile.row <= (bombTile.row + 1)
+            && (bombTile.col - 1) <= tile.col && tile.col <= (bombTile.col + 1) else {
+                print("bombTile doens't bomb out tile at row,col \(tile.row), \(tile.col) in tileIsPlayedOverByOtherTileInPlay")
+                return false
+        }
+        for (n,playTile) in play.playTiles.enumerated() where n > play.playTiles.index(of: bombTile)!{
+            print("n = \(n), playTile val = \(playTile.tileLabel.text) row,col = \(playTile.row),\(playTile.col).  checking if playTile has the same row,col as bombed out tile at row, col: \(tile.row),\(tile.col)")
+            if playTile.row == tile.row && playTile.col == tile.col {
+                return true
+            }
+        }
+        return false
+    }
+    
+    
 
     func setUpNodeWithText( nodeLabel: String, lblFontColor: UIColor, lblFontSize: CGFloat,
                             nodeSize: CGSize, nodePos: CGPoint, nodeColor: UIColor)  {

@@ -20,13 +20,13 @@ class GameOverPanel: SKShapeNode {
     let backToMenuLabel = SKLabelNode()
     let playAgainLabel = SKLabelNode()
     let finalSinglePlayerMessage = SKLabelNode()
-    
+    let separator: CGFloat = 5
     var vc: UIViewController?
     
     override init() {
         super.init()
         
-        fillColor = .blue
+        fillColor = .lightGray
         zPosition = 10
         isUserInteractionEnabled = true
     
@@ -45,7 +45,7 @@ func setUpGameOverPanel(game: Game) {
     func addSinglePlayerLabels() {
    //  finalSinglePlayerMessage.position =   CGPoint(x: 0, y: self.frame.height/2 - finalSinglePlayerMessage.frame.size.height/2 - 45)
    
-    let gameOverLbl = SKLabelNode(text: "Game Over!")
+    let gameOverLbl = SKLabelNode(text: "Game Over")
 
     gameOverLbl.fontColor = .black
     gameOverLbl.fontSize = 25
@@ -81,40 +81,82 @@ func setUpGameOverPanel(game: Game) {
         
     }
     func addTwoPlayerLabels() {
-        
-        var result: String
-        if game.player1.score == game.player2.score  {
-            result = "Tied"
-        }
-        else {
+         
+     
+//        let p1UserName = NSAttributedString(string: game.player1.userName!, attributes: [NSAttributedString.Key.foregroundColor : player1TextColor])
+//        let p2UserName = NSAttributedString(string: game.player2.userName!, attributes: [NSAttributedString.Key.foregroundColor : player2TextColor])
+//
+//
             
-            result = Auth.auth().currentUser?.uid == (game.player1.score > game.player2.score ? game.player1.userID: game.player2.userID) ? "Win" : "Lose"
+        //finalScoreLabel.text = "\(p1UserName): \(game.player1.score) | \(p2UserName): \(game.player2.score)"
+        
+        let winLbl = SKLabelNode()
+        if (game.player1.score >= game.player2.score &&  game.resignedPlayerNum != 1)
+        || game.resignedPlayerNum == 2 {
+            winLbl.text = "\(game.player1.userName!): \(game.player1.score)"
         }
-        gameResultLabel.text = "You \(result)!"
+        else if (game.player1.score <= game.player2.score && game.resignedPlayerNum != 2) || game.resignedPlayerNum == 1 {
+            winLbl.text = "\(game.player2.userName!): \(game.player2.score)"
+        }
+        winLbl.fontSize = 20
+        winLbl.fontColor =  game.player1.score == game.player2.score && !(game.resignedPlayerNum != 0) ? .white: UIColor(red: 38/255, green: 127/255, blue: 14/255, alpha: 1.0)
+        winLbl.fontName = "Arial-BoldMT"
+        addChild(winLbl)
         
-        finalScoreLabel.text = "\(game.player1.userName!): \(game.player1.score) | \(game.player2.userName!): \(game.player2.score)"
+       /* let  winlblx: CGFloat = -self.frame.width/2 + winLbl.frame.width/2 + 5
+        winLbl.position = CGPoint(x: winlblx, y: 0)
+ */
         
+        
+        let loseLbl = SKLabelNode()
+        if (game.player1.score >= game.player2.score && game.resignedPlayerNum != 1) || game.resignedPlayerNum == 2 {
+                  loseLbl.text = "\(game.player2.userName!): \(game.player2.score)"
+              }
+        else if (game.player1.score < game.player2.score && game.resignedPlayerNum != 2) || game.resignedPlayerNum == 1 {
+                  loseLbl.text = "\(game.player1.userName!): \(game.player1.score)"
+              }
+              loseLbl.fontSize = 20
+              loseLbl.fontColor = .white
+              loseLbl.fontName = "Arial-BoldMT"
+              
+        addChild(loseLbl)
+        loseLbl.position = CGPoint(x: 0, y: winLbl.frame.minY - loseLbl.frame.height/2 - 10)
+            
+      
+    
+        let gameOverLbl = SKLabelNode(text: "Game Over!")
+
+        gameOverLbl.fontColor = .black // UIColor(red: 16/255, green: 96/255, blue: 205/255, alpha: 1.0)
+          gameOverLbl.fontSize = 35
+          gameOverLbl.fontName = "Arial-BoldMT"
+          gameOverLbl.position.y = frame.size.height/2  - gameOverLbl.frame.size.height - 10
+          addChild(gameOverLbl)
+              
+        if game.resignedPlayerNum != 0 {
+            let resignedLbl = SKLabelNode(text: "\(game.resignedPlayerNum == 1 ? game.player1.userName! : game.player2.userName!) resigned!")
+            resignedLbl.position = CGPoint(x: 0, y: gameOverLbl.frame.minY - resignedLbl.frame.height/2 - 5)
+            resignedLbl.fontSize = 17
+            resignedLbl.fontName = "Arial-ItalicMT"
+            resignedLbl.fontColor = .black
+            addChild(resignedLbl)
+        }
         gameResultLabel.fontName =  "Arial-BoldMT"
-        gameResultLabel.fontColor = .black
+        gameResultLabel.fontColor = .blue
         gameResultLabel.fontSize = 30
         gameResultLabel.position = CGPoint(x: 0, y: self.frame.height/2 - gameResultLabel.frame.size.height/2 - 30)
         addChild(gameResultLabel)
         
-        finalScoreLabel.fontSize = 20
+        finalScoreLabel.fontSize = 15
         finalScoreLabel.fontColor = .black
         finalScoreLabel.fontName = "Arial-BoldMT"
         finalScoreLabel.position = CGPoint(x:0, y:0)
         addChild(finalScoreLabel)
         
        
- 
-        
-     
-     
-        
         exitLabel.text = "Exit"
         exitLabel.fontSize = 16
         exitLabel.fontColor = .white
+        
 
         exitLabel.fontName = "Arial-BoldMT"
         exitLabel.position.x = self.frame.minX + exitLabel.frame.size.width/2 + 15
@@ -123,7 +165,7 @@ func setUpGameOverPanel(game: Game) {
 
         addChild(exitLabel)
         
-        let exitShape = SKSpriteNode(color: .lightGray, size: CGSize(width: exitLabel.frame.size.width + 10, height: exitLabel.frame.size.height + 10))
+        let exitShape = SKSpriteNode(color: .red, size: CGSize(width: exitLabel.frame.size.width + 10, height: exitLabel.frame.size.height + 10))
         exitShape.position.y = exitLabel.frame.midY
         exitShape.position.x = exitLabel.position.x
         
@@ -133,12 +175,12 @@ func setUpGameOverPanel(game: Game) {
         rematchLabel.text = game.singlePlayerMode == false ? "Rematch" : "Play Again"
         rematchLabel.fontSize = 16
         rematchLabel.zPosition = 5
-        rematchLabel.fontColor = .white
+        rematchLabel.fontColor = .black
         rematchLabel.fontName = "Arial-BoldMT"
         rematchLabel.position = CGPoint(x: self.frame.size.width/2 - rematchLabel.frame.size.width/2 - 15, y: exitLabel.position.y)
         addChild(rematchLabel)
         
-        let rematchShape = SKSpriteNode(color: .lightGray, size: CGSize(width: rematchLabel.frame.size.width + 10, height: rematchLabel.frame.size.height + 10))
+        let rematchShape = SKSpriteNode(color: UIColor(red: 229/255, green: 198/255,blue: 5/255, alpha: 1.0), size: CGSize(width: rematchLabel.frame.size.width + 10, height: rematchLabel.frame.size.height + 10))
         rematchShape.position.y = rematchLabel.frame.midY
         rematchShape.position.x = rematchLabel.position.x
         

@@ -18,19 +18,21 @@ class InviteCell: UITableViewCell {
     {
         let db = UIButton(type: .system)
         db.translatesAutoresizingMaskIntoConstraints = false
-        db.setTitle("✘", for: UIControlState.normal)
+        db.setTitle("✘", for: UIControl.State.normal)
         db.backgroundColor = .white
-        db.setTitleColor(.gray, for: .normal)
+        db.setTitleColor(.red, for: .normal)
         db.titleLabel?.font = UIFont.boldSystemFont(ofSize: 35)
+        
         return db
         
         
     }()
     var acceptBtn: UIButton =
     {
-        let ab = UIButton(type: UIButtonType.system)
+        let ab = UIButton(type: UIButton.ButtonType.system)
         ab.translatesAutoresizingMaskIntoConstraints = false
-        ab.setTitle("✔︎", for: UIControlState.normal)
+        ab.setTitle("✔︎", for: UIControl.State.normal)
+        ab.setTitleColor(.green, for: .normal)
         ab.titleLabel?.font = UIFont.boldSystemFont(ofSize: 35)
         ab.backgroundColor = .white
         ab.setTitleColor(.black, for: .normal)
@@ -38,7 +40,7 @@ class InviteCell: UITableViewCell {
         
         
     }()
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         backgroundColor = .white
 
@@ -53,7 +55,7 @@ class InviteCell: UITableViewCell {
         declineBtn.widthAnchor.constraint(equalToConstant: 30).isActive = true
         declineBtn.addTarget(self, action: #selector(declineBtnPressed), for: .touchUpInside)
         addSubview(acceptBtn)
-        acceptBtn.rightAnchor.constraint(equalTo: declineBtn.leftAnchor, constant: -10).isActive = true
+        acceptBtn.rightAnchor.constraint(equalTo: declineBtn.leftAnchor, constant: -20).isActive = true
         acceptBtn.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
         acceptBtn.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -5).isActive = true
         acceptBtn.widthAnchor.constraint(equalToConstant: 30).isActive = true
@@ -65,7 +67,7 @@ class InviteCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func acceptBtnPressed() {
+    @objc func acceptBtnPressed() {
         if invite != nil {
 
             Fire.dataService.createGame(invite: invite!){
@@ -102,7 +104,7 @@ class InviteCell: UITableViewCell {
             
         }
     }
-    func declineBtnPressed(){
+    @objc func declineBtnPressed(){
         if invite != nil {
         Fire.dataService.declineInvitation(invite: invite!)
         removeInviteFromInviteController()

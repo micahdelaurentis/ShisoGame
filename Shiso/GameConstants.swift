@@ -16,13 +16,15 @@ struct GameConstants {
     static let TileBoardTileName = "Board"
     static let TilePlayerTileName = "Player Tile"
     static let TileDeleteTileName = "DELETE"
+    static let TileBombTileName = "BOMB"
+  
     static let TileWildcardTileName = "WILDCARD"
     static let TileWildCardSymbol = "?"
     static let TileDeleteTileSymbol =  "X"
     static let TileBonusTileText = "+2"
     static let WildCardPickerExitBoxName = "EXIT WILDCARD PICKER VIEW"
-    
-    static let BingoPoints = 10
+    static  let soundsOnUserDefaultsBool = "Sound_On"
+    static let BingoPoints = 7
     
   //  static let TileSize = CGSize(width: 70, height: 70)
   
@@ -43,6 +45,7 @@ struct GameConstants {
     static let TilePlayer2TileColor = UIColor(red: 102/255, green: 101/255, blue: 71/255, alpha: 1.0)
     static let TileBoardTileColor = UIColor(red: 243/255, green: 243/255, blue: 240/255, alpha: 1.0)
     
+    static let PlayBtnColor = UIColor(red: 85/255, green: 158/255, blue: 131/255, alpha: 1.0)
     //static let BoardSize = CGSize(width: 800, height: 800)
     static let BoardSize = CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width)
     static let BoardAnchorPoint = CGPoint(x: 0.5  , y: 0.5)
@@ -52,6 +55,7 @@ struct GameConstants {
     static let BoardNumRows: Int = 9
     static let BoardNumCols: Int = 9
     
+    static let BoxBonus: Int = 20
 
     static let TileSize: CGSize = {
 

@@ -125,9 +125,16 @@ class TileRack {
             completion!(newTile)
         }
     }
-    func removeAndReplaceTileFromRack1(player: Int,  tilesLeft: Int, completion: ((Int) -> ())? = nil){
+    
+    func removeAndReplaceTileFromRack1(player: Int,  tilesLeft: Int, game: Game? = nil, completion: ((Int) -> ())? = nil){
         print("In removeAndReplaceTileFromRack version 2. tilerack children count:\(tileRack.children.count) tile rack count: \(playerTiles.count)")
       var numTiles = 0
+      var randMax = 100
+        if let game = game {
+            if game.board.percentOfBoardOccupied() >= 0.65 {
+                randMax = 106
+            }
+        }
     var nTilesLeft = tilesLeft
         print("n tiles left: \(nTilesLeft)")
         // print("replacing tile with value: \(tile.getTileLabelText()) and position: \(tile.startingPosition) and rack position \(tile.rackPosition)")
@@ -146,7 +153,8 @@ class TileRack {
                 
                     let newTile = Tile()
                     newTile.rackPosition = i
-                    newTile.initializeTile(tileValueText: nil , includeRandomTextValue: true, player: player)
+                    
+                    newTile.initializeTile(tileValueText: nil , includeRandomTextValue: true, player: player, randMax: randMax)
 
                     playerTiles[i] = newTile
                   //  print("create new tile for player: val \(newTile.getTileTextRepresentation()) at location \(i)")

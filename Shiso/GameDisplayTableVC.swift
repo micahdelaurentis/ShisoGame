@@ -12,11 +12,7 @@ import SpriteKit
 import Firebase
 
 class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDataSource {
-    var gameVC: GameViewController! {
-        didSet {
-            print("set gamevc in displayvc to : \(gameVC)")
-        }
-    }
+    var gameVC: GameViewController! 
     var newGameSet: Bool = false
     var cellHeight: CGFloat = 0
     var tableView: UITableView!
@@ -26,7 +22,7 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
                 numberOfGamesLbl.text = "You have 1 active game!"
             }
             else {
-                numberOfGamesLbl.text = self.games == nil ? "You have 0 active games!" : "You have \(self.games!.count) active games!"
+                numberOfGamesLbl.text = self.games == nil || self.games?.count == 0 ? "You have 0 active games!" : "You have \(self.games!.count) active games!"
             }
         }
     }
@@ -70,7 +66,7 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     
     hamburgerControl.setUpNavBarWithHamburgerBtn(inVC: self)
     
-    tableView =  UITableView(frame: CGRect(x: 0, y: 0, width: 0, height: 0 ), style: UITableViewStyle.plain)
+    tableView =  UITableView(frame: CGRect(x: 0, y: 0, width: 0, height: 0 ), style: UITableView.Style.plain)
     tableView.isScrollEnabled = true
     tableView.dataSource = self
     tableView.delegate = self
@@ -80,6 +76,8 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
    // view.addSubview(backBtn)
     view.addSubview(newGameBtn)
     
+    
+         
         newGameBtn.topAnchor.constraint(equalTo: hamburgerControl.navBar.bottomAnchor).isActive = true
         newGameBtn.widthAnchor.constraint(equalToConstant: 200).isActive = true
         newGameBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
@@ -99,7 +97,7 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.topAnchor.constraint(equalTo: numberOfGamesLbl.bottomAnchor, constant: 10).isActive = true
         tableView.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 30).isActive = true
-        tableView.heightAnchor.constraint(equalToConstant: 3*singleGameViewHeight).isActive = true
+        tableView.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor).isActive = true
         tableView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 15).isActive = true 
         
      
@@ -136,8 +134,10 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     shisoPicImgView.isUserInteractionEnabled = true
     //view.addSubview(shisoPicImgView)
     
-        Fire.dataService.checkForChallengesReceived { (challengesReceived) in
-            
+        Fire.dataService.checkForChallengesReceived {
+        (challengesReceived) in
+            print("in fire.dataService.checkForChallengesReceived closure. notification circle being hidden or unhidden...")
+                     
             if challengesReceived == true {
                 print("You have challenges!")
                 self.notificationCircle.isHidden = false
@@ -162,7 +162,7 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
                 print("in game display, looping thru games. game ID: \(game.gameID)")
             }
         }
-        
+      
      
     }
     override func viewDidAppear(_ animated: Bool) {
@@ -192,7 +192,7 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
         }
     }
 
-    func shisoPicImgViewPressed() {
+    @objc func shisoPicImgViewPressed() {
         hamburgerControl.removeSlideOut()
         present(InvitesController(), animated: true, completion: nil)
     }
@@ -229,7 +229,7 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
         
     }
     
-    func loadGamesAndUpdateDisplay1(completion: ((CGFloat) -> ())? = nil) {
+    func loadGamesAndUpdateDisplay1(completion: ((CGFloat?) -> ())? = nil) {
         Fire.dataService.loadGames1() {
             (loadedGame)
             
@@ -304,16 +304,19 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
     }
     
  
-    func newGameBtnPushed() {
+    @objc func newGameBtnPushed() {
         hamburgerControl.removeSlideOut()
-        present(StartNewGameVC(), animated: true, completion: nil)
+        let vc = StartNewGameVC()
+        vc.modalPresentationStyle = .fullScreen
+        present(vc, animated: true, completion: nil)
+       
     }
     
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
      //let gameDisplayCell = tableView.dequeueReusableCell(withIdentifier: "gameDisplayCell", for: indexPath) as! GameDisplayCell
         
-        let gameDisplayCell = UITableViewCell(style: UITableViewCellStyle.default, reuseIdentifier: "displayCell")
+        let gameDisplayCell = UITableViewCell(style: UITableViewCell.CellStyle.default, reuseIdentifier: "displayCell")
         gameDisplayCell.backgroundColor = .black
         
         if let game = games?[indexPath.row] {
@@ -366,8 +369,11 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
             }
             let game = games[indexPath.row]
                if let gameVC = /*UIApplication.shared.keyWindow?.rootViewController*/ presentingViewController as? GameViewController {
-          
-                if let view =  gameVC.view as? SKView {
+                
+              hamburgerControl.removeSlideOut()
+              
+                gameVC.presentGame(game: game)
+               /* if let view =  gameVC.view as? SKView {
                     gameVC.dismiss(animated: true, completion: nil)
                     hamburgerControl.removeSlideOut()
                     if let scene = GameplayScene(fileNamed: "GameplayScene") {
@@ -383,6 +389,7 @@ class GameDisplayTableVC: UIViewController,  UITableViewDelegate, UITableViewDat
                 else {
                     print("can't let game vc have skview")
                 }
+ */
             }
         }
     }

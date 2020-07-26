@@ -16,6 +16,7 @@ struct FirebaseConstants {
    
   
     static var FBRef = Database.database().reference()
+    
     static var CurrentUserID: String? = Auth.auth().currentUser?.uid
  
     
@@ -60,6 +61,11 @@ struct FirebaseConstants {
     static let GameLastScoreIncrement = "LastScoreIncrement"
     static let GameLastPlayerToMove = "LastPlayerToMove"
     static let GameLastPlayerUsedAllTiles = "LastPlayerUsedAllTiles"
+    static let GamePlaysThisTurn = "PlaysThisTurn"
+    static let GameBoxLocs = "BoxLocs"
+    static let GameNumSequentialPlaysWithNoTilesUsed = "NumSequentialPlaysWithNoTilesUsed"
+    static let GameResignedPlayerNum  = "ResignedPlayerNum"
+    
     static let LastTurnPassed = "lastTurnPassed"
     static let TileValue = "TileValue"
     static let TileRackPosition = "TileRackPosition"
@@ -67,12 +73,13 @@ struct FirebaseConstants {
     static let TileCol = "Col"
     static let TilePlayer = "Player"
     static let TileHoldingValue = "HoldingValue"
+    static let TileHoldingPlayer = "HoldingPlayer"
     static let TileCurrentPositionX = "CurrentPositionX"
     static let TileCurrentPositionY = "CurrentPositionY"
     static let TileStartingPositionX = "StartingPositionX"
     static let TileStartingPositionY = "StartingPositionY"
     static let TileBonusTile = "BonusTile"
-  
+    static let TileOrderInPlay = "TileOrderInPlay"
     static let TileColor = "Color"
     static let TileBoardTileColor = "brown"
     static let TilePlayer1TileColor = "blue"

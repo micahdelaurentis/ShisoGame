@@ -14,27 +14,33 @@ import SpriteKit
 
 class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    var tableView = UITableView()
+  //  var tableView = UITableView()
     var invites: [Invite]? {
         didSet {
             print("item added/dropped from invites in Invites Controller. Count is: \(invites?.count)")
             DispatchQueue.main.async {
                 print("re-loading data")
                 self.tableView.reloadData()
+                
             }
         }
     }
     var backBtn: UIButton = {
         let bb = UIButton()
-        bb.frame = CGRect(origin: CGPoint(x: 10, y: 30), size: CGSize(width: 50, height: 30))
+        bb.frame = CGRect(origin: CGPoint(x: 10, y: 30), size: CGSize(width: 50, height: 50))
         bb.layer.cornerRadius = 3
         bb.backgroundColor = .white
         
-        bb.setTitle("🔙", for: .normal)
+        bb.setImage(UIImage(named: "homeBtnImage"), for: .normal)
         
         return bb
     }()
 
+   var tableView: UITableView  = {
+        let t = UITableView()
+        t.translatesAutoresizingMaskIntoConstraints = false
+        return t
+    }()
     var headerTitle = UILabel()
     var nChallenges: Int = 0 {
         didSet {
@@ -86,22 +92,43 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
         backBtn.addTarget(self, action: #selector(backBtnPushed), for: .touchUpInside)
         
         
-        view.backgroundColor = .white
+        view.backgroundColor = .blue
         
- 
-        tableView = UITableView(frame: CGRect(x: view.frame.midX - 150, y: view.frame.midY - 150, width: 300, height: 300), style: UITableViewStyle.plain)
+ /*
+         tableView = UITableView(frame: CGRect(x: view.frame.midX - 150, y: view.frame.midY - 150, width: 300, height: 300), style: UITableView.Style.plain)
+        */
+        
+        view.addSubview(tableView)
+        
+      
         tableView.delegate  = self
         tableView.dataSource = self
         tableView.register(InviteCell.self, forCellReuseIdentifier: "inviteCell")
+         
+        tableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+           tableView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+           tableView.topAnchor.constraint(equalTo: backBtn.bottomAnchor, constant: 10).isActive = true
+        tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -50).isActive = true
+            
         let header = UIView()
         header.backgroundColor = .lightGray
+        
         header.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50)
-        headerTitle = UILabel(frame: CGRect(origin: CGPoint(x: header.frame.midX - 50, y: header.frame.midY - 15) , size: CGSize(width: 200, height: 30)))
+       // headerTitle = UILabel(frame: CGRect(origin: CGPoint(x: header.frame.midX, y: header.frame.midY ) , size: CGSize(width: 200, height: 30)))
+        headerTitle = UILabel()
+        headerTitle.translatesAutoresizingMaskIntoConstraints = false
+        header.addSubview(headerTitle)
+        headerTitle.centerXAnchor.constraint(equalTo: header.centerXAnchor).isActive = true
+        headerTitle.centerYAnchor.constraint(equalTo: header.centerYAnchor).isActive = true
+        headerTitle.widthAnchor.constraint(equalTo: header.widthAnchor).isActive = true
+            headerTitle.heightAnchor.constraint(equalTo: header.heightAnchor).isActive = true
+            
         headerTitle.text = "Challenges: \(invites?.count ?? 0)"
         headerTitle.font = UIFont.boldSystemFont(ofSize: 18)
-        header.addSubview(headerTitle)
+        headerTitle.textAlignment = .center
+        
         tableView.tableHeaderView = header
-        view.addSubview(tableView)
+        
         
      
        
@@ -109,7 +136,7 @@ class InvitesController: UIViewController, UITableViewDelegate, UITableViewDataS
    
     
     
-    func backBtnPushed() {
+    @objc func backBtnPushed() {
      self.dismiss(animated: true, completion: nil)
     }
     

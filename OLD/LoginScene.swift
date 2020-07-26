@@ -15,7 +15,7 @@ import FBSDKLoginKit
 
 
 
-class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
+    class LoginScene: SKScene, UITextFieldDelegate , LoginButtonDelegate {
     
     var ref: DatabaseReference!
     var invite: Invite?
@@ -27,7 +27,7 @@ class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
     var emailField = UITextField()
     var nameField  = UITextField()
     
-    var loginButton = FBSDKLoginButton()
+        var loginButton = FBLoginButton()
      var mainVC: UIViewController?
     
     
@@ -45,10 +45,10 @@ class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
         passwordField = UITextField(frame: CGRect(x: emailField.frame.origin.x, y: emailField.frame.origin.y + 35, width: emailField.frame.size.width, height: emailField.frame.size.height))
         
      
-     loginButton = FBSDKLoginButton(frame: CGRect(x: passwordField.frame.origin.x , y: passwordField.frame.origin.y + 35,
+        loginButton = FBLoginButton(frame: CGRect(x: passwordField.frame.origin.x , y: passwordField.frame.origin.y + 35,
                                                    width: passwordField.frame.size.width, height: passwordField.frame.size.height))
      
-     loginButton.readPermissions = ["public_profile", "email"]
+     loginButton.permissions = ["public_profile", "email"]
      loginButton.delegate  = self
     
         
@@ -186,19 +186,19 @@ class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
     
   
     
-    func loginButtonDidLogOut(_ loginButton: FBSDKLoginButton!) {
+        func loginButtonDidLogOut(_ loginButton: FBLoginButton!) {
         print("Did log out")
         
         
     }
     
-    func loginButton(_ loginButton: FBSDKLoginButton!, didCompleteWith result: FBSDKLoginManagerLoginResult!, error: Error!) {
+        func loginButton(_ loginButton: FBLoginButton!, didCompleteWith result: LoginManagerLoginResult!, error: Error!) {
         if error != nil {
             print("Error logging in with facebook: \(error.localizedDescription)")
             return
         }
      
-        let accessToken = FBSDKAccessToken.current()
+            let accessToken = AccessToken.current
         guard let accessTokenString = accessToken?.tokenString else { return }
         
         let credentials = FacebookAuthProvider.credential(withAccessToken: accessTokenString)
@@ -212,7 +212,7 @@ class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
         
             guard user != nil else {return}
             
-            FirebaseConstants.UsersNode.child((user?.uid)!).observeSingleEvent(of: .value, with: { (snapshot) in
+            FirebaseConstants.UsersNode.child((user?.user.uid)!).observeSingleEvent(of: .value, with: { (snapshot) in
                 if snapshot.exists() {
                     print("Already exists!!---\(snapshot)")
                     return
@@ -220,9 +220,9 @@ class LoginScene: SKScene, UITextFieldDelegate , FBSDKLoginButtonDelegate {
                 else {
                     print("No user in database yet!!!!!!")
                     
-                    FirebaseConstants.UsersNode.child((user?.uid)!).updateChildValues([FirebaseConstants.UserName : user?.displayName ?? "",
-                                                                                       FirebaseConstants.UserEmail:  user?.email ?? "",
-                                                                                       FirebaseConstants.UserID: user?.uid])
+                    FirebaseConstants.UsersNode.child((user?.user.uid)!).updateChildValues([FirebaseConstants.UserName : user?.user.displayName ?? "",
+                                                                                            FirebaseConstants.UserEmail:  user?.user.email ?? "",
+                                                                                            FirebaseConstants.UserID: user?.user.uid])
                 }
             })
    

@@ -28,10 +28,10 @@ let ranking_5min = UILabel()
 var userStats = UserStats()
     var backBtn: UIButton = {
         let bb = UIButton()
-        bb.frame = CGRect(origin: CGPoint(x: 10, y: 30), size: CGSize(width: 70, height: 30))
+        bb.frame = CGRect(origin: CGPoint(x: 10, y: 30), size: CGSize(width: 50, height: 50))
         bb.layer.cornerRadius = 3
         bb.backgroundColor = .white
-        bb.setTitle("🔙", for: .normal)
+        bb.setImage(UIImage(named: "homeBtnImage"), for: .normal)
         
         return bb
     }()
@@ -162,7 +162,7 @@ override func viewDidLoad() {
       
     }
     
-    func backBtnPushed() {
+    @objc func backBtnPushed() {
      
         
         if let presentingVC = presentingViewController as? GameViewController {

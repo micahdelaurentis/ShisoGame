@@ -10,7 +10,7 @@ import UIKit
 import SpriteKit
 class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
 
-    var hamburgerContents = ["My Games", "Settings", "Statistics",  "Log Out"]
+    var hamburgerContents = ["My Games", "Settings", "Statistics",  "Log Out", "Resign"]
     var navBar: UINavigationBar!
     lazy var slideOutMenu: UITableView = {
         let tv = UITableView()
@@ -20,7 +20,7 @@ class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
     }()
     
 
-    func hamburgerMenuButtonTapped() {
+    @objc func hamburgerMenuButtonTapped() {
             toggleSlideOut()
     }
     
@@ -83,6 +83,9 @@ class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
         let cell = UITableViewCell()
         let txt =  hamburgerContents[indexPath.row]
         cell.textLabel?.text = txt
+        if txt == "Resign" {
+            cell.textLabel?.textColor = .orange
+         }
         cell.imageView?.image = UIImage(named: txt)
         return cell
     }
@@ -134,8 +137,51 @@ class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
                 
 
             }
-            else {
-               print("you selected something else")
+                
+            else if hc == "Settings" {
+                if let v = vc.view as? SKView {
+                    v.presentScene(nil)
+                   
+                }
+                vc.dismiss(animated: false, completion: nil)
+                vc.presentSettingsVC()
+            }
+            else if hc == "Resign" {
+                print("you selected resign.  ; current plalyer id = \(FirebaseConstants.CurrentUserID ?? "Unknown user id")")
+              
+                if let game = vc.lastPresentedGame {
+                    
+                    if let v = vc.view as? SKView, let sk = v.scene as? GameplayScene {
+                                                         print("YES: can access sk scene from resign ")
+                    
+                        sk.game.gameOver = true
+                                           
+                                           print("you resigned game with game id = \(game.gameID)")
+                        if FirebaseConstants.CurrentUserID == sk.game.player1.userID  {
+                                            sk.game.resignedPlayerNum = 1
+                                                
+                                                
+                                           }
+                        else if FirebaseConstants.CurrentUserID == sk.game.player2.userID {
+                                            sk.game.resignedPlayerNum = 2
+                                               
+                                           }
+                                           else {
+                                               print("error in determinign player who resigned")
+                                           }
+                                           vc.dismiss(animated: false) {
+                                            sk.switchPlayers()
+                                           }
+                                         
+                                    
+                                  
+                                  }
+                  
+                }
+                
+                else {
+                    print("You resigned but could not find game")
+                }
             }
             
             
@@ -148,22 +194,23 @@ class Hamburger: NSObject, UITableViewDataSource, UITableViewDelegate {
 
     }
     
-    func setUpNavBarWithHamburgerBtn(inVC vc: UIViewController) {
+    func setUpNavBarWithHamburgerBtn(inVC vc: UIViewController, color: UIColor = .lightGray, ht: CGFloat = 50 ) {
         
         print("setting up navbar with hamburger with vc:\(vc)")
-          navBar = UINavigationBar(frame: CGRect(x: 0, y: 0, width: vc.view.frame.size.width, height: 50))
+          navBar = UINavigationBar(frame: CGRect(x: 0, y: 0, width: vc.view.frame.size.width, height: ht))
        
         vc.view.addSubview(navBar)
-        
+        navBar.barTintColor = color 
         navBar.translatesAutoresizingMaskIntoConstraints = false
         if #available(iOS 11.0, *) {
+            print("pinning navbar to top anch safe area bc ios 11 available!")
             navBar.topAnchor.constraint(equalTo: vc.view.safeAreaLayoutGuide.topAnchor).isActive = true
         } else {
           navBar.topAnchor.constraint(equalTo: vc.view.topAnchor).isActive = true
         }
         navBar.leadingAnchor.constraint(equalTo: vc.view.leadingAnchor).isActive = true
         navBar.trailingAnchor.constraint(equalTo: vc.view.trailingAnchor).isActive = true
-        navBar.heightAnchor.constraint(equalToConstant: 50).isActive = true 
+        navBar.heightAnchor.constraint(equalToConstant: ht).isActive = true
         
         let hamburgerImg = UIImage(named: "hamburger")
         let hamburgerMenuButton = UIBarButtonItem(image: hamburgerImg, style: .plain, target: self, action: nil)

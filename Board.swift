@@ -13,9 +13,8 @@ class Board {
    
     var startingTiles = [Tile]()
     var bonusPointTiles = [Tile]()
-    var grid = [[Tile]]()
-    
-    
+    var grid = [[Tile]]() 
+   
     
     var intersectingBlocks = [[Tile]]()
     var alreadyCountedTargetTiles = [Tile]()
@@ -56,7 +55,7 @@ class Board {
                     tile.initializeTile(tileValueText: nil, includeRandomTextValue: true)
                     tile.color = GameConstants.TileStartingTilesColor 
                    //print("In board, creating tiles, tile name: \(tile.name)")
-                    while tile.tileType == TileType.eraser || tile.tileType == TileType.wildcard {
+                    while tile.tileType == TileType.eraser || tile.tileType == TileType.wildcard  || tile.tileType == TileType.bomb {
                         
                          tile.setTileValue(value: Int(arc4random_uniform(25)))
                          tile.texture = nil
@@ -187,6 +186,7 @@ class Board {
     }
     
     func getTile(atRow row: Int, andCol col: Int) -> Tile {
+    
         return grid[row][col]
     }
     
@@ -198,6 +198,7 @@ class Board {
     func setTileValue(row: Int, col: Int, value: Int?) {
          grid[row][col].tileValue = value
     }
+    
     func setTileInGrid(row: Int , col: Int, tile: Tile) {
      
             grid[row][col] = tile
@@ -217,6 +218,116 @@ class Board {
     func tileValueIsEmpty(row: Int, col: Int) -> Bool {
         return getTileValue(row: row, col: col) == nil
     }
+    
+    func getBoxLocsForTiles(tiles: [Tile]) -> [BoxLoc] {
+      var  boxLocs = [BoxLoc]()
+        for r in 0...GameConstants.BoardNumRows - 2 {
+            for c in 0...GameConstants.BoardNumCols - 2 {
+                var boxTileCount = 0
+                for i in r...r + 2 {
+                    for j in c ... c + 2 {
+                        if !getTile(atRow: i, andCol: j).tileIsEmpty {
+                            boxTileCount += 1
+                        }
+                    }
+                }
+                if boxTileCount == 9 {
+                    print("in board get box locs for nondelete tiles: box found with middle tile row: \(r+1) col: \(c+1)")
+                    for tile in tiles {
+                        if r <= tile.row && tile.row <= r + 2 && c <= tile.col && tile.col <= c + 2 {
+                            boxLocs.append(BoxLoc(row: r + 1, col: c + 1, newBox: true))
+                            print("in board, box DOES contain nondelete selected tile with value: \(String(describing: tile.tileValue)), at row/col: \(tile.row), \(tile.col) --> adding box with center: row: \(r+1) col: \(c+1)")
+                            break
+                        }
+                        else {
+                            print("in board, box doesn't contain any nondelete tiles, not adding row: \(r+1) col: \(c+1)")
+                        }
+                    }
+                 //   boxLocs.append(BoxLoc(row: r + 1, col: c + 1))
+                }
+                
+            }
+        }
+        
+        return boxLocs
+    }
+    
+    
+    func getBoxofTiles(withCenterTile tile: Tile) -> [Tile] {
+        var box = [Tile]()
+        
+        let row = tile.row
+        let col = tile.col
+        
+        for c in max(0, col - 1) ... min(GameConstants.BoardNumCols, col + 1) {
+            for r in max(0, row - 1) ... min(GameConstants.BoardNumRows, row + 1){
+           box.append(getTile(atRow: r, andCol: c))
+    
+            }
+        }
+        
+        return box
+    }
+    
+    
+    
+    
+    func tileIsWithinBombBounds(tile: Tile, bombTile: Tile) -> Bool {
+        guard bombTile.tileType == .bomb else {
+            return false
+        }
+        
+        return bombTile.row - 1 <= tile.row  && tile.row <= bombTile.row + 1
+            && bombTile.col - 1 <= tile.col && tile.col <= bombTile.col + 1
+        
+    }
+   
+    func tileIsPlayTileWithinBombBounds(tile: Tile, bombTile: Tile, plays: [Play]) -> Bool {
+        var tileInPlays = false
+        for play in plays{
+            for playTile in play.playTiles {
+                if tile.tileType != .bomb && tile.tileType != .eraser && tile.row == playTile.row && tile.col == playTile.col {
+                    tileInPlays = true
+                    break
+                }
+            }
+        }
+        
+        return tileInPlays && tileIsWithinBombBounds(tile: tile, bombTile: bombTile)
+    }
+    
+    
+    
+    
+    func boxTilesHaveNonStarterValuedTiles(withCenterTile tile: Tile) -> Bool {
+        
+        for sTile in getBoxofTiles(withCenterTile: tile) where !sTile.starterTile {
+            showTile(tile: sTile, message: "in box of tiles surrounding t")
+            if !sTile.tileIsEmpty {
+                print("non-empty tile found...returning True")
+                return true
+            }
+        }
+        print("no non-empty tile found, returnign false")
+        return false
+    }
+    
+   
+    
+    
+    func tilesHaveAnyValuesAsideFromStarterTiles(tiles: [Tile]) -> Bool {
+        
+        for tile in tiles where !tile.starterTile {
+            if !tile.tileIsEmpty {
+                return true
+            }
+        }
+        return false
+        
+    }
+    
+   
+    
     
     func getTiles(atRow row: Int) -> [Tile] {
         
@@ -242,6 +353,15 @@ class Board {
         }
         
         return tiles
+    }
+    
+    
+    func getTiles(fromTileArray tiles: [Tile]) -> [Tile] {
+        var gameBoardTiles = [Tile]()
+        for tile in tiles {
+            gameBoardTiles.append(getTile(atRow: tile.row, andCol: tile.col))
+        }
+        return gameBoardTiles
     }
     
     func getTilesAtCol(col: Int, minRow: Int = 0, maxRow:Int = GameConstants.BoardNumRows) -> [Tile] {
@@ -494,6 +614,7 @@ class Board {
     }
     
     
+    
     func getBottomConnectedValuedTiles(tile: Tile) -> [Tile] {
         var bottomSet = [Tile]()
                 
@@ -600,6 +721,9 @@ class Board {
             leftTile = getLeftConnectedValuedTiles(tile: tile).reversed()[1]
             if let leftTile = leftTile {
                 showTile(tile: leftTile, message: "left Connected Tile")
+                if targetTiles.contains(leftTile){
+                    return true
+                }
             }
         }
         if isConnectedToValuedTilesRight(tile: tile) {
@@ -607,20 +731,23 @@ class Board {
             
             if let rightTile = rightTile {
                 showTile(tile: rightTile, message: "right Connected Tile")
+                if targetTiles.contains(rightTile){
+                    return true
+                }
             }
         }
         
-        if let left = leftTile {
-            
-            if targetTiles.contains(left) {
-                return true
-            }
-        }
-        else if let right = rightTile {
-            if targetTiles.contains(right) {
-                return true
-            }
-        }
+//        if let left = leftTile {
+//
+//            if targetTiles.contains(left) {
+//                return true
+//            }
+//        }
+//        else if let right = rightTile {
+//            if targetTiles.contains(right) {
+//                return true
+//            }
+//        }
         
         return false
         
@@ -636,16 +763,23 @@ class Board {
             topTile = getTopConnectedValuedTiles(tile: tile).reversed()[1]
             if let topTile = topTile {
                 showTile(tile: topTile, message: "top tile")
+                if targetTiles.contains(topTile) {
+                    return true
+                }
             }
         }
         if isConnectedToValuedTilesBottom(tile: tile) {
             bottomTile = getBottomConnectedValuedTiles(tile: tile)[1]
             if let bottomTile = bottomTile {
                 showTile(tile: bottomTile, message: "bottom tile")
+                if targetTiles.contains(bottomTile) {
+                    return true
+                }
             }
+       
         }
         
-        if let top = topTile {
+  /*      if let top = topTile {
             print("tile is connected to top tile")
             if targetTiles.contains(top) {
                 return true
@@ -653,11 +787,13 @@ class Board {
         }
         else if let bottom = bottomTile {
             print("tile is connected to bottom tile")
+       
             if targetTiles.contains(bottom) {
                 return true
             }
         }
-        
+     
+        */
         print("target tiles doesn't contain top or bottom tile in hug function. returning false")
         return false
         
@@ -685,6 +821,7 @@ class Board {
     
     func getMinimallySpanningRowTileBlockContainingTile(tile: Tile) -> [Tile] {
       
+        print("in get min spanning row tiles containing \(tile.row), \(tile.col)")
         var tiles = [Tile]()
         
         let row = tile.row
@@ -739,13 +876,14 @@ class Board {
     }
     func showTile(tile: Tile, message: String? = nil) {
         let message  = message ?? ""
-        print("\(message) row, col = \(tile.row), \(tile.col) value: \(tile.tileLabel.text ?? "") ")
+        print("\(message)...tile empty: \(tile.tileIsEmpty), row, col = \(tile.row), \(tile.col) value: \(tile.tileLabel.text ?? "") ")
     }
     func showTiles(tiles: [Tile], message: String?) {
         for tile in tiles {
             showTile(tile: tile, message: message)
         }
     }
+    
     
     
     func getMinimallySpanningColTileBlockContainingTile(tile: Tile) -> [Tile] {
@@ -809,7 +947,7 @@ class Board {
 
     func getTilesInIntersectingBlocks( seedTiles: [Tile]?, targetTiles: [Tile])  {
         
-        print("In get tiles in intersectin blocks")
+        print("In get tiles in intersecting blocks")
         guard targetTiles.count > 0 else {return }
         
         
@@ -857,14 +995,15 @@ class Board {
             
             if startTile0.row == startTile1.row {
                 searchFunc = getMinimallySpanningColTileBlockContainingTile
-                hugFunc = tileIsTopOrBottomConnectedToTargetTile
-
+               // hugFunc = tileIsTopOrBottomConnectedToTargetTile
+                hugFunc = tileMinSpanColSetContainsTargetTile
             }
             
             else {
                 searchFunc = getMinimallySpanningRowTileBlockContainingTile
-                hugFunc = tileIsLeftOrRightConnectedToTargetTile
-
+              //  hugFunc = tileIsLeftOrRightConnectedToTargetTile
+                
+                hugFunc = tileMinSpanRowSetContainsTargetTile
             }
             
         }
@@ -875,9 +1014,9 @@ class Board {
        
         
         for tile in startTiles {
-            print("looping thru start tiles, at tile: \(tile.getTileValue())")
+            print("looping thru start tiles, at row,col: \(tile.row), \(tile.col)")
             if targetTiles.contains(tile) && !alreadyCountedTargetTiles.contains(tile){
-                print("Target tiles contains \(tile.getTileValue())")
+                print("Target tiles contains row,col: \(tile.row), \(tile.col)")
                 alreadyCountedTargetTiles.append(tile)
                 
                 if hugFunc(tile, targetTiles) {
@@ -925,6 +1064,9 @@ class Board {
             return true
         }
         
+        for t in targetTiles {
+            showTile(tile: t, message: "check if legal tile path target tiles...")
+        }
         getTilesInIntersectingBlocks(seedTiles: nil, targetTiles: targetTiles)
         
         return checkThatAlreadyCountedTargetTilesContainsAllTargetTiles(targetTiles: targetTiles)
@@ -942,7 +1084,7 @@ class Board {
        
     }
     func tileMinSpanRowSetContainsTargetTile(tile: Tile, targetTiles: [Tile]) -> Bool {
-        
+        print("in tile min span row set contains target tile. tile: \(tile.row),\(tile.col)")
         return getMinimallySpanningRowTileBlockContainingTile(tile: tile).filter({ (e) -> Bool in
             e != tile && targetTiles.contains(e)
         }).count > 0
@@ -963,19 +1105,36 @@ class Board {
         return boardDict
     }
     
-    func showBoard() {
-        print ("Showing board...")
+    func showBoard(msg: String = "") {
+        print ("Showing board...\(msg)")
         if grid.count - 1 > -1 {
         for i in 0 ... grid.count - 1{
             for j in 0 ... grid[0].count - 1 {
-                   print("value row \(i) col \(j): \(String(describing: getTileValue(row: i, col: j))) ")
+                print("Tile at row,col: (\(i),\(j))label text = \(String(describing: getTile(atRow: i, andCol: j).tileLabel.text))")
                 
             }
         }
         }
     }
     
+    func percentOfBoardOccupied() -> Float {
+        print("in percent of board occupied")
+        var numValuedTiles: Float = 0
+        for i in 0 ... GameConstants.BoardNumRows {
+                   for j in 0 ... GameConstants.BoardNumCols {
+                    numValuedTiles +=  getTile(atRow: i, andCol: j).tileIsEmpty ? 0 : 1
+                       
+                         
+                   }
+               }
     
+    
+        let ans: Float =  numValuedTiles/Float(100)
+    
+        print("percent of board occupied  = \(ans) -- \(numValuedTiles) out of 100")
+        return ans
+        
+    }
     
     
     
